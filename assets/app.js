@@ -1,8 +1,6 @@
 (function () {
   const { sections, channels } = window.YEB_DATA;
 
-  const LEVELS = ["A2", "B1", "B2", "C1"];
-  const LEVEL_NAMES = { A2: "Básico", B1: "Intermedio", B2: "Intermedio alto", C1: "Avanzado" };
   const ACCENTS = { US: "Acento americano", UK: "Acento británico", CA: "Acento canadiense", Mix: "Varios acentos" };
   const STORE = "yeb-state";
 
@@ -24,7 +22,7 @@
   };
 
   // ——— State: remembered per browser; the page works without storage too ———
-  const state = { level: null, topic: sections[0].id, favs: [] };
+  const state = { topic: sections[0].id, favs: [] };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
   const hash = location.hash.slice(1);
   if (sections.some((s) => s.id === hash)) state.topic = hash;
@@ -34,27 +32,8 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const initials = (name) => name.replace(/^The /, "").split(/[\s–-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   const levelText = ([a, b]) => (a === b ? a : `${a}–${b}`);
-  const fits = (c) => {
-    if (!state.level) return true;
-    const i = LEVELS.indexOf(state.level);
-    return i >= LEVELS.indexOf(c.level[0]) && i <= LEVELS.indexOf(c.level[1]);
-  };
 
-  // ——— Step 1: level ———
-  function renderLevels() {
-    $("#level-picker").innerHTML = LEVELS.map((l) => `
-      <button type="button" class="level-btn" role="radio" aria-checked="${state.level === l}" data-level="${l}">
-        <strong>${l}</strong><span>${LEVEL_NAMES[l]}</span>
-      </button>`).join("");
-  }
-  $("#level-picker").addEventListener("click", (e) => {
-    const b = e.target.closest(".level-btn");
-    if (!b) return;
-    state.level = state.level === b.dataset.level ? null : b.dataset.level;
-    save(); renderLevels(); renderPanel();
-  });
-
-  // ——— Step 2: topics ———
+  // ——— Topics ———
   function renderTopics() {
     const tiles = sections.map((s) => ({ id: s.id, label: s.short || s.title, count: channels.filter((c) => c.section === s.id).length }));
     if (state.favs.length) tiles.push({ id: "guardados", label: "Mis guardados", count: state.favs.length });
@@ -81,8 +60,6 @@
   // ——— Results ———
   function card(c) {
     const fav = state.favs.includes(c.name);
-    const ok = fits(c);
-    const rel = !state.level || ok ? "" : LEVELS.indexOf(state.level) < LEVELS.indexOf(c.level[0]) ? "harder" : "easier";
     return `
       <article class="card">
         <div class="card-top">
@@ -93,7 +70,6 @@
           </div>
           <button type="button" class="heart" data-fav="${esc(c.name)}" aria-pressed="${fav}" aria-label="${fav ? "Quitar de guardados" : "Guardar"}: ${esc(c.name)}">${TOPIC_ICONS.guardados}</button>
         </div>
-        ${state.level ? (ok ? `<span class="fit">✓ Para tu nivel</span>` : `<span class="fit ${rel}">${rel === "harder" ? "Un reto: más avanzado" : "Más fácil que tu nivel"}</span>`) : ""}
         <p>${esc(c.text)}</p>
         <div class="links">
           ${c.youtube ? `<a class="link-btn yt" href="${esc(c.youtube)}" target="_blank" rel="noopener">${ICONS.yt}YouTube</a>` : ""}
@@ -121,35 +97,23 @@
   }
 
   function renderPanel() {
+    if (state.topic === "guardados" && !state.favs.length) state.topic = sections[0].id;
     const isFavs = state.topic === "guardados";
-    if (isFavs && !state.favs.length) state.topic = sections[0].id;
-    const sec = sections.find((s) => s.id === state.topic);
-    const list = isFavs && state.favs.length
+    const sec = isFavs ? null : sections.find((s) => s.id === state.topic) || sections[0];
+    const list = isFavs
       ? channels.filter((c) => state.favs.includes(c.name))
       : channels.filter((c) => c.section === sec.id);
-    // Channels that fit the student's level go first; the rest stay visible.
-    const sorted = [...list.filter(fits), ...list.filter((c) => !fits(c))];
-    const fitting = list.filter(fits).length;
-
-    const title = isFavs && state.favs.length ? "Mis guardados" : sec.title;
-    const text = isFavs && state.favs.length ? "Los canales que marcaste con el corazón." : sec.text;
-    const levelNote = state.level
-      ? (fitting === list.length
-          ? `Todos van con tu nivel ${state.level}.`
-          : fitting
-          ? `${fitting} de ${list.length} van con tu nivel ${state.level}. Aparecen primero.`
-          : `Ninguno es justo de tu nivel ${state.level}, pero puedes probarlos con subtítulos.`)
-      : "";
+    const title = isFavs ? "Mis guardados" : sec.title;
+    const text = isFavs ? "Los canales que marcaste con el corazón." : sec.text;
 
     $("#panel").innerHTML = `
       <div class="panel-head">
         <h2>${esc(title)}</h2>
         <p>${esc(text)}</p>
-        ${levelNote ? `<p class="level-note">${esc(levelNote)}</p>` : ""}
       </div>
       ${!isFavs && sec.video ? videoBlock(sec.video) : ""}
-      ${sec.id === "shadowing" && !isFavs ? `<button type="button" class="help-link" data-open="guia-shadowing">¿Primera vez haciendo shadowing? Lee la guía en 5 pasos</button>` : ""}
-      <div class="cards">${sorted.map(card).join("")}</div>`;
+      ${!isFavs && sec.id === "shadowing" ? `<button type="button" class="help-link" data-open="guia-shadowing">¿Primera vez haciendo shadowing? Lee la guía en 5 pasos</button>` : ""}
+      <div class="cards">${list.map(card).join("")}</div>`;
   }
 
   $("#panel").addEventListener("click", (e) => {
@@ -185,7 +149,6 @@
     d.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  renderLevels();
   renderTopics();
   renderPanel();
 })();

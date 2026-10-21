@@ -1,6 +1,6 @@
 # Your English Buddy — Recursos
 
-Espacio para los estudiantes de [Your English Buddy](https://fabio-english-academy.vercel.app/): el estudiante elige su nivel (A2–C1) y un tema, y ve canales y podcasts de YouTube y Spotify para practicar.
+Espacio para los estudiantes de [Your English Buddy](https://fabio-english-academy.vercel.app/): el estudiante elige un tema y ve canales y podcasts de YouTube y Spotify para practicar, cada uno con su nivel (A2–C1).
 
 Sitio: https://fpdev47.github.io/english-buddy-resources/
 
@@ -13,7 +13,7 @@ index.html          Página principal
 assets/styles.css   Estilos y modo día/noche (paleta y tipografías de Your English Buddy)
 assets/theme.js     Botón de modo día/noche
 assets/gate.js      Clave de acceso
-assets/app.js       Nivel, temas, favoritos y reproductor de video
+assets/app.js       Temas, favoritos y reproductor de video
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
 ```
 
