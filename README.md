@@ -1,6 +1,8 @@
 # Your English Buddy — Recursos
 
-Centro de recursos para los estudiantes de [Your English Buddy](https://fabio-english-academy.vercel.app/): podcasts, canales de shadowing y charlas TED en YouTube y Spotify, filtrables por nivel (A2–C1) y tema.
+Espacio para los estudiantes de [Your English Buddy](https://fabio-english-academy.vercel.app/): el estudiante elige su nivel (A2–C1) y un tema, y ve canales y podcasts de YouTube y Spotify para practicar.
+
+Sitio: https://fpdev47.github.io/english-buddy-resources/
 
 Es un sitio estático (HTML, CSS y JavaScript, sin dependencias ni paso de build).
 
@@ -9,8 +11,9 @@ Es un sitio estático (HTML, CSS y JavaScript, sin dependencias ni paso de build
 ```
 index.html          Página principal
 assets/styles.css   Estilos (paleta y tipografías de Your English Buddy)
-assets/app.js       Filtros, búsqueda, favoritos y reproductor de video
-data/resources.js   Catálogo de canales, secciones y videos destacados
+assets/gate.js      Clave de acceso
+assets/app.js       Nivel, temas, favoritos y reproductor de video
+data/resources.js   Catálogo de canales y temas (con su video recomendado)
 ```
 
 ## Agregar o editar un canal
@@ -30,7 +33,17 @@ Abre `data/resources.js` y copia un objeto dentro de `channels`:
 }
 ```
 
-Para crear un tema nuevo, agrega un objeto a `sections` con `id`, `short`, `title`, `kicker` y `text`.
+Para crear un tema nuevo, agrega un objeto a `sections` con `id`, `short`, `title`, `kicker`, `text` y, si quieres, un `video` recomendado.
+
+## Clave de acceso
+
+La página pide una clave antes de mostrar el contenido y la recuerda en cada navegador. En `assets/gate.js` solo se guarda el hash SHA-256 de la clave, no la clave en sí. Para cambiarla:
+
+```bash
+printf '%s' 'nuevaclave' | shasum -a 256
+```
+
+y reemplaza `KEY_HASH` con el resultado. Es una barrera simple contra visitas casuales: como el sitio es estático, alguien con conocimientos técnicos podría saltársela.
 
 ## Ver en local
 
@@ -42,7 +55,7 @@ Luego abre http://localhost:5173.
 
 ## Despliegue
 
-En Vercel: **Add New → Project**, importa este repo y despliega sin cambiar nada (Framework Preset: *Other*).
+Publicado con GitHub Pages desde la rama `main`: cada cambio que subas se publica solo en uno o dos minutos.
 
 ## Próximamente
 

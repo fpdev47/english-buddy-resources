@@ -1,7 +1,8 @@
 /*
   Catálogo de recursos de Your English Buddy.
   Para agregar un canal: copia un objeto dentro de `channels` y cambia sus datos.
-  - section: id de una sección de `sections` (short = texto del filtro)
+  - section: id de una sección de `sections` (short = nombre corto del tema;
+    video = video recomendado opcional del tema)
   - level: [nivelMínimo, nivelMáximo] usando A2, B1, B2, C1
   - accent: "US" (Estados Unidos), "UK" (Reino Unido), "CA" (Canadá), "Mix"
   - youtube / spotify: deja "" si no existe
@@ -20,14 +21,16 @@ window.YEB_DATA = {
       short: "Shadowing",
       title: "Shadowing y pronunciación",
       kicker: "Escucha y repite",
-      text: "Videos para repetir en voz alta justo después del hablante. Así entrenas ritmo, entonación y fluidez."
+      text: "Videos para repetir en voz alta justo después del hablante. Así entrenas ritmo, entonación y fluidez.",
+      video: { id: "37x7oLjYPgM", start: 11, title: "4.5 horas de práctica de speaking", channel: "English is EZ with Connor", tip: "Escucha cada frase, pausa y repítela imitando la entonación. Con 15 minutos al día es suficiente." }
     },
     {
       id: "crecimiento",
       short: "Crecimiento personal",
       title: "Mentalidad y crecimiento personal",
       kicker: "Inglés real",
-      text: "Conversaciones auténticas entre nativos sobre hábitos, motivación y bienestar. Practicas tu inglés mientras aprendes algo útil para tu vida."
+      text: "Conversaciones auténticas entre nativos sobre hábitos, motivación y bienestar. Practicas tu inglés mientras aprendes algo útil para tu vida.",
+      video: { id: "6KjH6Svur0o", start: 0, title: "The Power of Reinvention", channel: "Mel Robbins", tip: "Activa los subtítulos en inglés y anota 5 expresiones nuevas mientras escuchas." }
     },
     {
       id: "ted",
@@ -49,25 +52,6 @@ window.YEB_DATA = {
       title: "Ciencia, historias y curiosidad",
       kicker: "Para seguir aprendiendo",
       text: "Historias reales y temas de ciencia contados con buen ritmo. Ideales cuando ya entiendes bastante y quieres un reto."
-    }
-  ],
-
-  featured: [
-    {
-      youtubeId: "37x7oLjYPgM",
-      start: 11,
-      title: "4.5 horas de práctica de speaking con Super Sentences",
-      channel: "English is EZ with Connor",
-      tag: "Shadowing",
-      text: "Escucha cada frase, pausa y repítela imitando la entonación. Haz 15 minutos al día."
-    },
-    {
-      youtubeId: "6KjH6Svur0o",
-      start: 0,
-      title: "The Power of Reinvention: Switching Things Up at Any Age",
-      channel: "Mel Robbins",
-      tag: "Podcast",
-      text: "Activa los subtítulos en inglés y anota 5 expresiones nuevas mientras escuchas."
     }
   ],
 
