@@ -20,7 +20,7 @@
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if ((await sha256(input.value.trim())) === KEY_HASH) {
+    if ((await sha256(input.value.trim().toLowerCase())) === KEY_HASH) {
       try { localStorage.setItem("yeb-access", "1"); } catch (err) {}
       root.classList.add("unlocked");
       window.scrollTo(0, 0);

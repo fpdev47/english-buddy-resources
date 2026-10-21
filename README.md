@@ -10,7 +10,8 @@ Es un sitio estático (HTML, CSS y JavaScript, sin dependencias ni paso de build
 
 ```
 index.html          Página principal
-assets/styles.css   Estilos (paleta y tipografías de Your English Buddy)
+assets/styles.css   Estilos y modo día/noche (paleta y tipografías de Your English Buddy)
+assets/theme.js     Botón de modo día/noche
 assets/gate.js      Clave de acceso
 assets/app.js       Nivel, temas, favoritos y reproductor de video
 data/resources.js   Catálogo de canales y temas (con su video recomendado)

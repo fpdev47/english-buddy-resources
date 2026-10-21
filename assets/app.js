@@ -73,6 +73,7 @@
     if (!b) return;
     state.topic = b.dataset.topic;
     save(); renderTopics(); renderPanel();
+    $("#topics .topic[aria-selected=true]").scrollIntoView({ inline: "center", block: "nearest" });
     history.replaceState(null, "", state.topic === "guardados" ? location.pathname : `#${state.topic}`);
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   });
@@ -81,8 +82,9 @@
   function card(c) {
     const fav = state.favs.includes(c.name);
     const ok = fits(c);
+    const rel = !state.level || ok ? "" : LEVELS.indexOf(state.level) < LEVELS.indexOf(c.level[0]) ? "harder" : "easier";
     return `
-      <article class="card${state.level && !ok ? " muted" : ""}">
+      <article class="card">
         <div class="card-top">
           <div class="avatar" aria-hidden="true">${esc(initials(c.name))}</div>
           <div class="card-title">
@@ -91,7 +93,7 @@
           </div>
           <button type="button" class="heart" data-fav="${esc(c.name)}" aria-pressed="${fav}" aria-label="${fav ? "Quitar de guardados" : "Guardar"}: ${esc(c.name)}">${TOPIC_ICONS.guardados}</button>
         </div>
-        ${state.level && ok ? `<span class="fit">✓ Para tu nivel</span>` : ""}
+        ${state.level ? (ok ? `<span class="fit">✓ Para tu nivel</span>` : `<span class="fit ${rel}">${rel === "harder" ? "Un reto: más avanzado" : "Más fácil que tu nivel"}</span>`) : ""}
         <p>${esc(c.text)}</p>
         <div class="links">
           ${c.youtube ? `<a class="link-btn yt" href="${esc(c.youtube)}" target="_blank" rel="noopener">${ICONS.yt}YouTube</a>` : ""}

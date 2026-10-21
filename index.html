@@ -8,7 +8,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-  <script>try { if (localStorage.getItem("yeb-access") === "1") document.documentElement.classList.add("unlocked"); } catch (e) {}</script>
+  <meta name="theme-color" content="#ffffff">
+  <script>
+    // Applied before paint: remembered access and the student's day/night choice.
+    try {
+      if (localStorage.getItem("yeb-access") === "1") document.documentElement.classList.add("unlocked");
+      var t = localStorage.getItem("yeb-theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d3a3e'/><path d='M9 18v-2a7 7 0 0 1 14 0v2' stroke='%23c8e47c' stroke-width='2.4' fill='none' stroke-linecap='round'/><rect x='7' y='17' width='5' height='8' rx='2' fill='%235cf890'/><rect x='20' y='17' width='5' height='8' rx='2' fill='%235cf890'/></svg>">
 </head>
@@ -22,7 +30,7 @@
       <h1>Espacio del estudiante</h1>
       <p>Escribe la clave de acceso que te dio tu profesor.</p>
       <label for="gate-key" class="sr-only">Clave de acceso</label>
-      <input id="gate-key" type="password" placeholder="Clave de acceso" required autofocus>
+      <input id="gate-key" type="password" placeholder="Clave de acceso" required autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go">
       <button class="gate-btn" type="submit">Entrar</button>
       <div class="gate-error" id="gate-error" role="alert"></div>
     </form>
@@ -35,6 +43,10 @@
         <span>Your English Buddy</span>
         <span class="brand-tag">Recursos</span>
       </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Cambiar a modo nocturno">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
     </div>
   </header>
 
@@ -53,9 +65,11 @@
       </div>
     </section>
 
+    <div class="container topics-label">
+      <div class="step-label"><span class="step-num">2</span>Elige un tema</div>
+    </div>
     <section class="topics-wrap">
       <div class="container">
-        <div class="step-label"><span class="step-num">2</span>Elige un tema</div>
         <div class="topics" id="topics" role="tablist" aria-label="Temas"></div>
       </div>
     </section>
@@ -101,6 +115,7 @@
     </div>
   </footer>
 
+  <script src="assets/theme.js"></script>
   <script src="assets/gate.js"></script>
   <script src="data/resources.js"></script>
   <script src="assets/app.js"></script>
