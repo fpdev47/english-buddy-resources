@@ -112,7 +112,6 @@
         <p>${esc(text)}</p>
       </div>
       ${!isFavs && sec.video ? videoBlock(sec.video) : ""}
-      ${!isFavs && sec.id === "shadowing" ? `<button type="button" class="help-link" data-open="guia-shadowing">¿Primera vez haciendo shadowing? Lee la guía en 5 pasos</button>` : ""}
       <div class="cards">${list.map(card).join("")}</div>`;
   }
 
@@ -140,14 +139,6 @@
     }
   });
 
-  // ——— Links that open a guide ———
-  document.addEventListener("click", (e) => {
-    const b = e.target.closest("[data-open]");
-    if (!b) return;
-    const d = document.getElementById(b.dataset.open);
-    d.open = true;
-    d.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
 
   renderTopics();
   renderPanel();

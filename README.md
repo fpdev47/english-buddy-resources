@@ -46,6 +46,8 @@ printf '%s' 'nuevaclave' | shasum -a 256
 
 y reemplaza `KEY_HASH` con el resultado. Es una barrera simple contra visitas casuales: como el sitio es estático, alguien con conocimientos técnicos podría saltársela.
 
+Después de cambiar cualquier archivo de `assets/` o `data/`, sube el número `?v=` de los enlaces en `index.html` (por ejemplo, a la fecha y hora). Así los navegadores de los estudiantes descargan la versión nueva en lugar de usar una copia guardada.
+
 ## Ver en local
 
 ```bash
