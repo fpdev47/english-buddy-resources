@@ -56,7 +56,7 @@ Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros`
 
 ## Español / inglés
 
-El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta, se muestra en español.
+La página empieza en inglés. El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta la traducción, ese texto se muestra en español.
 
 ## Clave de acceso
 

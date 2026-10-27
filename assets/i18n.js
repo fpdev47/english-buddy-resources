@@ -71,10 +71,10 @@
     }
   };
 
-  let lang = "es";
-  try { if (localStorage.getItem("yeb-lang") === "en") lang = "en"; } catch (e) {}
+  let lang = "en";
+  try { if (localStorage.getItem("yeb-lang") === "es") lang = "es"; } catch (e) {}
 
-  const t = (key) => (UI[lang][key] !== undefined ? UI[lang][key] : UI.es[key]);
+  const t = (key) => (UI[lang][key] !== undefined ? UI[lang][key] : UI.en[key]);
 
   function apply() {
     document.documentElement.lang = lang;
