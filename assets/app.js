@@ -2,8 +2,16 @@
   const { sections, channels } = window.YEB_DATA;
   const EXERCISES = window.YEB_EXERCISES || [];
 
-  const ACCENTS = { US: "Acento americano", UK: "Acento británico", CA: "Acento canadiense", Mix: "Varios acentos" };
-  const FORMATS = { podcast: "Podcast", video: "Videos" };
+  const EN = window.YEB_EN || { sections: {}, channels: {}, exercises: {} };
+  const t = window.YEB_I18N ? window.YEB_I18N.t : (k) => k;
+  const isEN = () => window.YEB_I18N && window.YEB_I18N.lang === "en";
+
+  // Translated content (falls back to the original Spanish when a translation is missing)
+  const secT = (s) => (isEN() && EN.sections[s.id]) || {};
+  const exT = (x) => (isEN() && EN.exercises[x.id]) || null;
+  const exSecT = (x, si) => { const e = exT(x); return (e && e.sections[si]) || {}; };
+  const itemT = (x, si, ii) => { const sec = exSecT(x, si); return (sec.items && sec.items[ii]) || {}; };
+  const label = (tr, value) => (tr.labels && tr.labels[value]) || value;
   const STORE = "yeb-state";
 
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -62,7 +70,7 @@
   // ——— Mode switch: Escuchar / Practicar ———
   function renderModes() {
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
-    $("#topics-title").textContent = state.mode === "practicar" ? "Elige un tema para practicar" : "Elige un tema";
+    $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : t("topicsListen");
   }
   $("#modes").addEventListener("click", (e) => {
     const b = e.target.closest(".mode-btn");
@@ -77,14 +85,14 @@
     if (state.mode === "practicar") {
       tiles = EXERCISES.map((x) => {
         const p = progress(x);
-        return { id: x.id, label: x.title, sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ejercicios`}`, icon: "ejercicio", selected: state.exTopic === x.id };
+        return { id: x.id, label: (exT(x) || x).title, sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ${t("exercises")}`}`, icon: "ejercicio", selected: state.exTopic === x.id };
       });
     } else {
       tiles = sections.map((s) => {
         const n = channels.filter((c) => c.section === s.id).length;
-        return { id: s.id, label: s.short || s.title, sub: `${n} ${n === 1 ? "canal" : "canales"}`, icon: s.id, selected: state.topic === s.id };
+        return { id: s.id, label: secT(s).short || s.short || s.title, sub: `${n} ${n === 1 ? t("channel") : t("channels")}`, icon: s.id, selected: state.topic === s.id };
       });
-      if (state.favs.length) tiles.push({ id: "guardados", label: "Mis guardados", sub: `${state.favs.length} ${state.favs.length === 1 ? "canal" : "canales"}`, icon: "guardados", selected: state.topic === "guardados" });
+      if (state.favs.length) tiles.push({ id: "guardados", label: t("saved"), sub: `${state.favs.length} ${state.favs.length === 1 ? t("channel") : t("channels")}`, icon: "guardados", selected: state.topic === "guardados" });
     }
     $("#topics").innerHTML = tiles.map((t) => `
       <button type="button" class="topic" role="tab" aria-selected="${t.selected}" data-topic="${t.id}">
@@ -107,7 +115,7 @@
   // ——— Listening: channel cards ———
   function card(c) {
     const fav = state.favs.includes(c.name);
-    const meta = [levelText(c.level), ACCENTS[c.accent] || c.accent, FORMATS[c.format]].filter(Boolean).join(" · ");
+    const meta = [levelText(c.level), t("accents")[c.accent] || c.accent, t("formats")[c.format]].filter(Boolean).join(" · ");
     return `
       <article class="card">
         <div class="card-top">
@@ -116,9 +124,9 @@
             <h3>${esc(c.name)}</h3>
             <div class="meta">${esc(meta)}</div>
           </div>
-          <button type="button" class="heart" data-fav="${esc(c.name)}" aria-pressed="${fav}" aria-label="${fav ? "Quitar de guardados" : "Guardar"}: ${esc(c.name)}">${TOPIC_ICONS.guardados}</button>
+          <button type="button" class="heart" data-fav="${esc(c.name)}" aria-pressed="${fav}" aria-label="${fav ? t("unsave") : t("save")}: ${esc(c.name)}">${TOPIC_ICONS.guardados}</button>
         </div>
-        <p>${esc(c.text)}</p>
+        <p>${esc((isEN() && EN.channels[c.name]) || c.text)}</p>
         <div class="links">
           ${c.youtube ? `<a class="link-btn yt" href="${esc(c.youtube)}" target="_blank" rel="noopener">${ICONS.yt}YouTube</a>` : ""}
           ${c.spotify ? `<a class="link-btn sp" href="${esc(c.spotify)}" target="_blank" rel="noopener">${ICONS.sp}Spotify</a>` : ""}
@@ -126,20 +134,21 @@
       </article>`;
   }
 
-  function videoBlock(v) {
+  function videoBlock(v, tr) {
+    tr = tr || {};
     return `
       <div class="pick">
         <div class="video">
-          <button type="button" data-yt="${esc(v.id)}" data-start="${v.start || 0}" aria-label="Reproducir: ${esc(v.title)}">
+          <button type="button" data-yt="${esc(v.id)}" data-start="${v.start || 0}" aria-label="${t("play")}: ${esc(tr.title || v.title)}">
             <img src="https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg" alt="" loading="lazy">
             <span class="play">${ICONS.play}</span>
           </button>
         </div>
         <div class="pick-body">
-          <span class="pick-tag">Empieza con este video</span>
-          <h3>${esc(v.title)}</h3>
+          <span class="pick-tag">${esc(t("startVideo"))}</span>
+          <h3>${esc(tr.title || v.title)}</h3>
           <div class="by">${esc(v.channel)}</div>
-          <p>${esc(v.tip)}</p>
+          <p>${esc(tr.tip || v.tip)}</p>
         </div>
       </div>`;
   }
@@ -151,10 +160,10 @@
     const list = isFavs ? channels.filter((c) => state.favs.includes(c.name)) : channels.filter((c) => c.section === sec.id);
     return `
       <div class="panel-head">
-        <h2>${esc(isFavs ? "Mis guardados" : sec.title)}</h2>
-        <p>${esc(isFavs ? "Los canales que marcaste con el corazón." : sec.text)}</p>
+        <h2>${esc(isFavs ? t("saved") : secT(sec).title || sec.title)}</h2>
+        <p>${esc(isFavs ? t("savedText") : secT(sec).text || sec.text)}</p>
       </div>
-      ${!isFavs && sec.video ? videoBlock(sec.video) : ""}
+      ${!isFavs && sec.video ? videoBlock(sec.video, secT(sec).video) : ""}
       <div class="cards">${list.map(card).join("")}</div>`;
   }
 
@@ -183,38 +192,39 @@
 
   function questionHTML(x, si, ii) {
     const item = x.sections[si].items[ii];
+    const tr = itemT(x, si, ii);
     const key = `${si}-${ii}`;
     const ans = (state.answers[x.id] || {})[key];
     const isWrite = item.type === "write";
-    const correct = isWrite ? item.a[0] : item.a;
-    const prompt = esc(item.q).replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
+    const correct = isWrite ? item.a[0] : label(tr, item.a);
+    const prompt = esc(tr.q || item.q).replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
 
     let body;
     if (isWrite) {
       body = `
         <form class="write" data-key="${key}" autocomplete="off">
-          <input type="text" class="write-input" aria-label="Tu respuesta" placeholder="Escribe en inglés…" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" value="${ans ? esc(ans.v) : ""}" ${ans ? "disabled" : ""}>
-          ${ans ? "" : `<button type="submit" class="check-btn">Comprobar</button>`}
+          <input type="text" class="write-input" aria-label="${esc(t("yourAnswer"))}" placeholder="${esc(t("typeHere"))}" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" value="${ans ? esc(ans.v) : ""}" ${ans ? "disabled" : ""}>
+          ${ans ? "" : `<button type="submit" class="check-btn">${esc(t("check"))}</button>`}
         </form>`;
     } else {
       body = `<div class="opts">${options(item).map((o) => {
         let cls = "opt";
         if (ans) cls += o === item.a ? " right" : o === ans.v ? " wrong" : " dim";
-        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans ? "disabled" : ""}>${esc(o)}</button>`;
+        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
       }).join("")}</div>`;
     }
 
     const fb = ans ? `
       <div class="fb ${ans.ok ? "ok" : "bad"}" role="status">
-        <strong>${ans.ok ? "✓ ¡Correcto!" : `✗ La respuesta es: ${esc(correct)}`}</strong>
-        <span>${esc(item.e)}</span>
+        <strong>${ans.ok ? t("correct") : `${t("answerIs")} ${esc(correct)}`}</strong>
+        <span>${esc(tr.e || item.e)}</span>
       </div>` : "";
 
     return `
       <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : ""}" id="q-${key}">
         <span class="q-num">${ii + 1}</span>
         <div class="q-body">
-          ${item.quote ? `<blockquote class="quote">${esc(item.quote)}</blockquote>` : ""}
+          ${item.quote ? `<blockquote class="quote">${esc(tr.quote || item.quote)}</blockquote>` : ""}
           <p class="q-text">${prompt}</p>
           ${body}
           ${fb}
@@ -226,28 +236,28 @@
     const p = progress(x);
     const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
     return `
-      <div class="score-text"><strong>${p.correct}</strong> correctas · ${p.done} de ${p.total} respondidas</div>
+      <div class="score-text">${t("score")(p.correct, p.done, p.total)}</div>
       <div class="score-bar" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
   }
 
   function renderPractice() {
-    if (!EXERCISES.length) return `<div class="panel-head"><h2>Ejercicios</h2><p>Muy pronto.</p></div>`;
+    if (!EXERCISES.length) return `<div class="panel-head"><h2>${esc(t("exercisesTitle"))}</h2><p>${esc(t("soon"))}</p></div>`;
     const x = EXERCISES.find((t) => t.id === state.exTopic) || EXERCISES[0];
     state.exTopic = x.id;
     return `
       <div class="panel-head ex-head">
         <div>
           <span class="level-pill">${esc(x.level)}</span>
-          <h2>${esc(x.title)}</h2>
-          <p>Responde y verás al instante si es correcto, con una explicación breve.</p>
+          <h2>${esc((exT(x) || x).title)}</h2>
+          <p>${esc(t("practiceIntro"))}</p>
         </div>
-        <button type="button" class="reset-btn" data-reset="${x.id}">Reiniciar</button>
+        <button type="button" class="reset-btn" data-reset="${x.id}">${esc(t("reset"))}</button>
       </div>
       <div class="score" id="score">${scoreHTML(x)}</div>
       ${x.sections.map((s, si) => `
         <section class="ex-section">
-          <h3>${esc(s.title)}</h3>
-          <p class="ex-instr">${esc(s.instructions)}</p>
+          <h3>${esc(exSecT(x, si).title || s.title)}</h3>
+          <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions)}</p>
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
@@ -276,7 +286,7 @@
 
     const reset = e.target.closest("[data-reset]");
     if (reset) {
-      if (!confirm("¿Borrar tus respuestas de este tema y empezar de nuevo?")) return;
+      if (!confirm(t("resetConfirm"))) return;
       delete state.answers[reset.dataset.reset];
       save(); renderTopics(); renderPanel();
       return;
@@ -289,7 +299,7 @@
       save();
       const on = state.favs.includes(name);
       heart.setAttribute("aria-pressed", on);
-      heart.setAttribute("aria-label", `${on ? "Quitar de guardados" : "Guardar"}: ${name}`);
+      heart.setAttribute("aria-label", `${on ? t("unsave") : t("save")}: ${name}`);
       renderTopics();
       if (state.topic === "guardados") renderPanel();
       return;
@@ -318,5 +328,7 @@
   function render() {
     renderModes(); renderTopics(); renderPanel();
   }
+  // Switching ES / EN re-renders in place; answers and scores are kept
+  document.addEventListener("yeb:lang", render);
   render();
 })();

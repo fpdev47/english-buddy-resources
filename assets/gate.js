@@ -26,9 +26,10 @@
       window.scrollTo(0, 0);
     } else {
       input.setAttribute("aria-invalid", "true");
-      error.textContent = "Clave incorrecta. Inténtalo de nuevo.";
+      error.textContent = window.YEB_I18N ? window.YEB_I18N.t("gateError") : "Clave incorrecta. Inténtalo de nuevo.";
       input.select();
     }
   });
   input.addEventListener("input", () => { input.removeAttribute("aria-invalid"); error.textContent = ""; });
+  document.addEventListener("yeb:lang", () => { if (error.textContent) error.textContent = window.YEB_I18N.t("gateError"); });
 })();

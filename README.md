@@ -11,11 +11,13 @@ Es un sitio estático (HTML, CSS y JavaScript, sin dependencias ni paso de build
 ```
 index.html          Página principal
 assets/styles.css   Estilos y modo día/noche (paleta y tipografías de Your English Buddy)
+assets/i18n.js      Botón ES / EN y textos fijos de la interfaz en ambos idiomas
 assets/theme.js     Botón de modo día/noche
 assets/gate.js      Clave de acceso
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
 data/exercises.js   Banco de ejercicios
+data/en.js          Traducción al inglés de temas, canales y ejercicios
 ```
 
 ## Agregar o editar un canal
@@ -51,6 +53,10 @@ Abre `data/exercises.js`. Cada tema tiene secciones y cada sección tiene ejerci
 ```
 
 Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros` (o `#shadowing` para un tema de Escuchar).
+
+## Español / inglés
+
+El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta, se muestra en español.
 
 ## Clave de acceso
 

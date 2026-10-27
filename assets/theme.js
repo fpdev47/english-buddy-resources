@@ -10,8 +10,9 @@
   function sync() {
     const dark = isDark();
     root.classList.toggle("is-dark", dark);
-    btn.setAttribute("aria-label", dark ? "Cambiar a modo día" : "Cambiar a modo nocturno");
-    btn.title = dark ? "Modo día" : "Modo nocturno";
+    const t = window.YEB_I18N ? window.YEB_I18N.t : (k) => ({ toLight: "Cambiar a modo día", toDark: "Cambiar a modo nocturno", lightTitle: "Modo día", darkTitle: "Modo nocturno" })[k];
+    btn.setAttribute("aria-label", dark ? t("toLight") : t("toDark"));
+    btn.title = dark ? t("lightTitle") : t("darkTitle");
     if (meta) meta.content = dark ? "#0b1d20" : "#ffffff";
   }
 
@@ -21,5 +22,6 @@
     sync();
   });
   media.addEventListener("change", sync);
+  document.addEventListener("yeb:lang", sync);
   sync();
 })();

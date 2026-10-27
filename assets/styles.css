@@ -167,6 +167,18 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--brand); font-family: var(--font-head); font-weight: 700; font-size: 18px; }
 .brand-icon { width: 24px; height: 24px; }
 .brand-tag { font-family: var(--font-body); font-size: 12px; font-weight: 700; color: var(--teal-900); background: var(--lime); padding: 3px 10px; border-radius: 999px; }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.lang-toggle {
+  display: inline-flex; padding: 3px; border-radius: 999px;
+  background: var(--bg-soft); border: 1px solid var(--line);
+}
+.lang-toggle button {
+  border: 0; background: transparent; cursor: pointer; min-width: 40px; min-height: 36px;
+  padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 13px; color: var(--muted);
+}
+.lang-toggle button[aria-pressed="true"] { background: var(--solid); color: #fff; }
+.lang-toggle button:focus-visible { outline: 3px solid var(--green-600); outline-offset: 1px; }
+.gate-card .lang-toggle { justify-self: end; margin: -12px -8px 0 0; }
 .theme-toggle {
   width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
   background: var(--bg-soft); border: 1px solid var(--line); color: var(--brand);
@@ -418,6 +430,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .heart { width: 44px; height: 44px; margin-right: -6px; }
   .cards { grid-template-columns: 1fr; }
   .brand-tag { display: none; }
+  .site-header .brand { font-size: 16px; gap: 8px; white-space: nowrap; }
+  .nav-actions { gap: 8px; }
+  .lang-toggle button { min-width: 34px; padding: 6px 8px; }
   .modes { display: flex; width: 100%; }
   .mode-btn { flex: 1; padding: 10px 12px; }
   .score { top: 138px; }
