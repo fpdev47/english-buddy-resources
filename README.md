@@ -1,6 +1,6 @@
 # Your English Buddy — Recursos
 
-Espacio para los estudiantes de [Your English Buddy](https://fabio-english-academy.vercel.app/): el estudiante elige un tema y ve canales y podcasts de YouTube y Spotify para practicar, cada uno con su nivel (A2–C1).
+Espacio para los estudiantes de [Your English Buddy](https://fabio-english-academy.vercel.app/): en «Escuchar» el estudiante encuentra canales y podcasts de YouTube y Spotify por tema, y en «Practicar» hace ejercicios que se corrigen al instante.
 
 Sitio: https://fpdev47.github.io/english-buddy-resources/
 
@@ -13,8 +13,9 @@ index.html          Página principal
 assets/styles.css   Estilos y modo día/noche (paleta y tipografías de Your English Buddy)
 assets/theme.js     Botón de modo día/noche
 assets/gate.js      Clave de acceso
-assets/app.js       Temas, favoritos y reproductor de video
+assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
+data/exercises.js   Banco de ejercicios
 ```
 
 ## Agregar o editar un canal
@@ -28,13 +29,28 @@ Abre `data/resources.js` y copia un objeto dentro de `channels`:
   section: "aprender",          // id de una sección de `sections`
   level: ["A2", "B1"],          // nivel mínimo y máximo
   accent: "UK",                 // US, UK, CA o Mix
+  format: "podcast",            // podcast o video
   text: "Descripción corta en español.",
   youtube: "https://www.youtube.com/@bbclearningenglish",
   spotify: "https://open.spotify.com/show/..."   // "" si no existe
 }
 ```
 
-Para crear un tema nuevo, agrega un objeto a `sections` con `id`, `short`, `title`, `kicker`, `text` y, si quieres, un `video` recomendado.
+Para crear un tema nuevo, agrega un objeto a `sections` con `id`, `short`, `title`, `text` y, si quieres, un `video` recomendado. Si el tema es nuevo, agrégale un ícono en `TOPIC_ICONS` dentro de `assets/app.js`.
+
+## Agregar ejercicios
+
+Abre `data/exercises.js`. Cada tema tiene secciones y cada sección tiene ejercicios:
+
+```js
+// Opción múltiple: escribe la respuesta correcta en `a`; las opciones se mezclan solas
+{ q: "I visit ___ every Sunday.", a: "her", o: ["she", "hers"], e: "Explicación breve." }
+
+// Escribir: todas las respuestas válidas en `a`
+{ type: "write", q: "1984", a: ["nineteen eighty-four"], e: "Explicación breve." }
+```
+
+Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros` (o `#shadowing` para un tema de Escuchar).
 
 ## Clave de acceso
 
@@ -60,6 +76,3 @@ Luego abre http://localhost:5173.
 
 Publicado con GitHub Pages desde la rama `main`: cada cambio que subas se publica solo en uno o dos minutos.
 
-## Próximamente
-
-Sección de ejercicios (listening, vocabulario y gramática).

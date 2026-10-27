@@ -1,19 +1,25 @@
 (function () {
   const { sections, channels } = window.YEB_DATA;
+  const EXERCISES = window.YEB_EXERCISES || [];
 
   const ACCENTS = { US: "Acento americano", UK: "Acento británico", CA: "Acento canadiense", Mix: "Varios acentos" };
+  const FORMATS = { podcast: "Podcast", video: "Videos" };
   const STORE = "yeb-state";
 
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const TOPIC_ICONS = {
     aprender: svg("M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"),
     shadowing: svg("M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"),
+    vocabulario: svg("M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"),
+    conversacion: svg("M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM8 9h8M8 13h5"),
+    noticias: svg("M4 4h13v16H6a2 2 0 0 1-2-2zM17 8h3v10a2 2 0 0 1-2 2M8 8h5M8 12h5M8 16h3"),
     crecimiento: svg("M12 3v1M12 20v1M4.2 4.2l.7.7M19.1 19.1l.7.7M3 12h1M20 12h1M4.2 19.8l.7-.7M19.1 4.9l.7-.7M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0"),
     ted: svg("M3 5h18v11H3zM8 21h8M12 16v5"),
     negocios: svg("M3 7h18v13H3zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"),
     curiosidad: svg("M9 2h6M10 2v6L4 19a2 2 0 0 0 1.8 3h12.4A2 2 0 0 0 20 19L14 8V2M7 15h10"),
+    examenes: svg("M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"),
     guardados: svg("M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"),
-    ejercicios: svg("M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z")
+    ejercicio: svg("M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z")
   };
   const ICONS = {
     yt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-4.8.5-4.8s0-3.2-.5-4.8zM9.7 15.1V8.9l5.8 3.1-5.8 3.1z"/></svg>',
@@ -22,51 +28,93 @@
   };
 
   // ——— State: remembered per browser; the page works without storage too ———
-  const state = { topic: sections[0].id, favs: [] };
+  const state = { mode: "escuchar", topic: sections[0].id, exTopic: EXERCISES[0] && EXERCISES[0].id, favs: [], answers: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
-  const hash = location.hash.slice(1);
-  if (sections.some((s) => s.id === hash)) state.topic = hash;
+  if (!state.answers || typeof state.answers !== "object") state.answers = {};
+  if (!Array.isArray(state.favs)) state.favs = [];
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+
+  // Links: #shadowing (a listening topic) or #practicar/numeros (an exercise topic)
+  function readHash() {
+    const [a, b] = decodeURIComponent(location.hash.slice(1)).split("/");
+    if (a === "practicar") {
+      state.mode = "practicar";
+      if (EXERCISES.some((x) => x.id === b)) state.exTopic = b;
+    } else if (sections.some((s) => s.id === a)) {
+      state.mode = "escuchar";
+      state.topic = a;
+    }
+  }
+  function writeHash() {
+    const h = state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    history.replaceState(null, "", h || location.pathname);
+  }
+  readHash();
 
   const $ = (sel) => document.querySelector(sel);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const initials = (name) => name.replace(/^The /, "").split(/[\s–-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  const initials = (name) => {
+    const words = name.replace(/^The /, "").split(/[\s–·-]+/).filter((w) => /^[A-Za-z]/.test(w));
+    return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || name).slice(0, 2)).toUpperCase();
+  };
   const levelText = ([a, b]) => (a === b ? a : `${a}–${b}`);
 
-  // ——— Topics ———
+  // ——— Mode switch: Escuchar / Practicar ———
+  function renderModes() {
+    document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
+    $("#topics-title").textContent = state.mode === "practicar" ? "Elige un tema para practicar" : "Elige un tema";
+  }
+  $("#modes").addEventListener("click", (e) => {
+    const b = e.target.closest(".mode-btn");
+    if (!b || b.dataset.mode === state.mode) return;
+    state.mode = b.dataset.mode;
+    save(); writeHash(); render();
+  });
+
+  // ——— Topics row ———
   function renderTopics() {
-    const tiles = sections.map((s) => ({ id: s.id, label: s.short || s.title, count: channels.filter((c) => c.section === s.id).length }));
-    if (state.favs.length) tiles.push({ id: "guardados", label: "Mis guardados", count: state.favs.length });
+    let tiles;
+    if (state.mode === "practicar") {
+      tiles = EXERCISES.map((x) => {
+        const p = progress(x);
+        return { id: x.id, label: x.title, sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ejercicios`}`, icon: "ejercicio", selected: state.exTopic === x.id };
+      });
+    } else {
+      tiles = sections.map((s) => {
+        const n = channels.filter((c) => c.section === s.id).length;
+        return { id: s.id, label: s.short || s.title, sub: `${n} ${n === 1 ? "canal" : "canales"}`, icon: s.id, selected: state.topic === s.id };
+      });
+      if (state.favs.length) tiles.push({ id: "guardados", label: "Mis guardados", sub: `${state.favs.length} ${state.favs.length === 1 ? "canal" : "canales"}`, icon: "guardados", selected: state.topic === "guardados" });
+    }
     $("#topics").innerHTML = tiles.map((t) => `
-      <button type="button" class="topic" role="tab" aria-selected="${state.topic === t.id}" data-topic="${t.id}">
-        <span class="topic-icon">${TOPIC_ICONS[t.id] || ""}</span>
-        <span class="topic-text"><strong>${esc(t.label)}</strong><small>${t.count} ${t.count === 1 ? "canal" : "canales"}</small></span>
-      </button>`).join("") + `
-      <div class="topic soon" aria-disabled="true">
-        <span class="topic-icon">${TOPIC_ICONS.ejercicios}</span>
-        <span class="topic-text"><strong>Ejercicios</strong><small>Muy pronto</small></span>
-      </div>`;
+      <button type="button" class="topic" role="tab" aria-selected="${t.selected}" data-topic="${t.id}">
+        <span class="topic-icon">${TOPIC_ICONS[t.icon] || ""}</span>
+        <span class="topic-text"><strong>${esc(t.label)}</strong><small>${esc(t.sub)}</small></span>
+      </button>`).join("");
+    // Keep the selected topic visible in the swipeable strip (mobile) without moving the page
+    const box = $("#topics"), sel = box.querySelector("[aria-selected=true]");
+    if (sel && box.scrollWidth > box.clientWidth) box.scrollLeft = sel.offsetLeft - box.offsetLeft - (box.clientWidth - sel.offsetWidth) / 2;
   }
   $("#topics").addEventListener("click", (e) => {
     const b = e.target.closest("button.topic");
     if (!b) return;
-    state.topic = b.dataset.topic;
-    save(); renderTopics(); renderPanel();
-    $("#topics .topic[aria-selected=true]").scrollIntoView({ inline: "center", block: "nearest" });
-    history.replaceState(null, "", state.topic === "guardados" ? location.pathname : `#${state.topic}`);
+    if (state.mode === "practicar") state.exTopic = b.dataset.topic;
+    else state.topic = b.dataset.topic;
+    save(); renderTopics(); renderPanel(); writeHash();
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  // ——— Results ———
+  // ——— Listening: channel cards ———
   function card(c) {
     const fav = state.favs.includes(c.name);
+    const meta = [levelText(c.level), ACCENTS[c.accent] || c.accent, FORMATS[c.format]].filter(Boolean).join(" · ");
     return `
       <article class="card">
         <div class="card-top">
           <div class="avatar" aria-hidden="true">${esc(initials(c.name))}</div>
           <div class="card-title">
             <h3>${esc(c.name)}</h3>
-            <div class="meta">${esc(levelText(c.level))} · ${esc(ACCENTS[c.accent] || c.accent)}</div>
+            <div class="meta">${esc(meta)}</div>
           </div>
           <button type="button" class="heart" data-fav="${esc(c.name)}" aria-pressed="${fav}" aria-label="${fav ? "Quitar de guardados" : "Guardar"}: ${esc(c.name)}">${TOPIC_ICONS.guardados}</button>
         </div>
@@ -96,26 +144,144 @@
       </div>`;
   }
 
-  function renderPanel() {
+  function renderListen() {
     if (state.topic === "guardados" && !state.favs.length) state.topic = sections[0].id;
     const isFavs = state.topic === "guardados";
     const sec = isFavs ? null : sections.find((s) => s.id === state.topic) || sections[0];
-    const list = isFavs
-      ? channels.filter((c) => state.favs.includes(c.name))
-      : channels.filter((c) => c.section === sec.id);
-    const title = isFavs ? "Mis guardados" : sec.title;
-    const text = isFavs ? "Los canales que marcaste con el corazón." : sec.text;
-
-    $("#panel").innerHTML = `
+    const list = isFavs ? channels.filter((c) => state.favs.includes(c.name)) : channels.filter((c) => c.section === sec.id);
+    return `
       <div class="panel-head">
-        <h2>${esc(title)}</h2>
-        <p>${esc(text)}</p>
+        <h2>${esc(isFavs ? "Mis guardados" : sec.title)}</h2>
+        <p>${esc(isFavs ? "Los canales que marcaste con el corazón." : sec.text)}</p>
       </div>
       ${!isFavs && sec.video ? videoBlock(sec.video) : ""}
       <div class="cards">${list.map(card).join("")}</div>`;
   }
 
+  // ——— Practice: exercises ———
+  const normalize = (s) => String(s).toLowerCase().replace(/[‐-―-]/g, " ").replace(/[.,!?;:"'«»“”‘’()]/g, "").replace(/\s+/g, " ").trim();
+
+  // Stable shuffle so options don't jump around between visits
+  function seeded(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+    return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296;
+  }
+  function options(item) {
+    const all = [item.a, ...item.o];
+    const rnd = seeded(item.q + "|" + item.a + "|" + (item.quote || ""));
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+    return all;
+  }
+
+  function progress(x) {
+    const saved = state.answers[x.id] || {};
+    const total = x.sections.reduce((n, s) => n + s.items.length, 0);
+    const vals = Object.values(saved);
+    return { total, done: vals.length, correct: vals.filter((v) => v.ok).length };
+  }
+
+  function questionHTML(x, si, ii) {
+    const item = x.sections[si].items[ii];
+    const key = `${si}-${ii}`;
+    const ans = (state.answers[x.id] || {})[key];
+    const isWrite = item.type === "write";
+    const correct = isWrite ? item.a[0] : item.a;
+    const prompt = esc(item.q).replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
+
+    let body;
+    if (isWrite) {
+      body = `
+        <form class="write" data-key="${key}" autocomplete="off">
+          <input type="text" class="write-input" aria-label="Tu respuesta" placeholder="Escribe en inglés…" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" value="${ans ? esc(ans.v) : ""}" ${ans ? "disabled" : ""}>
+          ${ans ? "" : `<button type="submit" class="check-btn">Comprobar</button>`}
+        </form>`;
+    } else {
+      body = `<div class="opts">${options(item).map((o) => {
+        let cls = "opt";
+        if (ans) cls += o === item.a ? " right" : o === ans.v ? " wrong" : " dim";
+        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans ? "disabled" : ""}>${esc(o)}</button>`;
+      }).join("")}</div>`;
+    }
+
+    const fb = ans ? `
+      <div class="fb ${ans.ok ? "ok" : "bad"}" role="status">
+        <strong>${ans.ok ? "✓ ¡Correcto!" : `✗ La respuesta es: ${esc(correct)}`}</strong>
+        <span>${esc(item.e)}</span>
+      </div>` : "";
+
+    return `
+      <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : ""}" id="q-${key}">
+        <span class="q-num">${ii + 1}</span>
+        <div class="q-body">
+          ${item.quote ? `<blockquote class="quote">${esc(item.quote)}</blockquote>` : ""}
+          <p class="q-text">${prompt}</p>
+          ${body}
+          ${fb}
+        </div>
+      </article>`;
+  }
+
+  function scoreHTML(x) {
+    const p = progress(x);
+    const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+    return `
+      <div class="score-text"><strong>${p.correct}</strong> correctas · ${p.done} de ${p.total} respondidas</div>
+      <div class="score-bar" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
+  }
+
+  function renderPractice() {
+    if (!EXERCISES.length) return `<div class="panel-head"><h2>Ejercicios</h2><p>Muy pronto.</p></div>`;
+    const x = EXERCISES.find((t) => t.id === state.exTopic) || EXERCISES[0];
+    state.exTopic = x.id;
+    return `
+      <div class="panel-head ex-head">
+        <div>
+          <span class="level-pill">${esc(x.level)}</span>
+          <h2>${esc(x.title)}</h2>
+          <p>Responde y verás al instante si es correcto, con una explicación breve.</p>
+        </div>
+        <button type="button" class="reset-btn" data-reset="${x.id}">Reiniciar</button>
+      </div>
+      <div class="score" id="score">${scoreHTML(x)}</div>
+      ${x.sections.map((s, si) => `
+        <section class="ex-section">
+          <h3>${esc(s.title)}</h3>
+          <p class="ex-instr">${esc(s.instructions)}</p>
+          <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
+        </section>`).join("")}`;
+  }
+
+  function answer(key, value) {
+    const x = EXERCISES.find((t) => t.id === state.exTopic);
+    const [si, ii] = key.split("-").map(Number);
+    const item = x.sections[si].items[ii];
+    const ok = item.type === "write" ? item.a.some((a) => normalize(a) === normalize(value)) : value === item.a;
+    state.answers[x.id] = state.answers[x.id] || {};
+    state.answers[x.id][key] = { v: value, ok };
+    save();
+    document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
+    $("#score").innerHTML = scoreHTML(x);
+    renderTopics();
+  }
+
+  // ——— Panel ———
+  function renderPanel() {
+    $("#panel").innerHTML = state.mode === "practicar" ? renderPractice() : renderListen();
+  }
+
   $("#panel").addEventListener("click", (e) => {
+    const opt = e.target.closest(".opt");
+    if (opt && !opt.disabled) return answer(opt.dataset.key, opt.dataset.v);
+
+    const reset = e.target.closest("[data-reset]");
+    if (reset) {
+      if (!confirm("¿Borrar tus respuestas de este tema y empezar de nuevo?")) return;
+      delete state.answers[reset.dataset.reset];
+      save(); renderTopics(); renderPanel();
+      return;
+    }
+
     const heart = e.target.closest(".heart");
     if (heart) {
       const name = heart.dataset.fav;
@@ -128,6 +294,7 @@
       if (state.topic === "guardados") renderPanel();
       return;
     }
+
     const btn = e.target.closest("button[data-yt]");
     if (btn) {
       const iframe = document.createElement("iframe");
@@ -139,7 +306,17 @@
     }
   });
 
+  $("#panel").addEventListener("submit", (e) => {
+    const form = e.target.closest("form.write");
+    if (!form) return;
+    e.preventDefault();
+    const input = form.querySelector("input");
+    if (!input.value.trim()) { input.focus(); return; }
+    answer(form.dataset.key, input.value.trim());
+  });
 
-  renderTopics();
-  renderPanel();
+  function render() {
+    renderModes(); renderTopics(); renderPanel();
+  }
+  render();
 })();

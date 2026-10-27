@@ -1,381 +1,316 @@
 /*
   Catálogo de recursos de Your English Buddy.
   Para agregar un canal: copia un objeto dentro de `channels` y cambia sus datos.
-  - section: id de una sección de `sections` (short = nombre corto del tema;
-    video = video recomendado opcional del tema)
+  - section: id de un tema de `sections` (short = nombre corto; video = video recomendado opcional)
   - level: [nivelMínimo, nivelMáximo] usando A2, B1, B2, C1
-  - accent: "US" (Estados Unidos), "UK" (Reino Unido), "CA" (Canadá), "Mix"
+  - accent: "US" (Estados Unidos), "UK" (Reino Unido), "CA" (Canadá), "Mix" (varios)
+  - format: "podcast" (audio, con o sin video) o "video" (lecciones o videos de YouTube)
   - youtube / spotify: deja "" si no existe
 */
 window.YEB_DATA = {
   sections: [
     {
       id: "aprender",
-      short: "Aprender inglés",
+      short: "Podcasts para aprender",
       title: "Podcasts para aprender inglés",
-      kicker: "Para estudiantes",
-      text: "Creados para personas que aprenden inglés: hablan más claro, explican el vocabulario y muchos tienen transcripción."
+      text: "Creados para estudiantes: hablan más claro, explican el vocabulario y muchos tienen transcripción."
     },
     {
       id: "shadowing",
-      short: "Shadowing",
-      title: "Shadowing y pronunciación",
-      kicker: "Escucha y repite",
-      text: "Videos para repetir en voz alta justo después del hablante. Así entrenas ritmo, entonación y fluidez.",
+      short: "Pronunciación y shadowing",
+      title: "Pronunciación y shadowing",
+      text: "Escucha y repite en voz alta justo después del hablante para entrenar ritmo, entonación y fluidez.",
       video: { id: "37x7oLjYPgM", start: 11, title: "4.5 horas de práctica de speaking", channel: "English is EZ with Connor", tip: "Escucha cada frase, pausa y repítela imitando la entonación. Con 15 minutos al día es suficiente." }
+    },
+    {
+      id: "vocabulario",
+      short: "Vocabulario y gramática",
+      title: "Vocabulario y gramática",
+      text: "Lecciones cortas en video con profesores nativos: phrasal verbs, expresiones, errores comunes y gramática explicada en inglés."
+    },
+    {
+      id: "conversacion",
+      short: "Conversación diaria",
+      title: "Conversación y vida diaria",
+      text: "Inglés de todos los días: entrevistas en la calle, charlas entre amigos y situaciones reales."
+    },
+    {
+      id: "noticias",
+      short: "Noticias",
+      title: "Noticias en inglés",
+      text: "Noticias contadas más despacio o en niveles, para seguir la actualidad mientras practicas."
     },
     {
       id: "crecimiento",
       short: "Crecimiento personal",
       title: "Mentalidad y crecimiento personal",
-      kicker: "Inglés real",
-      text: "Conversaciones auténticas entre nativos sobre hábitos, motivación y bienestar. Practicas tu inglés mientras aprendes algo útil para tu vida.",
+      text: "Conversaciones entre nativos sobre hábitos, motivación y bienestar. Inglés real a velocidad normal.",
       video: { id: "6KjH6Svur0o", start: 0, title: "The Power of Reinvention", channel: "Mel Robbins", tip: "Activa los subtítulos en inglés y anota 5 expresiones nuevas mientras escuchas." }
     },
     {
       id: "ted",
-      short: "TED y TEDx",
-      title: "Charlas TED y TEDx",
-      kicker: "Ideas que inspiran",
-      text: "Charlas cortas (5 a 20 minutos) con subtítulos en inglés y transcripción. Perfectas para practicar listening con un tema concreto."
+      short: "TED y discursos",
+      title: "Charlas TED y discursos",
+      text: "Charlas y discursos con subtítulos en inglés. Muchos acentos distintos y un tema concreto en cada video."
     },
     {
       id: "negocios",
-      short: "Negocios",
-      title: "Negocios y carrera",
-      kicker: "Inglés profesional",
-      text: "Vocabulario de trabajo, liderazgo y emprendimiento: lo que escucharás en reuniones, entrevistas y en tu trabajo remoto."
+      short: "Negocios y trabajo",
+      title: "Negocios y trabajo",
+      text: "Vocabulario de reuniones, entrevistas, emprendimiento y dinero: el inglés que vas a escuchar en tu trabajo."
     },
     {
       id: "curiosidad",
       short: "Ciencia e historias",
       title: "Ciencia, historias y curiosidad",
-      kicker: "Para seguir aprendiendo",
-      text: "Historias reales y temas de ciencia contados con buen ritmo. Ideales cuando ya entiendes bastante y quieres un reto."
+      text: "Historias reales, ciencia y explicaciones del mundo. Ritmo rápido: ideales para nivel intermedio alto o avanzado."
+    },
+    {
+      id: "examenes",
+      short: "Exámenes",
+      title: "Exámenes: IELTS, TOEFL y Cambridge",
+      text: "Estrategias, ejemplos de respuestas y práctica para preparar exámenes oficiales de inglés."
     }
   ],
 
   channels: [
-    // ——— Aprender inglés ———
-    {
-      name: "6 Minute English",
-      host: "BBC Learning English",
-      section: "aprender",
-      level: ["A2", "B1"],
-      accent: "UK",
-      text: "Episodios de 6 minutos sobre temas actuales, con el vocabulario clave explicado. El mejor punto de partida para crear el hábito diario.",
-      youtube: "https://www.youtube.com/@bbclearningenglish",
-      spotify: "https://open.spotify.com/show/3CF9ANEicXGxEROA3cOryE"
-    },
-    {
-      name: "Learning English Conversations",
-      host: "BBC Learning English",
-      section: "aprender",
-      level: ["A2", "B1"],
-      accent: "UK",
+    // ——— Podcasts para aprender ———
+    { name: "6 Minute English", host: "BBC Learning English", section: "aprender", level: ["A2", "B1"], accent: "UK", format: "podcast",
+      text: "Episodios de 6 minutos sobre temas actuales con el vocabulario clave explicado. El mejor punto de partida.",
+      youtube: "https://www.youtube.com/@bbclearningenglish", spotify: "https://open.spotify.com/show/3CF9ANEicXGxEROA3cOryE" },
+    { name: "Learning English Conversations", host: "BBC Learning English", section: "aprender", level: ["A2", "B1"], accent: "UK", format: "podcast",
       text: "Incluye «The English We Speak»: una expresión cotidiana por episodio, explicada en pocos minutos.",
-      youtube: "https://www.youtube.com/@bbclearningenglish",
-      spotify: "https://open.spotify.com/show/33450hhCQdEEqRpd4w1TBe"
-    },
-    {
-      name: "Speak English With Vanessa",
-      host: "Vanessa",
-      section: "aprender",
-      level: ["A2", "B1"],
-      accent: "US",
+      youtube: "https://www.youtube.com/@bbclearningenglish", spotify: "https://open.spotify.com/show/33450hhCQdEEqRpd4w1TBe" },
+    { name: "Coffee Break English", host: "Coffee Break Languages", section: "aprender", level: ["A2", "B1"], accent: "UK", format: "podcast",
+      text: "Lecciones de unos 15 minutos que avanzan paso a paso, con un profesor y una estudiante. Hablan despacio.",
+      youtube: "https://www.youtube.com/@coffeebreakenglish", spotify: "https://open.spotify.com/show/7qVcmaCAKgmZoAhjPMsXvC" },
+    { name: "Easy Stories in English", host: "Ariel Goodbody", section: "aprender", level: ["A2", "B2"], accent: "UK", format: "podcast",
+      text: "Cuentos y fábulas narrados por nivel (beginner, intermediate, advanced), con el vocabulario difícil explicado.",
+      youtube: "https://www.youtube.com/@EasyStoriesInEnglish", spotify: "https://open.spotify.com/show/23zdIqNUb0riR51woKIEoF" },
+    { name: "Speak English Now", host: "Georgiana", section: "aprender", level: ["A2", "B1"], accent: "US", format: "podcast",
+      text: "Mini-historias con preguntas y respuestas para que contestes en voz alta. Sin gramática, solo escuchar y hablar.",
+      youtube: "https://www.youtube.com/@SpeakEnglishpodcast", spotify: "https://open.spotify.com/show/3BdVI2jDY4FRY4QKKbY1GM" },
+    { name: "Speak English With Vanessa", host: "Vanessa", section: "aprender", level: ["A2", "B1"], accent: "US", format: "podcast",
       text: "Inglés americano natural, hablado despacio y con calma. Muy bueno para ganar confianza al hablar.",
-      youtube: "https://www.youtube.com/@SpeakEnglishWithVanessa",
-      spotify: "https://open.spotify.com/show/1VIAIQSjrR6xpK8PCKaJvs"
-    },
-    {
-      name: "All Ears English",
-      host: "Lindsay & Michelle",
-      section: "aprender",
-      level: ["B1", "C1"],
-      accent: "US",
-      text: "Expresiones, phrasal verbs y small talk del inglés americano, en conversaciones relajadas y divertidas.",
-      youtube: "https://www.youtube.com/@AllEarsEnglishPodcast",
-      spotify: "https://open.spotify.com/show/6qXldSz1Ulq1Nvj2JK5kSR"
-    },
-    {
-      name: "Culips English Podcast",
-      host: "Culips",
-      section: "aprender",
-      level: ["B1", "B2"],
-      accent: "CA",
+      youtube: "https://www.youtube.com/@SpeakEnglishWithVanessa", spotify: "https://open.spotify.com/show/1VIAIQSjrR6xpK8PCKaJvs" },
+    { name: "ESLPod", host: "Lucy Tse & Jeff McQuillan", section: "aprender", level: ["B1", "B2"], accent: "US", format: "podcast",
+      text: "Un diálogo leído despacio y luego explicado palabra por palabra. Un clásico para mejorar el listening.",
+      youtube: "https://www.youtube.com/@ESLPod", spotify: "https://open.spotify.com/show/0ZOMLO3yOVTyO0sc8osFm2" },
+    { name: "Speak English with Tiffani", host: "Tiffani", section: "aprender", level: ["B1", "B2"], accent: "US", format: "podcast",
+      text: "Vocabulario por temas y consejos para hablar con más fluidez. Episodios cortos y muy prácticos.",
+      youtube: "https://www.youtube.com/@SpeakEnglishWithTiffani", spotify: "https://open.spotify.com/show/0yraeFxouTWwPu4Xm17Lc8" },
+    { name: "All Ears English", host: "Lindsay & Michelle", section: "aprender", level: ["B1", "C1"], accent: "US", format: "podcast",
+      text: "Expresiones, phrasal verbs y small talk del inglés americano en conversaciones relajadas.",
+      youtube: "https://www.youtube.com/@AllEarsEnglishPodcast", spotify: "https://open.spotify.com/show/6qXldSz1Ulq1Nvj2JK5kSR" },
+    { name: "Culips English Podcast", host: "Culips", section: "aprender", level: ["B1", "B2"], accent: "CA", format: "podcast",
       text: "Conversaciones entre nativos canadienses sobre idioms, slang y phrasal verbs del día a día.",
-      youtube: "https://www.youtube.com/@Culips",
-      spotify: "https://open.spotify.com/show/49oSR9XZMPQqFrEYTL3CCP"
-    },
-    {
-      name: "English Learning for Curious Minds",
-      host: "Leonardo English",
-      section: "aprender",
-      level: ["B1", "B2"],
-      accent: "UK",
-      text: "Historia, psicología y cultura contadas en inglés británico claro. Cada episodio tiene transcripción.",
-      youtube: "https://www.youtube.com/@EnglishLearningforCuriousMinds",
-      spotify: "https://open.spotify.com/show/0Hqh7seQDFP0K41GMa40aL"
-    },
-    {
-      name: "Luke's English Podcast",
-      host: "Luke Thompson",
-      section: "aprender",
-      level: ["B2", "C1"],
-      accent: "UK",
-      text: "Episodios largos, con humor y mucho inglés británico real. Para cuando quieres escuchar durante más tiempo.",
-      youtube: "https://www.youtube.com/@LukesEnglishPodcast",
-      spotify: "https://open.spotify.com/show/4X48gpjrctXNJWtOnUgwq8"
-    },
-    {
-      name: "Easy English",
-      host: "Easy Languages",
-      section: "aprender",
-      level: ["B1", "B2"],
-      accent: "UK",
-      text: "Entrevistas en la calle con subtítulos en inglés y español. Escuchas a gente común hablando como habla de verdad.",
-      youtube: "https://www.youtube.com/@EasyEnglishVideos",
-      spotify: ""
-    },
+      youtube: "https://www.youtube.com/@Culips", spotify: "https://open.spotify.com/show/49oSR9XZMPQqFrEYTL3CCP" },
+    { name: "English Learning for Curious Minds", host: "Leonardo English", section: "aprender", level: ["B1", "B2"], accent: "UK", format: "podcast",
+      text: "Historia, psicología y cultura en inglés británico claro. Cada episodio tiene transcripción.",
+      youtube: "https://www.youtube.com/@EnglishLearningforCuriousMinds", spotify: "https://open.spotify.com/show/0Hqh7seQDFP0K41GMa40aL" },
+    { name: "Speak Better English with Harry", host: "Harry", section: "aprender", level: ["B1", "C1"], accent: "UK", format: "podcast",
+      text: "Vocabulario, expresiones y phrasal verbs por temas, explicados con calma por un profesor británico.",
+      youtube: "https://www.youtube.com/@LearnEnglishwithHarry", spotify: "https://open.spotify.com/show/4NHIIVB3DkjH70yhE3pbcd" },
+    { name: "Luke's English Podcast", host: "Luke Thompson", section: "aprender", level: ["B2", "C1"], accent: "UK", format: "podcast",
+      text: "Episodios largos, con humor y mucho inglés británico real. Para escuchar durante más tiempo.",
+      youtube: "https://www.youtube.com/@LukesEnglishPodcast", spotify: "https://open.spotify.com/show/4X48gpjrctXNJWtOnUgwq8" },
 
-    // ——— Shadowing ———
-    {
-      name: "English is EZ with Connor",
-      host: "Connor",
-      section: "shadowing",
-      level: ["A2", "B2"],
-      accent: "US",
+    // ——— Pronunciación y shadowing ———
+    { name: "English is EZ with Connor", host: "Connor", section: "shadowing", level: ["A2", "B2"], accent: "US", format: "video",
       text: "Sesiones largas de «escucha y repite» con frases útiles. Excelente para practicar shadowing todos los días.",
-      youtube: "https://www.youtube.com/@EnglishisEZ",
-      spotify: ""
-    },
-    {
-      name: "Rachel's English",
-      host: "Rachel",
-      section: "shadowing",
-      level: ["B1", "C1"],
-      accent: "US",
+      youtube: "https://www.youtube.com/@EnglishisEZ", spotify: "" },
+    { name: "English with Jennifer", host: "Jennifer", section: "shadowing", level: ["A2", "B1"], accent: "US", format: "video",
+      text: "Pronunciación y gramática paso a paso, con pausas para que repitas. Muy clara para empezar.",
+      youtube: "https://www.youtube.com/@EnglishWithJennifer", spotify: "" },
+    { name: "Rachel's English", host: "Rachel", section: "shadowing", level: ["B1", "C1"], accent: "US", format: "video",
       text: "La referencia en pronunciación americana: reducciones, linking y ritmo, analizados palabra por palabra.",
-      youtube: "https://www.youtube.com/@rachelsenglish",
-      spotify: "https://open.spotify.com/show/383zrzICOQvMfRoFcZ6Jsm"
-    },
-    {
-      name: "English Speaking Success",
-      host: "Georgie",
-      section: "shadowing",
-      level: ["B1", "B2"],
-      accent: "UK",
-      text: "Lecciones de «speak with me» y pronunciación británica para hablar con más fluidez y seguridad.",
-      youtube: "https://www.youtube.com/@EnglishSpeakingSuccess",
-      spotify: ""
-    },
-    {
-      name: "The English Coach",
-      host: "Chris",
-      section: "shadowing",
-      level: ["B1", "B2"],
-      accent: "US",
+      youtube: "https://www.youtube.com/@rachelsenglish", spotify: "https://open.spotify.com/show/383zrzICOQvMfRoFcZ6Jsm" },
+    { name: "Accent's Way English with Hadar", host: "Hadar Shemesh", section: "shadowing", level: ["B2", "C1"], accent: "US", format: "video",
+      text: "Acento americano y confianza al hablar, explicado por una profesora que también aprendió inglés como segundo idioma.",
+      youtube: "https://www.youtube.com/@hadar.shemesh", spotify: "" },
+    { name: "English Speaking Success", host: "Georgie", section: "shadowing", level: ["B1", "B2"], accent: "UK", format: "video",
+      text: "Lecciones de «speak with me» y pronunciación británica para hablar con más fluidez.",
+      youtube: "https://www.youtube.com/@EnglishSpeakingSuccess", spotify: "" },
+    { name: "The English Coach", host: "Chris", section: "shadowing", level: ["B1", "B2"], accent: "US", format: "video",
       text: "Práctica de conversación y frases para repetir en voz alta, con explicaciones claras y pausadas.",
-      youtube: "https://www.youtube.com/@TheEnglishCoach",
-      spotify: ""
-    },
-    {
-      name: "Learn English With TV Series",
-      host: "LETS",
-      section: "shadowing",
-      level: ["B1", "C1"],
-      accent: "US",
+      youtube: "https://www.youtube.com/@TheEnglishCoach", spotify: "" },
+    { name: "Learn English With TV Series", host: "LETS", section: "shadowing", level: ["B1", "C1"], accent: "US", format: "video",
       text: "Escenas de series y películas analizadas frase por frase. Repite los diálogos para sonar más natural.",
-      youtube: "https://www.youtube.com/@LearnEnglishWithTVSeries",
-      spotify: ""
-    },
-    {
-      name: "Learn English with Bob the Canadian",
-      host: "Bob",
-      section: "shadowing",
-      level: ["A2", "B1"],
-      accent: "CA",
-      text: "Habla despacio y muy claro. Ideal para hacer tus primeras prácticas de shadowing sin frustrarte.",
-      youtube: "https://www.youtube.com/@LearnEnglishwithBobtheCanadian",
-      spotify: ""
-    },
-    {
-      name: "English with Lucy",
-      host: "Lucy",
-      section: "shadowing",
-      level: ["B1", "B2"],
-      accent: "UK",
-      text: "Pronunciación y vocabulario británico con ejercicios de repetición y ejemplos del día a día.",
-      youtube: "https://www.youtube.com/@EnglishwithLucy",
-      spotify: ""
-    },
+      youtube: "https://www.youtube.com/@LearnEnglishWithTVSeries", spotify: "" },
+
+    // ——— Vocabulario y gramática ———
+    { name: "English with Lucy", host: "Lucy", section: "vocabulario", level: ["B1", "B2"], accent: "UK", format: "video",
+      text: "Vocabulario, pronunciación y gramática británica con ejemplos del día a día.",
+      youtube: "https://www.youtube.com/@EnglishwithLucy", spotify: "" },
+    { name: "Oxford Online English", host: "Oxford Online English", section: "vocabulario", level: ["B1", "C1"], accent: "UK", format: "video",
+      text: "Lecciones completas y muy bien organizadas: gramática, vocabulario, conversación y escritura.",
+      youtube: "https://www.youtube.com/@Oxfordonlineenglish1", spotify: "" },
+    { name: "English with Emma · engVid", host: "Emma", section: "vocabulario", level: ["A2", "B2"], accent: "CA", format: "video",
+      text: "Gramática, vocabulario y errores comunes explicados en la pizarra, paso a paso.",
+      youtube: "https://www.youtube.com/@engvidEmma", spotify: "" },
+    { name: "Adam's English Lessons · engVid", host: "Adam", section: "vocabulario", level: ["B1", "C1"], accent: "CA", format: "video",
+      text: "Gramática más avanzada, vocabulario y escritura. Ideal para pulir detalles.",
+      youtube: "https://www.youtube.com/@engvidAdam", spotify: "" },
+    { name: "English with James · engVid", host: "James", section: "vocabulario", level: ["B1", "B2"], accent: "CA", format: "video",
+      text: "Phrasal verbs, idioms y slang explicados con humor y dibujos en la pizarra.",
+      youtube: "https://www.youtube.com/@engvidJames", spotify: "" },
+    { name: "Learn English with Gill · engVid", host: "Gill", section: "vocabulario", level: ["A2", "B1"], accent: "UK", format: "video",
+      text: "Lecciones tranquilas y muy claras de gramática y vocabulario británico.",
+      youtube: "https://www.youtube.com/@engvidGill", spotify: "" },
+    { name: "Learn English with Papa Teach Me", host: "Papa Teach Me", section: "vocabulario", level: ["B1", "B2"], accent: "UK", format: "video",
+      text: "Gramática y expresiones británicas con humor y muchos ejemplos reales.",
+      youtube: "https://www.youtube.com/@PapaTeachMe", spotify: "" },
+    { name: "Arnel's Everyday English", host: "Arnel", section: "vocabulario", level: ["B1", "B2"], accent: "US", format: "video",
+      text: "Expresiones y vocabulario del inglés americano cotidiano, explicados con calma.",
+      youtube: "https://www.youtube.com/@arnelseverydayenglish", spotify: "" },
+
+    // ——— Conversación diaria ———
+    { name: "Easy English", host: "Easy Languages", section: "conversacion", level: ["B1", "B2"], accent: "UK", format: "video",
+      text: "Entrevistas en la calle con subtítulos en inglés y español. Gente común hablando como habla de verdad.",
+      youtube: "https://www.youtube.com/@EasyEnglishVideos", spotify: "" },
+    { name: "Learn English with Bob the Canadian", host: "Bob", section: "conversacion", level: ["A2", "B1"], accent: "CA", format: "video",
+      text: "Habla despacio y muy claro sobre la vida diaria en su granja. Ideal para empezar a escuchar nativos.",
+      youtube: "https://www.youtube.com/@LearnEnglishwithBobtheCanadian", spotify: "" },
+    { name: "elllo", host: "Todd Beuckens", section: "conversacion", level: ["A2", "B2"], accent: "Mix", format: "video",
+      text: "Conversaciones cortas entre personas de todo el mundo, organizadas por nivel. Escuchas muchos acentos.",
+      youtube: "https://www.youtube.com/@elllovideos", spotify: "" },
+    { name: "English Addict with Mr Duncan", host: "Mr Duncan", section: "conversacion", level: ["A2", "B2"], accent: "UK", format: "video",
+      text: "Transmisiones en vivo largas y relajadas, con vocabulario del día a día y mucha conversación.",
+      youtube: "https://www.youtube.com/@EnglishAddict", spotify: "" },
+
+    // ——— Noticias ———
+    { name: "VOA Learning English", host: "Voice of America", section: "noticias", level: ["A2", "B1"], accent: "US", format: "video",
+      text: "Noticias leídas más despacio y con vocabulario sencillo. También tiene lecciones de gramática cotidiana.",
+      youtube: "https://www.youtube.com/@VOALearningEnglish", spotify: "" },
+    { name: "News in Levels", host: "News in Levels", section: "noticias", level: ["A2", "B1"], accent: "Mix", format: "video",
+      text: "La misma noticia contada en tres niveles de dificultad. Empieza por el nivel 1 y sube.",
+      youtube: "https://www.youtube.com/@NewsinLevels", spotify: "" },
+    { name: "CNN 10", host: "CNN", section: "noticias", level: ["B2", "C1"], accent: "US", format: "video",
+      text: "Noticias del mundo en 10 minutos, pensadas para estudiantes. Ritmo rápido pero muy claro.",
+      youtube: "https://www.youtube.com/@CNN10", spotify: "" },
 
     // ——— Crecimiento personal ———
-    {
-      name: "The Mel Robbins Podcast",
-      host: "Mel Robbins",
-      section: "crecimiento",
-      level: ["B2", "C1"],
-      accent: "US",
+    { name: "The Mel Robbins Podcast", host: "Mel Robbins", section: "crecimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
       text: "Consejos prácticos sobre hábitos, motivación y reinventarte. Mel habla con energía y muy claro.",
-      youtube: "https://www.youtube.com/@melrobbins",
-      spotify: "https://open.spotify.com/show/7vz4RYsD5MulTCrcH478t1"
-    },
-    {
-      name: "On Purpose with Jay Shetty",
-      host: "Jay Shetty",
-      section: "crecimiento",
-      level: ["B2", "C1"],
-      accent: "Mix",
+      youtube: "https://www.youtube.com/@melrobbins", spotify: "https://open.spotify.com/show/7vz4RYsD5MulTCrcH478t1" },
+    { name: "On Purpose with Jay Shetty", host: "Jay Shetty", section: "crecimiento", level: ["B2", "C1"], accent: "Mix", format: "podcast",
       text: "Entrevistas sobre propósito, relaciones y salud mental. Jay tiene acento británico; muchos invitados, americano.",
-      youtube: "https://www.youtube.com/@jayshetty",
-      spotify: "https://open.spotify.com/show/5EqqB52m2bsr4k1Ii7sStc"
-    },
-    {
-      name: "A Bit of Optimism",
-      host: "Simon Sinek",
-      section: "crecimiento",
-      level: ["B2", "C1"],
-      accent: "US",
-      text: "Conversaciones tranquilas sobre liderazgo, confianza y relaciones. Simon habla pausado y con ejemplos.",
-      youtube: "https://www.youtube.com/@SimonSinek",
-      spotify: "https://open.spotify.com/show/0wjYlCNxLDgFUUjZMaP6Dx"
-    },
+      youtube: "https://www.youtube.com/@jayshetty", spotify: "https://open.spotify.com/show/5EqqB52m2bsr4k1Ii7sStc" },
+    { name: "A Bit of Optimism", host: "Simon Sinek", section: "crecimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Conversaciones tranquilas sobre liderazgo, confianza y relaciones. Simon habla pausado.",
+      youtube: "https://www.youtube.com/@SimonSinek", spotify: "https://open.spotify.com/show/0wjYlCNxLDgFUUjZMaP6Dx" },
+    { name: "Deep Dive with Ali Abdaal", host: "Ali Abdaal", section: "crecimiento", level: ["B2", "C1"], accent: "UK", format: "podcast",
+      text: "Productividad, estudio y hábitos, explicados por un médico británico que habla muy claro.",
+      youtube: "https://www.youtube.com/@aliabdaal", spotify: "https://open.spotify.com/show/7gZkflCpck1rTixj8M7yHt" },
+    { name: "Matt D'Avella", host: "Matt D'Avella", section: "crecimiento", level: ["B2", "B2"], accent: "US", format: "video",
+      text: "Videos cortos sobre minimalismo y hábitos, con narración pausada y muy buena imagen.",
+      youtube: "https://www.youtube.com/@mattdavella", spotify: "" },
+    { name: "The Daily Stoic", host: "Ryan Holiday", section: "crecimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Una reflexión breve cada día basada en la filosofía estoica. Episodios de pocos minutos.",
+      youtube: "https://www.youtube.com/@dailystoic", spotify: "https://open.spotify.com/show/7fY99FB3bNyn7nEdXCoBeB" },
+    { name: "The School of Greatness", host: "Lewis Howes", section: "crecimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Entrevistas con deportistas, empresarios y expertos sobre éxito, salud y relaciones.",
+      youtube: "https://www.youtube.com/@lewishowes", spotify: "https://open.spotify.com/show/07GQhOZboEZOE1ysnFLipT" },
+    { name: "Unlocking Us", host: "Brené Brown", section: "crecimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Emociones, vulnerabilidad y relaciones, con una investigadora que cuenta historias muy personales.",
+      youtube: "", spotify: "https://open.spotify.com/show/4P86ZzHf7EOlRG7do9LkKZ" },
 
-    // ——— TED ———
-    {
-      name: "TED Talks",
-      host: "TED",
-      section: "ted",
-      level: ["B1", "C1"],
-      accent: "Mix",
+    // ——— TED y discursos ———
+    { name: "TED Talks", host: "TED", section: "ted", level: ["B1", "C1"], accent: "Mix", format: "video",
       text: "Las charlas oficiales de TED. En la web de TED cada charla tiene transcripción interactiva.",
-      youtube: "https://www.youtube.com/@TED",
-      spotify: "https://open.spotify.com/show/1VXcH8QHkjRcTCEd88U3ti"
-    },
-    {
-      name: "TEDx Talks",
-      host: "TEDx",
-      section: "ted",
-      level: ["B1", "C1"],
-      accent: "Mix",
-      text: "Miles de charlas de eventos locales en todo el mundo. Escuchas muchos acentos distintos.",
-      youtube: "https://www.youtube.com/@TEDx",
-      spotify: ""
-    },
-    {
-      name: "TED-Ed",
-      host: "TED-Ed",
-      section: "ted",
-      level: ["B1", "B2"],
-      accent: "Mix",
+      youtube: "https://www.youtube.com/@TED", spotify: "https://open.spotify.com/show/1VXcH8QHkjRcTCEd88U3ti" },
+    { name: "TED-Ed", host: "TED-Ed", section: "ted", level: ["B1", "B2"], accent: "Mix", format: "video",
       text: "Lecciones animadas de 5 minutos sobre ciencia, historia y más. Las imágenes te ayudan a entender.",
-      youtube: "https://www.youtube.com/@TEDEd",
-      spotify: ""
-    },
+      youtube: "https://www.youtube.com/@TEDEd", spotify: "" },
+    { name: "TEDx Talks", host: "TEDx", section: "ted", level: ["B1", "C1"], accent: "Mix", format: "video",
+      text: "Miles de charlas de eventos locales en todo el mundo. Escuchas muchos acentos distintos.",
+      youtube: "https://www.youtube.com/@TEDx", spotify: "" },
+    { name: "English Speeches", host: "English Speeches", section: "ted", level: ["B1", "C1"], accent: "Mix", format: "video",
+      text: "Discursos famosos con subtítulos en inglés en pantalla. Perfecto para leer mientras escuchas.",
+      youtube: "https://www.youtube.com/@EnglishSpeeches", spotify: "" },
+    { name: "Big Think", host: "Big Think", section: "ted", level: ["C1", "C1"], accent: "Mix", format: "video",
+      text: "Expertos explican ideas de ciencia, psicología y negocios en pocos minutos. Vocabulario avanzado.",
+      youtube: "https://www.youtube.com/@bigthink", spotify: "" },
 
-    // ——— Negocios ———
-    {
-      name: "Business English from All Ears English",
-      host: "Lindsay McMahon",
-      section: "negocios",
-      level: ["B1", "B2"],
-      accent: "US",
+    // ——— Negocios y trabajo ———
+    { name: "Business English from All Ears English", host: "Lindsay McMahon", section: "negocios", level: ["B1", "B2"], accent: "US", format: "podcast",
       text: "Frases para reuniones, correos, entrevistas y networking. Muy útil si trabajas en remoto.",
-      youtube: "https://www.youtube.com/@AllEarsEnglishPodcast",
-      spotify: "https://open.spotify.com/show/5HFUjaqFFXUiHC5SA6uVEz"
-    },
-    {
-      name: "The Diary Of A CEO",
-      host: "Steven Bartlett",
-      section: "negocios",
-      level: ["B2", "C1"],
-      accent: "UK",
+      youtube: "https://www.youtube.com/@AllEarsEnglishPodcast", spotify: "https://open.spotify.com/show/5HFUjaqFFXUiHC5SA6uVEz" },
+    { name: "Business English Pod", host: "BusinessEnglishPod.com", section: "negocios", level: ["B1", "B2"], accent: "Mix", format: "podcast",
+      text: "Diálogos de trabajo (reuniones, presentaciones, negociaciones) explicados frase por frase.",
+      youtube: "https://www.youtube.com/@BusinessEnglishPod", spotify: "https://open.spotify.com/show/4nCHpl7GXuMu41Jn4xDLtH" },
+    { name: "CNBC Make It", host: "CNBC", section: "negocios", level: ["B2", "B2"], accent: "US", format: "video",
+      text: "Videos cortos sobre dinero, carrera y éxito profesional. Buen vocabulario de finanzas personales.",
+      youtube: "https://www.youtube.com/@CNBCMakeIt", spotify: "" },
+    { name: "How I Built This", host: "Guy Raz", section: "negocios", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Fundadores de marcas famosas cuentan cómo empezaron. Historias con mucho vocabulario de negocios.",
+      youtube: "https://www.youtube.com/@HowIBuiltThis", spotify: "https://open.spotify.com/show/6E709HRH7XaiZrMfgtNCun" },
+    { name: "The Diary Of A CEO", host: "Steven Bartlett", section: "negocios", level: ["B2", "C1"], accent: "UK", format: "podcast",
       text: "Entrevistas largas con empresarios y expertos sobre éxito, salud y dinero. Inglés británico natural.",
-      youtube: "https://www.youtube.com/@TheDiaryOfACEO",
-      spotify: "https://open.spotify.com/show/7iQXmUT7XGuZSzAMjoNWlX"
-    },
-    {
-      name: "How I Built This",
-      host: "Guy Raz",
-      section: "negocios",
-      level: ["B2", "C1"],
-      accent: "US",
-      text: "Fundadores de marcas famosas cuentan cómo empezaron. Historias con buen ritmo y mucho vocabulario de negocios.",
-      youtube: "https://www.youtube.com/@HowIBuiltThis",
-      spotify: "https://open.spotify.com/show/6E709HRH7XaiZrMfgtNCun"
-    },
-    {
-      name: "HBR IdeaCast",
-      host: "Harvard Business Review",
-      section: "negocios",
-      level: ["C1", "C1"],
-      accent: "US",
-      text: "Ideas de liderazgo y gestión explicadas por expertos. Inglés profesional de nivel avanzado.",
-      youtube: "https://www.youtube.com/@HarvardBusinessReview",
-      spotify: "https://open.spotify.com/show/4gtSBBxIAE142ApX6LqsvN"
-    },
+      youtube: "https://www.youtube.com/@TheDiaryOfACEO", spotify: "https://open.spotify.com/show/7iQXmUT7XGuZSzAMjoNWlX" },
+    { name: "Planet Money", host: "NPR", section: "negocios", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "La economía explicada con historias divertidas y fáciles de seguir.",
+      youtube: "https://www.youtube.com/@planetmoney", spotify: "https://open.spotify.com/show/4FYpq3lSeQMAhqNI81O0Cn" },
+    { name: "HBR IdeaCast", host: "Harvard Business Review", section: "negocios", level: ["C1", "C1"], accent: "US", format: "podcast",
+      text: "Liderazgo y gestión explicados por expertos. Inglés profesional de nivel avanzado.",
+      youtube: "https://www.youtube.com/@HarvardBusinessReview", spotify: "https://open.spotify.com/show/4gtSBBxIAE142ApX6LqsvN" },
 
-    // ——— Curiosidad ———
-    {
-      name: "Kurzgesagt – In a Nutshell",
-      host: "Kurzgesagt",
-      section: "curiosidad",
-      level: ["B1", "B2"],
-      accent: "Mix",
+    // ——— Ciencia e historias ———
+    { name: "Kurzgesagt – In a Nutshell", host: "Kurzgesagt", section: "curiosidad", level: ["B1", "B2"], accent: "Mix", format: "video",
       text: "Videos animados de ciencia de unos 10 minutos. Narración clara y subtítulos en inglés.",
-      youtube: "https://www.youtube.com/@kurzgesagt",
-      spotify: ""
-    },
-    {
-      name: "The Moth",
-      host: "The Moth",
-      section: "curiosidad",
-      level: ["B2", "C1"],
-      accent: "US",
+      youtube: "https://www.youtube.com/@kurzgesagt", spotify: "" },
+    { name: "SciShow", host: "SciShow", section: "curiosidad", level: ["B2", "B2"], accent: "US", format: "video",
+      text: "Preguntas curiosas de ciencia respondidas en pocos minutos.",
+      youtube: "https://www.youtube.com/@SciShow", spotify: "" },
+    { name: "Veritasium", host: "Derek Muller", section: "curiosidad", level: ["B2", "C1"], accent: "Mix", format: "video",
+      text: "Experimentos y misterios de la ciencia contados como una historia.",
+      youtube: "https://www.youtube.com/@veritasium", spotify: "" },
+    { name: "CrashCourse", host: "CrashCourse", section: "curiosidad", level: ["B2", "C1"], accent: "US", format: "video",
+      text: "Cursos completos de historia, ciencia y más en videos de 10 a 15 minutos. Hablan rápido.",
+      youtube: "https://www.youtube.com/@crashcourse", spotify: "" },
+    { name: "The Moth", host: "The Moth", section: "curiosidad", level: ["B2", "C1"], accent: "US", format: "podcast",
       text: "Personas comunes cuentan historias reales en un escenario, sin guion. Inglés emocional y espontáneo.",
-      youtube: "https://www.youtube.com/@TheMoth",
-      spotify: "https://open.spotify.com/show/5UKrcYdaGbq10z97yqi81N"
-    },
-    {
-      name: "Hidden Brain",
-      host: "Shankar Vedantam",
-      section: "curiosidad",
-      level: ["B2", "C1"],
-      accent: "US",
-      text: "Psicología y comportamiento humano explicados con historias. Shankar habla despacio y con mucha claridad.",
-      youtube: "https://www.youtube.com/@HiddenBrain",
-      spotify: "https://open.spotify.com/show/20Gf4IAauFrfj7RBkjcWxh"
-    },
-    {
-      name: "Stuff You Should Know",
-      host: "Josh & Chuck",
-      section: "curiosidad",
-      level: ["B2", "C1"],
-      accent: "US",
-      text: "Dos amigos explican cómo funciona todo, del café a las pirámides. Conversación muy natural y con humor.",
-      youtube: "https://www.youtube.com/@StuffYouShouldKnow",
-      spotify: "https://open.spotify.com/show/0ofXAdFIQQRsCYj9754UFx"
-    },
-    {
-      name: "Freakonomics Radio",
-      host: "Stephen J. Dubner",
-      section: "curiosidad",
-      level: ["C1", "C1"],
-      accent: "US",
-      text: "Economía y el lado oculto de las cosas cotidianas. Ritmo rápido: un buen reto para nivel avanzado.",
-      youtube: "https://www.youtube.com/@freakonomics",
-      spotify: "https://open.spotify.com/show/6z4NLXyHPga1UmSJsPK7G1"
-    },
-    {
-      name: "Huberman Lab",
-      host: "Andrew Huberman",
-      section: "curiosidad",
-      level: ["C1", "C1"],
-      accent: "US",
-      text: "Neurociencia aplicada al sueño, la concentración y la salud. Vocabulario técnico: para avanzados.",
-      youtube: "https://www.youtube.com/@hubermanlab",
-      spotify: "https://open.spotify.com/show/79CkJF3UJTHFV8Dse3Oy0P"
-    }
+      youtube: "https://www.youtube.com/@TheMoth", spotify: "https://open.spotify.com/show/5UKrcYdaGbq10z97yqi81N" },
+    { name: "Hidden Brain", host: "Shankar Vedantam", section: "curiosidad", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Psicología y comportamiento humano explicados con historias. Shankar habla despacio y claro.",
+      youtube: "https://www.youtube.com/@HiddenBrain", spotify: "https://open.spotify.com/show/20Gf4IAauFrfj7RBkjcWxh" },
+    { name: "Stuff You Should Know", host: "Josh & Chuck", section: "curiosidad", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Dos amigos explican cómo funciona todo, del café a las pirámides. Conversación natural y con humor.",
+      youtube: "https://www.youtube.com/@StuffYouShouldKnow", spotify: "https://open.spotify.com/show/0ofXAdFIQQRsCYj9754UFx" },
+    { name: "Vox", host: "Vox", section: "curiosidad", level: ["C1", "C1"], accent: "US", format: "video",
+      text: "Explicaciones visuales de temas de actualidad, cultura y sociedad. Narración rápida.",
+      youtube: "https://www.youtube.com/@Vox", spotify: "" },
+    { name: "This American Life", host: "Ira Glass", section: "curiosidad", level: ["C1", "C1"], accent: "US", format: "podcast",
+      text: "Historias reales de la vida en Estados Unidos, contadas como pequeñas películas de radio.",
+      youtube: "https://www.youtube.com/@this-american-life", spotify: "https://open.spotify.com/show/41zWZdWCpVQrKj7ykQnXRc" },
+    { name: "Radiolab", host: "WNYC Studios", section: "curiosidad", level: ["C1", "C1"], accent: "US", format: "podcast",
+      text: "Ciencia y filosofía con mucho sonido y edición creativa. Un reto para nivel avanzado.",
+      youtube: "https://www.youtube.com/@Radiolabpod", spotify: "https://open.spotify.com/show/2hmkzUtix0qTqvtpPcMzEL" },
+    { name: "Freakonomics Radio", host: "Stephen J. Dubner", section: "curiosidad", level: ["C1", "C1"], accent: "US", format: "podcast",
+      text: "Economía y el lado oculto de las cosas cotidianas. Ritmo rápido.",
+      youtube: "https://www.youtube.com/@freakonomics", spotify: "https://open.spotify.com/show/6z4NLXyHPga1UmSJsPK7G1" },
+    { name: "Huberman Lab", host: "Andrew Huberman", section: "curiosidad", level: ["C1", "C1"], accent: "US", format: "podcast",
+      text: "Neurociencia aplicada al sueño, la concentración y la salud. Vocabulario técnico.",
+      youtube: "https://www.youtube.com/@hubermanlab", spotify: "https://open.spotify.com/show/79CkJF3UJTHFV8Dse3Oy0P" },
+
+    // ——— Exámenes ———
+    { name: "English with Cambridge", host: "Cambridge University Press & Assessment", section: "examenes", level: ["B1", "C1"], accent: "UK", format: "video",
+      text: "El canal oficial de Cambridge: consejos para sus exámenes (B1 Preliminary, B2 First, C1 Advanced) y lecciones.",
+      youtube: "https://www.youtube.com/@CambridgeEnglishTV", spotify: "" },
+    { name: "IELTS Speaking for Success", host: "Maria & Rory", section: "examenes", level: ["B1", "C1"], accent: "UK", format: "podcast",
+      text: "Cada semana responden preguntas reales del Speaking de IELTS con vocabulario y respuestas modelo.",
+      youtube: "", spotify: "https://open.spotify.com/show/5ISJgLQXgXRzeumkV4eR40" },
+    { name: "IELTS Liz", host: "Liz", section: "examenes", level: ["B1", "C1"], accent: "UK", format: "video",
+      text: "Estrategias claras para cada parte de IELTS, con ejemplos y errores típicos.",
+      youtube: "https://www.youtube.com/@ieltsliz", spotify: "" },
+    { name: "E2 IELTS", host: "E2", section: "examenes", level: ["B1", "C1"], accent: "Mix", format: "video",
+      text: "Clases y simulacros de IELTS con profesores de distintos países.",
+      youtube: "https://www.youtube.com/@E2IELTS", spotify: "" },
+    { name: "IELTS Advantage", host: "IELTS Advantage", section: "examenes", level: ["B2", "C1"], accent: "Mix", format: "video",
+      text: "Técnicas para subir tu puntaje en Writing y Speaking de IELTS.",
+      youtube: "https://www.youtube.com/@IELTSAdvantage", spotify: "" },
+    { name: "TST Prep TOEFL", host: "TST Prep", section: "examenes", level: ["B1", "C1"], accent: "US", format: "video",
+      text: "Preparación para el TOEFL: ejemplos de preguntas, plantillas y práctica cronometrada.",
+      youtube: "https://www.youtube.com/@TSTPrep", spotify: "" }
   ]
 };
