@@ -4,7 +4,7 @@
 # 1. Pega el texto del discurso debajo de estas líneas (puedes borrarlas o dejarlas).
 # 2. Deja una línea en blanco entre párrafo y párrafo.
 # 3. Las líneas que empiezan con # se ignoran.
-# 4. Sube el número ?v= en index.html para que los estudiantes vean la versión nueva.
+# 4. No hace falta cambiar nada más: el sitio siempre lee la versión más reciente de este archivo.
 #
 # Mientras este archivo no tenga texto, la lectura muestra solo el resumen.
 # Nota: el discurso tiene derechos de autor (Stanford / herederos de Steve Jobs);
