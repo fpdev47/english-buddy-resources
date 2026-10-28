@@ -15,6 +15,11 @@
   const button = form.querySelector(".gate-btn");
   const eye = form.querySelector(".pw-toggle");
   let errorKey = "";
+  // A page cached from before usernames existed: reload it once to get the new login page
+  if (!user || !eye) {
+    if (!sessionStorage.getItem("yeb-reloaded")) { sessionStorage.setItem("yeb-reloaded", "1"); location.reload(); }
+    return;
+  }
 
   // Show / hide the password
   function syncEye() {
