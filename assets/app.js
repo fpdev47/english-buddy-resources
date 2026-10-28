@@ -108,6 +108,7 @@
     if (!b) return;
     if (state.mode === "practicar") state.exTopic = b.dataset.topic;
     else state.topic = b.dataset.topic;
+    if (undoSnapshot) hideToast();
     save(); renderTopics(); renderPanel(); writeHash();
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   });
@@ -229,6 +230,7 @@
       <div class="fb ${ans.ok ? "ok" : "bad"}" role="status">
         <strong>${ans.ok ? t("correct") : `${t("answerIs")} ${esc(correct)}`}</strong>
         <span>${esc(tr.e || item.e)}</span>
+        ${ans.ok ? "" : `<button type="button" class="retry-one" data-action="retry-one" data-key="${key}">↻ ${esc(t("tryAgain"))}</button>`}
       </div>` : "";
 
     return `
@@ -255,9 +257,31 @@
   function scoreHTML(x) {
     const p = progress(x);
     const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+    const wrong = p.done - p.correct;
+    const text = p.done === p.total && p.total ? t("complete")(p.correct, p.total) : t("score")(p.correct, p.done, p.total);
     return `
-      <div class="score-text">${t("score")(p.correct, p.done, p.total)}</div>
+      <div class="score-row">
+        <div class="score-text">${text}</div>
+        <div class="score-actions">
+          ${wrong ? `<button type="button" class="score-btn primary" data-action="retry-wrong">↻ ${esc(t("retryWrong"))} (${wrong})</button>` : ""}
+          ${p.done ? `<button type="button" class="score-btn" data-action="start-over">${esc(t("startOver"))}</button>` : ""}
+        </div>
+      </div>
       <div class="score-bar" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
+  }
+
+  function sectionCount(x, si) {
+    const items = x.sections[si].items;
+    const answered = items.map((_, ii) => savedAnswer(x, si, ii)).filter(Boolean);
+    if (!answered.length) return "";
+    return `${answered.filter((a) => a.ok).length}/${items.length} ✓`;
+  }
+
+  // Refresh everything that depends on the answers of the current topic, without re-rendering the page
+  function refreshPractice(x) {
+    $("#score").innerHTML = scoreHTML(x);
+    x.sections.forEach((_, si) => { const el = document.getElementById(`sec-count-${si}`); if (el) el.textContent = sectionCount(x, si); });
+    renderTopics();
   }
 
   function renderPractice() {
@@ -271,12 +295,11 @@
           <h2>${esc((exT(x) || x).title)}</h2>
           <p>${esc(t("practiceIntro"))}</p>
         </div>
-        <button type="button" class="reset-btn" data-reset="${x.id}">${esc(t("reset"))}</button>
       </div>
       <div class="score" id="score">${scoreHTML(x)}</div>
       ${x.sections.map((s, si) => `
         <section class="ex-section${s.story ? " has-story" : ""}">
-          <h3>${esc(exSecT(x, si).title || s.title)}</h3>
+          <h3>${esc(exSecT(x, si).title || s.title)} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions)}</p>
           ${s.story ? `<div class="story">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
@@ -294,8 +317,64 @@
     document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
     const mark = document.querySelector(`.story [data-jump="${key}"]`);
     if (mark) mark.className = storyMarkClass(x, si, ii + 1);
-    $("#score").innerHTML = scoreHTML(x);
-    renderTopics();
+    refreshPractice(x);
+  }
+
+  // ——— Clearing answers (with undo instead of a confirm dialog) ———
+  let toastTimer, undoSnapshot = null;
+  function toast(message, snapshot) {
+    undoSnapshot = snapshot;
+    const el = $("#toast");
+    el.innerHTML = `<span>${esc(message)}</span>${snapshot ? `<button type="button" data-action="undo">${esc(t("undo"))}</button>` : ""}`;
+    el.hidden = false;
+    void el.offsetWidth; // apply the hidden state first so the entrance animation plays
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast() {
+    const el = $("#toast");
+    el.classList.remove("show");
+    setTimeout(() => { if (!el.classList.contains("show")) el.hidden = true; }, 250);
+    undoSnapshot = null;
+  }
+  function currentTopic() { return EXERCISES.find((t) => t.id === state.exTopic); }
+
+  function retryOne(key) {
+    const x = currentTopic();
+    delete (state.answers[x.id] || {})[key];
+    save();
+    const [si, ii] = key.split("-").map(Number);
+    document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
+    const mark = document.querySelector(`.story [data-jump="${key}"]`);
+    if (mark) mark.className = storyMarkClass(x, si, ii + 1);
+    refreshPractice(x);
+    const q = document.getElementById(`q-${key}`);
+    const first = q.querySelector(".opt, .write-input");
+    if (first) first.focus({ preventScroll: true });
+  }
+
+  function clearAnswers(onlyWrong) {
+    const x = currentTopic();
+    const saved = state.answers[x.id] || {};
+    const snapshot = { id: x.id, answers: JSON.parse(JSON.stringify(saved)) };
+    let firstKey = null;
+    x.sections.forEach((s, si) => s.items.forEach((_, ii) => {
+      const key = `${si}-${ii}`, ans = savedAnswer(x, si, ii);
+      if (ans && (!onlyWrong || !ans.ok)) { delete saved[key]; if (!firstKey) firstKey = key; }
+    }));
+    state.answers[x.id] = saved;
+    save(); renderPanel(); renderTopics();
+    const target = onlyWrong && firstKey ? document.getElementById(`q-${firstKey}`) : $("#results");
+    if (target) target.scrollIntoView({ behavior: "smooth", block: onlyWrong ? "center" : "start" });
+    toast(onlyWrong ? t("wrongCleared") : t("allCleared"), snapshot);
+  }
+
+  function undo() {
+    if (!undoSnapshot) return;
+    state.answers[undoSnapshot.id] = undoSnapshot.answers;
+    save(); renderPanel(); renderTopics();
+    hideToast();
   }
 
   // ——— Panel ———
@@ -314,11 +393,12 @@
     const opt = e.target.closest(".opt");
     if (opt && !opt.disabled) return answer(opt.dataset.key, opt.dataset.v);
 
-    const reset = e.target.closest("[data-reset]");
-    if (reset) {
-      if (!confirm(t("resetConfirm"))) return;
-      delete state.answers[reset.dataset.reset];
-      save(); renderTopics(); renderPanel();
+    const action = e.target.closest("[data-action]");
+    if (action) {
+      const a = action.dataset.action;
+      if (a === "retry-one") retryOne(action.dataset.key);
+      else if (a === "retry-wrong") clearAnswers(true);
+      else if (a === "start-over") clearAnswers(false);
       return;
     }
 
@@ -354,6 +434,8 @@
     if (!input.value.trim()) { input.focus(); return; }
     answer(form.dataset.key, input.value.trim());
   });
+
+  $("#toast").addEventListener("click", (e) => { if (e.target.closest("[data-action=undo]")) undo(); });
 
   function render() {
     renderModes(); renderTopics(); renderPanel();
