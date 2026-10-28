@@ -30,6 +30,18 @@
   eye.addEventListener("click", () => { pass.type = pass.type === "password" ? "text" : "password"; syncEye(); pass.focus(); });
   syncEye();
 
+  // «Forgot your password?»: WhatsApp to the teacher, with the username if it's already typed
+  const wa = document.getElementById("wa-link");
+  const phone = window.YEB_TEACHER_WHATSAPP;
+  if (!phone) wa.closest(".forgot").hidden = true;
+  function syncWa() {
+    const u = user.value.trim();
+    wa.href = `https://wa.me/${phone}?text=${encodeURIComponent(t("forgotMsg") + (u ? ` ${t("forgotUser")}: ${u}` : ""))}`;
+  }
+  user.addEventListener("input", syncWa);
+  document.addEventListener("yeb:lang", syncWa);
+  syncWa();
+
   if (root.classList.contains("unlocked")) return;
   if (!user.value) setTimeout(() => user.focus(), 0);
 

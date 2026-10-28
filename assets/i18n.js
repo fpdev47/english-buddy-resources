@@ -51,6 +51,8 @@
       showPw: "Mostrar contraseña", hidePw: "Ocultar contraseña",
       gateError: "Usuario o contraseña incorrectos. Inténtalo de nuevo.",
       gateOffline: "No pudimos conectarnos. Revisa tu internet e inténtalo de nuevo.",
+      forgot: "¿Olvidaste tu contraseña?", forgotText: "Pídele una nueva a tu profesor. No perderás tu progreso.",
+      forgotWa: "Escribirle por WhatsApp", forgotMsg: "¡Hola! Olvidé mi contraseña de Your English Buddy.", forgotUser: "Mi usuario es",
       hi: (n) => `¡Hola, ${n}!`, logout: "Cerrar sesión"
     },
     en: {
@@ -99,6 +101,8 @@
       showPw: "Show password", hidePw: "Hide password",
       gateError: "Wrong username or password. Please try again.",
       gateOffline: "We couldn't connect. Check your internet and try again.",
+      forgot: "Forgot your password?", forgotText: "Ask your teacher for a new one. Your progress won't be lost.",
+      forgotWa: "Message on WhatsApp", forgotMsg: "Hi! I forgot my password for Your English Buddy.", forgotUser: "My username is",
       hi: (n) => `Hi, ${n}!`, logout: "Log out"
     }
   };

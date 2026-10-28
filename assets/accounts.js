@@ -12,6 +12,9 @@
   computadora). Con Supabase (assets/config.js) además se sincroniza entre dispositivos; en ese caso
   inserta en la base de datos la misma contraseña (ver setup/supabase.sql).
 */
+// WhatsApp del profesor para «¿Olvidaste tu contraseña?» (código de país + número, sin + ni espacios)
+window.YEB_TEACHER_WHATSAPP = "584242345232";
+
 window.YEB_ACCOUNTS = [
   { user: "mary", name: "Mary", hash: "bc5a20262d815b420ba89cf9ec66dcd796ae639d5569e0f77ac151c05ad74f29" },
   { user: "jesus", name: "Jesus", hash: "8a1a7788798a073c4cc9d9939f50ec2d9f802c9972e473d315d0ad5fc3c14d07" }
