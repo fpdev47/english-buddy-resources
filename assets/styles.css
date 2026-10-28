@@ -457,6 +457,16 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 .read-video .pick { margin-bottom: 0; }
 .read-video + .source { margin: 12px 0 0; }
 .summary-title { font-size: 20px; margin: 26px 0 12px; }
+.view-switch {
+  display: inline-flex; gap: 4px; padding: 4px; margin: 22px 0 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+}
+.view-switch button {
+  border: 0; background: transparent; cursor: pointer; min-height: 40px; padding: 8px 18px;
+  border-radius: 999px; font-weight: 700; font-size: 14.5px; color: var(--muted);
+}
+.view-switch button[aria-selected="true"] { background: var(--solid); color: #fff; }
+.view-switch button:focus-visible { outline: 3px solid var(--green-600); outline-offset: 2px; }
 .source a { color: var(--brand); font-weight: 600; }
 .vocab-box { margin-top: 28px; }
 .vocab-box h3 { font-size: 20px; }

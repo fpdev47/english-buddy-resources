@@ -9,6 +9,8 @@
   - vocabulary: preguntas con V("frase con [[palabra]]", correcta ES, [incorrectas ES], [traducción EN de cada opción], explicación ES, explicación EN)
   - source (opcional): enlaces a la fuente original
   - video (opcional): video de YouTube que se muestra antes del texto
+  - transcript (opcional): archivo .txt con el texto completo; si tiene texto, la lectura
+    muestra «Texto completo | Resumen» (párrafos separados por una línea en blanco; # = comentario)
 */
 (function () {
   const C = (q, a, o, e, eEn) => ({ q, a, o, e, en: { e: eEn } });
@@ -24,6 +26,8 @@
     {
       id: "r-steve-jobs", tier: "advanced", level: "B2–C1", minutes: 3,
       title: "Steve Jobs at Stanford (2005)",
+      // Full text (optional): paste it in this file; until then only the summary is shown
+      transcript: "data/transcripts/steve-jobs.txt",
       // The full speech, from Stanford's official channel (the text below is a summary for learners)
       video: {
         id: "UF8uR6Z6KLc", start: 0, channel: "Stanford",

@@ -75,6 +75,8 @@ V("Frase literal con [[palabra]]", "significado correcto ES", ["incorrecto", "in
 
 Las lecturas ya traen su inglés, no hace falta tocar `data/en.js`.
 
+**Texto completo opcional:** una lectura puede apuntar a un archivo `.txt` con `transcript`. Si el archivo tiene texto (párrafos separados por una línea en blanco; las líneas con `#` se ignoran), la lectura muestra «Texto completo | Resumen» y abre en el texto completo. La de Steve Jobs usa `data/transcripts/steve-jobs.txt`, que está vacío: pegar ahí el discurso es decisión tuya, porque tiene derechos de autor y el repo es público.
+
 ## Español / inglés
 
 La página empieza en inglés. El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta la traducción, ese texto se muestra en español.

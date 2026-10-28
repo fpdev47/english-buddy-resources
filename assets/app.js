@@ -445,10 +445,10 @@
   }
 
   // ——— Reading ———
-  function readingText(x) {
+  function readingText(x, paragraphs) {
     // Highlight the first appearance of each vocabulary item; placeholders avoid matching inside the markup
     const terms = x.vocab.map((v, i) => ({ i, m: (v[3] || v[0]).replace(/[()]/g, "").trim() })).sort((a, b) => b.m.length - a.m.length);
-    let paras = x.text.map((p) => esc(p));
+    let paras = (paragraphs || x.text).map((p) => esc(p));
     for (const { i, m } of terms) {
       const re = new RegExp(`\\b(${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i");
       const idx = paras.findIndex((p) => re.test(p));
@@ -457,11 +457,32 @@
     return paras.map((p) => `<p>${p.replace(/\u0000(\d+)\u0001(.*?)\u0002/g, (_, i, w) => `<button type="button" class="vw" data-vw="${i}">${w}</button>`)}</p>`).join("");
   }
 
+  // Optional full transcript (a .txt file next to the site); loaded once per reading
+  const transcripts = {};
+  function loadTranscript(x) {
+    if (!x.transcript || transcripts[x.id] !== undefined) return;
+    transcripts[x.id] = null;   // loading
+    fetch(x.transcript, { cache: "no-cache" })
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((txt) => {
+        const paras = txt.split(/\r?\n/).filter((l) => !l.trim().startsWith("#")).join("\n")
+          .split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean);
+        transcripts[x.id] = paras.length ? paras : false;
+        if (paras.length && state.mode === "leer" && state.readTopic === x.id) renderPanel();
+      })
+      .catch(() => { transcripts[x.id] = false; });
+  }
+  const fullText = (x) => (Array.isArray(transcripts[x.id]) ? transcripts[x.id] : null);
+  const readView = (x) => (fullText(x) && (state.readView || {})[x.id] !== "summary" ? "full" : "summary");
+  const shownText = (x) => (readView(x) === "full" ? fullText(x) : x.text);
+
   function renderRead() {
     if (!READINGS.length) return `<div class="panel-head"><h2>${esc(t("reading"))}</h2><p>${esc(t("soon"))}</p></div>`;
     const x = READINGS.find((r) => r.id === state.readTopic) || READINGS[0];
     state.readTopic = x.id;
+    loadTranscript(x);
     const L = isEN() ? "en" : "es";
+    const view = readView(x);
     const canSpeak = "speechSynthesis" in window;
     return `
       <div class="panel-head">
@@ -472,8 +493,12 @@
       </div>
       ${x.video ? `<div class="read-video">${videoBlock(x.video, { title: x.video.title[L], tip: x.video.tip[L] }, t("fullVideo"))}</div>` : ""}
       ${x.source ? `<p class="source">${esc(x.source.note[L])} ${x.source.links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label[L])} ↗</a>`).join(" · ")}</p>` : ""}
-      ${x.video ? `<h3 class="summary-title">${esc(t("summary"))}</h3>` : ""}
-      <article class="reading" lang="en">${readingText(x)}</article>
+      ${fullText(x) ? `
+        <div class="view-switch" role="tablist" aria-label="${esc(t("summary"))}">
+          <button type="button" role="tab" data-action="read-view" data-view="full" aria-selected="${view === "full"}">${esc(t("fullText"))}</button>
+          <button type="button" role="tab" data-action="read-view" data-view="summary" aria-selected="${view === "summary"}">${esc(t("summaryShort"))}</button>
+        </div>` : x.video ? `<h3 class="summary-title">${esc(t("summary"))}</h3>` : ""}
+      <article class="reading${view === "full" ? " full" : ""}" lang="en">${readingText(x, shownText(x))}</article>
       <section class="vocab-box">
         <h3>${esc(t("vocabTitle"))}</h3>
         <p class="ex-instr">${esc(t("vocabHint"))}</p>
@@ -491,7 +516,7 @@
   function speak(btn) {
     if (speechSynthesis.speaking) return stopSpeaking();
     const x = currentTopic();
-    const u = new SpeechSynthesisUtterance(x.text.join(" "));
+    const u = new SpeechSynthesisUtterance(shownText(x).join(" "));
     u.lang = "en-US"; u.rate = 0.92;
     const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-US") || speechSynthesis.getVoices().find((v) => /^en/.test(v.lang));
     if (voice) u.voice = voice;
@@ -527,6 +552,10 @@
     if (action) {
       const a = action.dataset.action;
       if (a === "speak") speak(action);
+      else if (a === "read-view") {
+        state.readView = { ...(state.readView || {}), [state.readTopic]: action.dataset.view };
+        save(); renderPanel();
+      }
       else if (a === "retry-one") retryOne(action.dataset.key);
       else if (a === "retry-wrong") clearAnswers(true);
       else if (a === "start-over") clearAnswers(false);

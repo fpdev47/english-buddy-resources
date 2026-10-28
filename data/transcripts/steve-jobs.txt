@@ -1,0 +1,11 @@
+# Transcripción completa del discurso de Steve Jobs en Stanford (2005)
+#
+# Cómo usar este archivo:
+# 1. Pega el texto del discurso debajo de estas líneas (puedes borrarlas o dejarlas).
+# 2. Deja una línea en blanco entre párrafo y párrafo.
+# 3. Las líneas que empiezan con # se ignoran.
+# 4. Sube el número ?v= en index.html para que los estudiantes vean la versión nueva.
+#
+# Mientras este archivo no tenga texto, la lectura muestra solo el resumen.
+# Nota: el discurso tiene derechos de autor (Stanford / herederos de Steve Jobs);
+# publicarlo en este repo público es decisión de quien lo pegue.
