@@ -1,6 +1,11 @@
 (function () {
   const { sections, channels } = window.YEB_DATA;
   const EXERCISES = window.YEB_EXERCISES || [];
+  // Readings reuse the exercise engine: comprehension + vocabulary-in-context sections
+  const READINGS = (window.YEB_READINGS || []).map((r) => ({
+    ...r,
+    sections: [{ kind: "comprehension", items: r.comprehension }, { kind: "vocab", items: r.vocabulary }]
+  }));
 
   const EN = window.YEB_EN || { sections: {}, channels: {}, exercises: {} };
   const t = window.YEB_I18N ? window.YEB_I18N.t : (k) => k;
@@ -27,7 +32,8 @@
     curiosidad: svg("M9 2h6M10 2v6L4 19a2 2 0 0 0 1.8 3h12.4A2 2 0 0 0 20 19L14 8V2M7 15h10"),
     examenes: svg("M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"),
     guardados: svg("M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"),
-    ejercicio: svg("M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z")
+    ejercicio: svg("M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"),
+    lectura: svg("M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z")
   };
   const ICONS = {
     yt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-4.8.5-4.8s0-3.2-.5-4.8zM9.7 15.1V8.9l5.8 3.1-5.8 3.1z"/></svg>',
@@ -36,25 +42,28 @@
   };
 
   // ——— State: remembered per browser; the page works without storage too ———
-  const state = { mode: "practicar", topic: sections[0].id, exTopic: EXERCISES[0] && EXERCISES[0].id, favs: [], answers: {} };
+  const state = { mode: "practicar", topic: sections[0].id, exTopic: EXERCISES[0] && EXERCISES[0].id, readTopic: READINGS[0] && READINGS[0].id, favs: [], answers: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
   if (!state.answers || typeof state.answers !== "object") state.answers = {};
   if (!Array.isArray(state.favs)) state.favs = [];
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
 
-  // Links: #shadowing (a listening topic) or #practicar/numeros (an exercise topic)
+  // Links: #shadowing (listening), #practicar/numeros (exercises) or #leer/r-miami (a reading)
   function readHash() {
     const [a, b] = decodeURIComponent(location.hash.slice(1)).split("/");
     if (a === "practicar") {
       state.mode = "practicar";
       if (EXERCISES.some((x) => x.id === b)) state.exTopic = b;
+    } else if (a === "leer") {
+      state.mode = "leer";
+      if (READINGS.some((x) => x.id === b)) state.readTopic = b;
     } else if (sections.some((s) => s.id === a)) {
       state.mode = "escuchar";
       state.topic = a;
     }
   }
   function writeHash() {
-    const h = state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    const h = state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
   }
   readHash();
@@ -70,7 +79,7 @@
   // ——— Mode switch: Escuchar / Practicar ———
   function renderModes() {
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
-    $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : t("topicsListen");
+    $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : state.mode === "leer" ? t("topicsRead") : t("topicsListen");
   }
   $("#modes").addEventListener("click", (e) => {
     const b = e.target.closest(".mode-btn");
@@ -86,6 +95,11 @@
       tiles = EXERCISES.map((x) => {
         const p = progress(x);
         return { id: x.id, label: (exT(x) || x).title, sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ${t("exercises")}`}`, icon: "ejercicio", selected: state.exTopic === x.id };
+      });
+    } else if (state.mode === "leer") {
+      tiles = READINGS.map((x) => {
+        const p = progress(x);
+        return { id: x.id, label: x.title, sub: `${t("tiers")[x.tier]} · ${x.level} · ${p.done ? `${p.correct}/${p.total}` : t("minRead")(x.minutes)}`, icon: "lectura", selected: state.readTopic === x.id };
       });
     } else {
       tiles = sections.map((s) => {
@@ -107,6 +121,7 @@
     const b = e.target.closest("button.topic");
     if (!b) return;
     if (state.mode === "practicar") state.exTopic = b.dataset.topic;
+    else if (state.mode === "leer") state.readTopic = b.dataset.topic;
     else state.topic = b.dataset.topic;
     if (undoSnapshot) hideToast();
     save(); renderTopics(); renderPanel(); writeHash();
@@ -204,7 +219,7 @@
 
   function questionHTML(x, si, ii) {
     const item = x.sections[si].items[ii];
-    const tr = itemT(x, si, ii);
+    const tr = (isEN() && item.en) || itemT(x, si, ii);
     const key = `${si}-${ii}`;
     const ans = savedAnswer(x, si, ii);
     const isWrite = item.type === "write";
@@ -296,18 +311,24 @@
           <p>${esc(t("practiceIntro"))}</p>
         </div>
       </div>
+      ${exerciseBody(x)}`;
+  }
+
+  const KIND_TEXT = { comprehension: ["comprehension", "comprehensionInstr"], vocab: ["vocabInContext", "vocabInstr"] };
+  function exerciseBody(x) {
+    return `
       <div class="score" id="score">${scoreHTML(x)}</div>
       ${x.sections.map((s, si) => `
         <section class="ex-section${s.story ? " has-story" : ""}">
-          <h3>${esc(exSecT(x, si).title || s.title)} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
-          <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions)}</p>
+          <h3>${esc(exSecT(x, si).title || s.title || t(KIND_TEXT[s.kind][0]))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
+          <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `<div class="story">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
 
   function answer(key, value) {
-    const x = EXERCISES.find((t) => t.id === state.exTopic);
+    const x = currentTopic();
     const [si, ii] = key.split("-").map(Number);
     const item = x.sections[si].items[ii];
     const ok = item.type === "write" ? item.a.some((a) => normalize(a) === normalize(value)) : value === item.a;
@@ -338,7 +359,9 @@
     setTimeout(() => { if (!el.classList.contains("show")) el.hidden = true; }, 250);
     undoSnapshot = null;
   }
-  function currentTopic() { return EXERCISES.find((t) => t.id === state.exTopic); }
+  function currentTopic() {
+    return state.mode === "leer" ? READINGS.find((r) => r.id === state.readTopic) : EXERCISES.find((x) => x.id === state.exTopic);
+  }
 
   function retryOne(key) {
     const x = currentTopic();
@@ -377,12 +400,73 @@
     hideToast();
   }
 
+  // ——— Reading ———
+  function readingText(x) {
+    // Highlight the first appearance of each vocabulary item; placeholders avoid matching inside the markup
+    const terms = x.vocab.map((v, i) => ({ i, m: (v[3] || v[0]).replace(/[()]/g, "").trim() })).sort((a, b) => b.m.length - a.m.length);
+    let paras = x.text.map((p) => esc(p));
+    for (const { i, m } of terms) {
+      const re = new RegExp(`\\b(${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i");
+      const idx = paras.findIndex((p) => re.test(p));
+      if (idx >= 0) paras[idx] = paras[idx].replace(re, `\u0000${i}\u0001$1\u0002`);
+    }
+    return paras.map((p) => `<p>${p.replace(/\u0000(\d+)\u0001(.*?)\u0002/g, (_, i, w) => `<button type="button" class="vw" data-vw="${i}">${w}</button>`)}</p>`).join("");
+  }
+
+  function renderRead() {
+    if (!READINGS.length) return `<div class="panel-head"><h2>${esc(t("reading"))}</h2><p>${esc(t("soon"))}</p></div>`;
+    const x = READINGS.find((r) => r.id === state.readTopic) || READINGS[0];
+    state.readTopic = x.id;
+    const L = isEN() ? "en" : "es";
+    const canSpeak = "speechSynthesis" in window;
+    return `
+      <div class="panel-head">
+        <span class="level-pill">${esc(t("tiers")[x.tier])} · ${esc(x.level)}</span>
+        <h2>${esc(x.title)}</h2>
+        <p>${esc(t("minRead")(x.minutes))}</p>
+        ${canSpeak ? `<button type="button" class="speak-btn" data-action="speak">🔊 ${esc(t("listenStory"))}</button>` : ""}
+      </div>
+      <article class="reading" lang="en">${readingText(x)}</article>
+      ${x.source ? `<p class="source">${esc(x.source.note[L])} ${x.source.links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label[L])} ↗</a>`).join(" · ")}</p>` : ""}
+      <section class="vocab-box">
+        <h3>${esc(t("vocabTitle"))}</h3>
+        <p class="ex-instr">${esc(t("vocabHint"))}</p>
+        <dl class="vocab-list">${x.vocab.map((v) => `<div><dt lang="en">${esc(v[0])}</dt><dd>${esc(L === "en" ? v[2] : v[1])}</dd></div>`).join("")}</dl>
+      </section>
+      ${exerciseBody(x)}`;
+  }
+
+  // Read the story aloud with the browser's voice
+  function stopSpeaking() {
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    const b = document.querySelector("[data-action=speak]");
+    if (b) { b.classList.remove("on"); b.textContent = `🔊 ${t("listenStory")}`; }
+  }
+  function speak(btn) {
+    if (speechSynthesis.speaking) return stopSpeaking();
+    const x = currentTopic();
+    const u = new SpeechSynthesisUtterance(x.text.join(" "));
+    u.lang = "en-US"; u.rate = 0.92;
+    const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-US") || speechSynthesis.getVoices().find((v) => /^en/.test(v.lang));
+    if (voice) u.voice = voice;
+    u.onend = u.onerror = stopSpeaking;
+    btn.classList.add("on"); btn.textContent = `■ ${t("stopStory")}`;
+    speechSynthesis.speak(u);
+  }
+
   // ——— Panel ———
   function renderPanel() {
-    $("#panel").innerHTML = state.mode === "practicar" ? renderPractice() : renderListen();
+    stopSpeaking();
+    $("#panel").innerHTML = state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
   }
 
   $("#panel").addEventListener("click", (e) => {
+    const vw = e.target.closest("[data-vw]");
+    if (vw) {
+      const v = currentTopic().vocab[+vw.dataset.vw];
+      toast(`${v[0]} — ${isEN() ? v[2] : v[1]}`);
+      return;
+    }
     const jump = e.target.closest("[data-jump]");
     if (jump) {
       const q = document.getElementById(`q-${jump.dataset.jump}`);
@@ -396,7 +480,8 @@
     const action = e.target.closest("[data-action]");
     if (action) {
       const a = action.dataset.action;
-      if (a === "retry-one") retryOne(action.dataset.key);
+      if (a === "speak") speak(action);
+      else if (a === "retry-one") retryOne(action.dataset.key);
       else if (a === "retry-wrong") clearAnswers(true);
       else if (a === "start-over") clearAnswers(false);
       return;

@@ -428,6 +428,33 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
   .retry-one:hover { background: var(--bad-bg); }
 }
 
+/* ——— Reading ——— */
+.speak-btn {
+  margin-top: 14px; cursor: pointer; min-height: 40px; padding: 8px 16px; border-radius: 999px;
+  background: var(--green); color: var(--teal-900); border: 0; font-weight: 700; font-size: 14.5px;
+}
+.speak-btn.on { background: var(--solid); color: #fff; }
+.reading {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  padding: 22px 24px; font-size: 18px; line-height: 1.8; color: var(--ink); max-width: 760px;
+}
+.reading p { margin: 0 0 14px; }
+.reading p:last-child { margin-bottom: 0; }
+.vw {
+  font: inherit; color: inherit; cursor: pointer; padding: 0 2px; margin: 0; border: 0; border-radius: 4px;
+  background: var(--tag-bg); border-bottom: 2px dotted var(--brand); line-height: inherit;
+}
+.vw:focus-visible { outline: 3px solid var(--green-600); outline-offset: 1px; }
+.source { max-width: 760px; margin: 12px 0 0; font-size: 14px; color: var(--muted); }
+.source a { color: var(--brand); font-weight: 600; }
+.vocab-box { margin-top: 28px; }
+.vocab-box h3 { font-size: 20px; }
+.vocab-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 0 0 8px; }
+.vocab-list div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.vocab-list dt { font-weight: 700; color: var(--brand); }
+.vocab-list dd { margin: 2px 0 0; color: var(--text); font-size: 14.5px; }
+@media (hover: hover) { .vw:hover { background: var(--lime); color: var(--teal-900); } }
+
 /* ——— Footer ——— */
 .site-footer { background: var(--teal-900); color: rgba(255,255,255,.75); padding: 28px 0 calc(28px + env(safe-area-inset-bottom)); font-size: 14px; border-top: 1px solid var(--line); }
 .site-footer .container { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -479,7 +506,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .nav-actions { gap: 8px; }
   .lang-toggle button { min-width: 34px; padding: 6px 8px; }
   .modes { display: flex; width: 100%; }
-  .mode-btn { flex: 1; padding: 10px 12px; }
+  .mode-btn { flex: 1; padding: 10px 6px; gap: 5px; font-size: 14px; }
+  .reading { padding: 18px 16px; font-size: 17px; }
+  .vocab-list { grid-template-columns: 1fr; }
   .score { top: 138px; }
   .q { padding: 14px; gap: 10px; }
   .opts { flex-direction: column; }

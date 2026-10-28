@@ -17,6 +17,7 @@ assets/gate.js      Clave de acceso
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
 data/exercises.js   Banco de ejercicios
+data/readings.js    Lecturas (pestaña Reading): historias, vocabulario y preguntas
 data/en.js          Traducción al inglés de temas, canales y ejercicios
 ```
 
@@ -59,6 +60,17 @@ Otras opciones:
 - Si cambias o reordenas ejercicios de un tema, las respuestas guardadas que ya no coinciden se descartan solas.
 
 Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros` (o `#shadowing` para un tema de Escuchar).
+
+## Agregar lecturas
+
+Abre `data/readings.js` y copia una lectura. Cada una tiene el texto en párrafos, una lista de vocabulario (`[palabra, español, inglés, texto exacto en la historia]`) que se resalta y se puede tocar, y dos tipos de preguntas:
+
+```js
+C("Pregunta en inglés", "correcta", ["incorrecta", "incorrecta"], "explicación ES", "explicación EN")
+V("Frase literal con [[palabra]]", "significado correcto ES", ["incorrecto", "incorrecto"], ["EN correcto", "EN", "EN"], "explicación ES", "explicación EN")
+```
+
+Las lecturas ya traen su inglés, no hace falta tocar `data/en.js`.
 
 ## Español / inglés
 
