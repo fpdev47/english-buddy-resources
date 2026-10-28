@@ -46,6 +46,8 @@
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
   if (!state.answers || typeof state.answers !== "object") state.answers = {};
   if (!Array.isArray(state.favs)) state.favs = [];
+  // One-time move to the new default reading (Steve Jobs), for students who already had the old default saved
+  if (state.readDefaultV !== 2) { state.readTopic = READINGS[0] && READINGS[0].id; state.readDefaultV = 2; }
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
 
   // Links: #shadowing (listening), #practicar/numeros (exercises) or #leer/r-miami (a reading)

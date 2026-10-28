@@ -19,6 +19,56 @@
   };
 
   window.YEB_READINGS = [
+    // ——————————————————— DESTACADA (se abre por defecto) ———————————————————
+    {
+      id: "r-steve-jobs", tier: "advanced", level: "B2–C1", minutes: 3,
+      title: "Steve Jobs at Stanford (2005)",
+      source: {
+        note: { es: "Resumen escrito para estudiantes. Lee el discurso completo o mira el video oficial:", en: "A summary written for learners. Read the full speech or watch the official video:" },
+        links: [
+          { label: { es: "Texto oficial (Stanford)", en: "Official transcript (Stanford)" }, url: "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says" },
+          { label: { es: "Video oficial (YouTube)", en: "Official video (YouTube)" }, url: "https://www.youtube.com/watch?v=UF8uR6Z6KLc" }
+        ]
+      },
+      text: [
+        "In June 2005, Apple co-founder Steve Jobs gave the commencement speech at Stanford University. Instead of a long lecture, he told the graduates three short stories from his life.",
+        "The first story was about connecting the dots. Jobs dropped out of college after six months, but he kept attending the classes that interested him, including calligraphy. Ten years later, that class shaped the beautiful fonts of the first Macintosh. His lesson: you can only connect the dots looking backward, so you have to trust that they will connect in your future.",
+        "The second story was about love and loss. At thirty, Jobs was fired from Apple, the company he had started in his parents' garage. It was devastating, but it also freed him to start over. He founded NeXT and Pixar, met his wife and, years later, returned to Apple. His advice: find what you love, and don't settle.",
+        "The third story was about death. After he was diagnosed with cancer, Jobs realized that remembering he would die one day was the best tool for making big decisions. Our time is limited, he said, so we shouldn't waste it living someone else's life.",
+        "He ended with the farewell message of a magazine he loved as a young man: “Stay hungry. Stay foolish.”"
+      ],
+      vocab: [
+        ["commencement speech", "discurso de graduación", "a speech at a graduation ceremony"],
+        ["lecture", "clase magistral, sermón", "a long formal talk"],
+        ["drop out (of)", "abandonar los estudios", "to leave school before finishing", "dropped out of"],
+        ["connect the dots", "unir los puntos", "to see how different events are related"],
+        ["shape", "dar forma, influir", "to have a strong effect on how something develops", "shaped"],
+        ["get fired", "ser despedido", "to lose your job because your boss ends it", "fired"],
+        ["devastating", "devastador", "extremely sad or shocking"],
+        ["start over", "empezar de nuevo", "to begin again from the beginning"],
+        ["settle", "conformarse", "to accept something less than you want"],
+        ["diagnose", "diagnosticar", "when a doctor identifies an illness", "diagnosed"],
+        ["farewell", "despedida", "a goodbye"]
+      ],
+      comprehension: [
+        C("How many stories did Jobs tell?", "Three", ["Two", "Five"], "«He told the graduates three short stories from his life.»", "“He told the graduates three short stories from his life.”"),
+        C("Why was the calligraphy class important later?", "It influenced the fonts of the Macintosh", ["It helped him finish college", "It gave him the idea for Pixar"], "«…that class shaped the beautiful fonts of the first Macintosh.»", "“…that class shaped the beautiful fonts of the first Macintosh.”"),
+        C("What does “you can only connect the dots looking backward” mean?", "You only understand how events connect after they happen", ["You should plan every step of your life", "You should never think about the past"], "No puedes ver la conexión por adelantado; solo después.", "You can't see the connection in advance; only afterward."),
+        C("What happened when Jobs was thirty?", "He was fired from Apple", ["He founded Apple", "He was diagnosed with cancer"], "«At thirty, Jobs was fired from Apple.»", "“At thirty, Jobs was fired from Apple.”"),
+        C("What did he do after leaving Apple?", "He founded NeXT and Pixar", ["He went back to college", "He retired"], "«He founded NeXT and Pixar, met his wife and, years later, returned to Apple.»", "“He founded NeXT and Pixar, met his wife and, years later, returned to Apple.”"),
+        C("Why is remembering death useful, according to Jobs?", "It helps you make big decisions", ["It makes you work less", "It helps you save money"], "Era «the best tool for making big decisions».", "It was “the best tool for making big decisions”.")
+      ],
+      vocabulary: [
+        V("Steve Jobs gave the [[commencement speech]] at Stanford.", "Discurso de graduación", ["Discurso de inicio de clases", "Discurso político"], ["A graduation speech", "A first-day-of-school speech", "A political speech"], "Commencement = ceremonia de graduación (en EE. UU.).", "Commencement = a graduation ceremony (US)."),
+        V("Jobs [[dropped out of]] college after six months.", "Abandonó los estudios", ["Se graduó de", "Se inscribió en"], ["Left before finishing", "Graduated from", "Enrolled in"], "Drop out of school/college = dejar los estudios sin terminar.", "Drop out of school/college = leave before finishing."),
+        V("…that class [[shaped]] the beautiful fonts of the first Macintosh.", "Dio forma, influyó en", ["Copió", "Borró"], ["Strongly influenced", "Copied", "Deleted"], "Shape = influir mucho en cómo algo termina siendo.", "Shape = strongly influence how something ends up."),
+        V("It was [[devastating]].", "Devastador, muy doloroso", ["Divertido", "Sin importancia"], ["Extremely painful", "Fun", "Unimportant"], "Devastating = que te destruye emocionalmente.", "Devastating = emotionally destroying."),
+        V("…it also freed him to [[start over]].", "Empezar de nuevo", ["Terminar", "Rendirse"], ["Begin again", "Finish", "Give up"], "Start over = volver a empezar desde cero.", "Start over = begin again from zero."),
+        V("…find what you love, and don't [[settle]].", "No te conformes", ["No te mudes", "No te sientes"], ["Don't accept less", "Don't move house", "Don't sit down"], "Settle (for) = conformarse con algo menos de lo que quieres.", "Settle (for) = accept less than you want."),
+        V("He ended with the [[farewell]] message of a magazine.", "Despedida", ["Bienvenida", "Advertencia"], ["Goodbye", "Welcome", "Warning"], "Farewell = adiós, despedida.", "Farewell = goodbye.")
+      ]
+    },
+
     // ——————————————————— BASIC ———————————————————
     {
       id: "r-new-job", tier: "basic", level: "A1–A2", minutes: 2,
@@ -270,54 +320,7 @@
         V("The [[trade-off]], according to the CEO, was worth it…", "Lo que se pierde a cambio de un beneficio", ["Un acuerdo comercial internacional", "Un descuento"], ["What you lose to gain something", "An international trade deal", "A discount"], "Trade-off = equilibrio entre una ventaja y un costo.", "Trade-off = a balance between a benefit and a cost."),
         V("…and they [[rose to the challenge]].", "Estuvieron a la altura del reto", ["Se rindieron", "Subieron una montaña"], ["Succeeded when it was difficult", "Gave up", "Climbed a mountain"], "Rise to the challenge = responder bien ante algo difícil.", "Rise to the challenge = respond well to something difficult.")
       ]
-    },
-    {
-      id: "r-steve-jobs", tier: "advanced", level: "B2–C1", minutes: 3,
-      title: "Steve Jobs at Stanford (2005)",
-      source: {
-        note: { es: "Resumen escrito para estudiantes. Lee el discurso completo o mira el video oficial:", en: "A summary written for learners. Read the full speech or watch the official video:" },
-        links: [
-          { label: { es: "Texto oficial (Stanford)", en: "Official transcript (Stanford)" }, url: "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says" },
-          { label: { es: "Video oficial (YouTube)", en: "Official video (YouTube)" }, url: "https://www.youtube.com/watch?v=UF8uR6Z6KLc" }
-        ]
-      },
-      text: [
-        "In June 2005, Apple co-founder Steve Jobs gave the commencement speech at Stanford University. Instead of a long lecture, he told the graduates three short stories from his life.",
-        "The first story was about connecting the dots. Jobs dropped out of college after six months, but he kept attending the classes that interested him, including calligraphy. Ten years later, that class shaped the beautiful fonts of the first Macintosh. His lesson: you can only connect the dots looking backward, so you have to trust that they will connect in your future.",
-        "The second story was about love and loss. At thirty, Jobs was fired from Apple, the company he had started in his parents' garage. It was devastating, but it also freed him to start over. He founded NeXT and Pixar, met his wife and, years later, returned to Apple. His advice: find what you love, and don't settle.",
-        "The third story was about death. After he was diagnosed with cancer, Jobs realized that remembering he would die one day was the best tool for making big decisions. Our time is limited, he said, so we shouldn't waste it living someone else's life.",
-        "He ended with the farewell message of a magazine he loved as a young man: “Stay hungry. Stay foolish.”"
-      ],
-      vocab: [
-        ["commencement speech", "discurso de graduación", "a speech at a graduation ceremony"],
-        ["lecture", "clase magistral, sermón", "a long formal talk"],
-        ["drop out (of)", "abandonar los estudios", "to leave school before finishing", "dropped out of"],
-        ["connect the dots", "unir los puntos", "to see how different events are related"],
-        ["shape", "dar forma, influir", "to have a strong effect on how something develops", "shaped"],
-        ["get fired", "ser despedido", "to lose your job because your boss ends it", "fired"],
-        ["devastating", "devastador", "extremely sad or shocking"],
-        ["start over", "empezar de nuevo", "to begin again from the beginning"],
-        ["settle", "conformarse", "to accept something less than you want"],
-        ["diagnose", "diagnosticar", "when a doctor identifies an illness", "diagnosed"],
-        ["farewell", "despedida", "a goodbye"]
-      ],
-      comprehension: [
-        C("How many stories did Jobs tell?", "Three", ["Two", "Five"], "«He told the graduates three short stories from his life.»", "“He told the graduates three short stories from his life.”"),
-        C("Why was the calligraphy class important later?", "It influenced the fonts of the Macintosh", ["It helped him finish college", "It gave him the idea for Pixar"], "«…that class shaped the beautiful fonts of the first Macintosh.»", "“…that class shaped the beautiful fonts of the first Macintosh.”"),
-        C("What does “you can only connect the dots looking backward” mean?", "You only understand how events connect after they happen", ["You should plan every step of your life", "You should never think about the past"], "No puedes ver la conexión por adelantado; solo después.", "You can't see the connection in advance; only afterward."),
-        C("What happened when Jobs was thirty?", "He was fired from Apple", ["He founded Apple", "He was diagnosed with cancer"], "«At thirty, Jobs was fired from Apple.»", "“At thirty, Jobs was fired from Apple.”"),
-        C("What did he do after leaving Apple?", "He founded NeXT and Pixar", ["He went back to college", "He retired"], "«He founded NeXT and Pixar, met his wife and, years later, returned to Apple.»", "“He founded NeXT and Pixar, met his wife and, years later, returned to Apple.”"),
-        C("Why is remembering death useful, according to Jobs?", "It helps you make big decisions", ["It makes you work less", "It helps you save money"], "Era «the best tool for making big decisions».", "It was “the best tool for making big decisions”.")
-      ],
-      vocabulary: [
-        V("Steve Jobs gave the [[commencement speech]] at Stanford.", "Discurso de graduación", ["Discurso de inicio de clases", "Discurso político"], ["A graduation speech", "A first-day-of-school speech", "A political speech"], "Commencement = ceremonia de graduación (en EE. UU.).", "Commencement = a graduation ceremony (US)."),
-        V("Jobs [[dropped out of]] college after six months.", "Abandonó los estudios", ["Se graduó de", "Se inscribió en"], ["Left before finishing", "Graduated from", "Enrolled in"], "Drop out of school/college = dejar los estudios sin terminar.", "Drop out of school/college = leave before finishing."),
-        V("…that class [[shaped]] the beautiful fonts of the first Macintosh.", "Dio forma, influyó en", ["Copió", "Borró"], ["Strongly influenced", "Copied", "Deleted"], "Shape = influir mucho en cómo algo termina siendo.", "Shape = strongly influence how something ends up."),
-        V("It was [[devastating]].", "Devastador, muy doloroso", ["Divertido", "Sin importancia"], ["Extremely painful", "Fun", "Unimportant"], "Devastating = que te destruye emocionalmente.", "Devastating = emotionally destroying."),
-        V("…it also freed him to [[start over]].", "Empezar de nuevo", ["Terminar", "Rendirse"], ["Begin again", "Finish", "Give up"], "Start over = volver a empezar desde cero.", "Start over = begin again from zero."),
-        V("…find what you love, and don't [[settle]].", "No te conformes", ["No te mudes", "No te sientes"], ["Don't accept less", "Don't move house", "Don't sit down"], "Settle (for) = conformarse con algo menos de lo que quieres.", "Settle (for) = accept less than you want."),
-        V("He ended with the [[farewell]] message of a magazine.", "Despedida", ["Bienvenida", "Advertencia"], ["Goodbye", "Welcome", "Warning"], "Farewell = adiós, despedida.", "Farewell = goodbye.")
-      ]
     }
+
   ];
 })();
