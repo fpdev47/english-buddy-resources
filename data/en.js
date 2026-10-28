@@ -201,6 +201,37 @@ window.YEB_EN = {
           { e: "13 = thirTEEN (stress at the end); 30 = THIRty (stress at the start)." },
           { e: "50 = FIFty; 15 = fifTEEN. Watch the spelling: fifty, not “fivety”." },
           { e: "With no number before it, it takes -s and “of”: thousands of people." }
+        ] },
+        { title: "Story: Maria's trip", instructions: "Read the story. Then write or choose how to say each marked number.", items: [
+          { e: "Years in pairs: 19 | 94 → nineteen ninety-four." },
+          { e: "Flight numbers in pairs: 22 | 15 → twenty-two fifteen." },
+          { q: "(3) What's the natural way for Maria to say the price $349.99?", e: "Dollars | cents: 349 | 99 → three forty-nine ninety-nine." },
+          { e: "Hour | minutes: six forty-five (or “a quarter to seven”)." },
+          { e: "The natural way is 1 | 06 → one oh six (0 is said “oh”)." },
+          { e: "Room numbers in pairs: 14 | 12 → fourteen twelve." },
+          { q: "(7) How does she say the phone number 555-0193?", e: "Phone numbers: digit by digit, and 0 is usually said “oh”." },
+          { e: "Dates use ordinals: July twenty-first (UK: the twenty-first of July)." },
+          { e: "The most common way: 20 | 27 → twenty twenty-seven." }
+        ] },
+        { title: "Find the mistake: a voicemail", instructions: "Tom left you a message about an apartment. Each sentence has one mistake in how a number is said: tap the wrong part.", items: [
+          { q: "Which part is wrong?", e: "After a number, hundred has no -s: one thousand two hundred dollars." },
+          { q: "Which part is wrong?", e: "Years don't use “and”: nineteen eighty." },
+          { q: "Which part is wrong?", e: "Dates are said with ordinals: May fifth." },
+          { q: "Which part is wrong?", e: "Floors use ordinals: the twelfth floor." },
+          { q: "Which part is wrong?", e: "With no number before it, add -s: hundreds of apartments." },
+          { q: "Which part is wrong?", e: "With a number before it, thousand has no -s: two point five thousand dollars." },
+          { q: "Which part is wrong?", e: "Phone numbers are said digit by digit: five five five." },
+          { q: "Which part is wrong?", e: "Dates use ordinals: the thirtieth of June." }
+        ] },
+        { title: "Math in English", instructions: "plus (+) · minus (−) · times (×) · divided by (÷) · equals (=). Write the answer in words.", items: [
+          { e: "12 + 9 = 21 → twenty-one." },
+          { e: "100 − 45 = 55 → fifty-five." },
+          { e: "7 × 8 = 56 → fifty-six." },
+          { e: "90 ÷ 3 = 30 → thirty." },
+          { e: "1,000 ÷ 2 = 500 → five hundred." },
+          { e: "5.00 − 3.40 = 1.60 → one sixty (or “a dollar sixty”)." },
+          { e: "2026 − 1990 = 36 → thirty-six." },
+          { q: "How do you read “15 × 4 = 60”?", e: "× = times. 15 = fifTEEN and 60 = SIXty." }
         ] }
       ]
     },

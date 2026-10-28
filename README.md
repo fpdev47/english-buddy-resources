@@ -52,6 +52,10 @@ Abre `data/exercises.js`. Cada tema tiene secciones y cada sección tiene ejerci
 { type: "write", q: "1984", a: ["nineteen eighty-four"], e: "Explicación breve." }
 ```
 
+Otras opciones:
+- `quote`: frase que se muestra arriba de la pregunta. Si todas las opciones son partes de esa frase («encuentra el error»), se muestran en el orden de lectura.
+- `story` (en una sección): una historia que se muestra antes de las preguntas; las marcas (1), (2)... se convierten en círculos numerados.
+
 Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros` (o `#shadowing` para un tema de Escuchar).
 
 ## Español / inglés

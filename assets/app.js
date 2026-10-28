@@ -178,6 +178,9 @@
   }
   function options(item) {
     const all = [item.a, ...item.o];
+    // "Find the mistake": when every option is a piece of the quoted sentence, keep reading order
+    const pos = (o) => item.quote.search(new RegExp(`(^|\\W)${o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=\\W|$)`));
+    if (item.quote && all.every((o) => pos(o) >= 0)) return all.sort((x, y) => pos(x) - pos(y));
     const rnd = seeded(item.q + "|" + item.a + "|" + (item.quote || ""));
     for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
     return all;
@@ -197,7 +200,7 @@
     const ans = (state.answers[x.id] || {})[key];
     const isWrite = item.type === "write";
     const correct = isWrite ? item.a[0] : label(tr, item.a);
-    const prompt = esc(tr.q || item.q).replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
+    const prompt = esc(tr.q || item.q).replace(/^\((\d+)\)\s*/, '<span class="mark">$1</span>').replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
 
     let body;
     if (isWrite) {
@@ -255,9 +258,10 @@
       </div>
       <div class="score" id="score">${scoreHTML(x)}</div>
       ${x.sections.map((s, si) => `
-        <section class="ex-section">
+        <section class="ex-section${s.story ? " has-story" : ""}">
           <h3>${esc(exSecT(x, si).title || s.title)}</h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions)}</p>
+          ${s.story ? `<div class="story">${esc(s.story).replace(/\((\d+)\)/g, '<span class="mark">$1</span>')}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }

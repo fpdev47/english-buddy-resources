@@ -6,6 +6,7 @@
   - Escribir: { type: "write", q: "...", a: ["respuesta", "otra forma válida"], e: "..." }
     Se aceptan mayúsculas o minúsculas, guiones o espacios y signos de puntuación distintos.
   - quote (opcional): frase original que se muestra encima de la pregunta.
+  - story (opcional, en la sección): texto que se muestra antes de las preguntas, con marcas (1), (2)...
 */
 window.YEB_EXERCISES = [
   {
@@ -137,6 +138,50 @@ window.YEB_EXERCISES = [
           { q: "She is ___ years old. (13)", a: "thirteen", o: ["thirty", "threeteen", "thirdteen"], e: "13 = thirTEEN (acento al final); 30 = THIRty (acento al principio)." },
           { q: "The ticket costs ___ dollars. (50)", a: "fifty", o: ["fifteen", "fivety", "fiveteen"], e: "50 = FIFty; 15 = fifTEEN. Ojo con la ortografía: fifty, no «fivety»." },
           { q: "___ of people visit the museum every year.", a: "Thousands", o: ["Thousand", "Thousands of thousand", "Thousand's"], e: "Sin número delante, sí lleva -s y «of»: thousands of people." }
+        ]
+      },
+      {
+        title: "Historia: el viaje de María",
+        instructions: "Lee la historia. Luego escribe o elige cómo se dice cada número marcado.",
+        story: "Maria was born in (1) 1994. Last summer she flew to New York on flight (2) 2215. Her ticket cost (3) $349.99. She landed at (4) 6:45 in the evening and took bus (5) 106 to her hotel. Her room was (6) 1412. That night she called her mom at (7) 555‑0193. She stayed until (8) July 21st and promised to come back in (9) 2027.",
+        items: [
+          { type: "write", q: "(1) 1994", a: ["nineteen ninety-four"], e: "Año de dos en dos: 19 | 94 → nineteen ninety-four." },
+          { type: "write", q: "(2) flight 2215", a: ["twenty-two fifteen"], e: "Vuelo de dos en dos: 22 | 15 → twenty-two fifteen." },
+          { q: "(3) ¿Cómo dice María el precio $349.99 de forma natural?", a: "three forty-nine ninety-nine", o: ["thirty-four nine ninety-nine", "three four nine point nine nine", "three hundred forty-nine point ninety-nine"], e: "Dólares | centavos: 349 | 99 → three forty-nine ninety-nine." },
+          { type: "write", q: "(4) 6:45", a: ["six forty-five", "a quarter to seven", "quarter to seven"], e: "Hora | minutos: six forty-five (o «a quarter to seven»)." },
+          { type: "write", q: "(5) bus 106", a: ["one oh six", "one o six", "one hundred six", "one hundred and six", "a hundred and six"], e: "Lo natural es 1 | 06 → one oh six (el 0 se dice «oh»)." },
+          { type: "write", q: "(6) room 1412", a: ["fourteen twelve"], e: "Habitación de dos en dos: 14 | 12 → fourteen twelve." },
+          { q: "(7) ¿Cómo dice el teléfono 555-0193?", a: "five five five, oh one nine three", o: ["five hundred fifty-five, nineteen three", "fifty-five five, zero hundred ninety-three", "five fifty-five, one ninety-three"], e: "Teléfonos: dígito por dígito, y el 0 suele decirse «oh»." },
+          { type: "write", q: "(8) July 21st", a: ["july twenty-first", "the twenty-first of july", "july the twenty-first"], e: "Fecha con ordinal: July twenty-first (UK: the twenty-first of July)." },
+          { type: "write", q: "(9) 2027", a: ["twenty twenty-seven", "two thousand twenty-seven", "two thousand and twenty-seven"], e: "Lo más común: 20 | 27 → twenty twenty-seven." }
+        ]
+      },
+      {
+        title: "Encuentra el error: un mensaje de voz",
+        instructions: "Tom te dejó un mensaje sobre un apartamento. En cada frase hay un error al decir un número: toca la parte equivocada.",
+        items: [
+          { quote: "The rent is one thousand two hundreds dollars a month.", q: "¿Qué parte está mal?", a: "two hundreds", o: ["The rent is", "one thousand", "dollars a month"], e: "Después de un número, hundred no lleva -s: one thousand two hundred dollars." },
+          { quote: "The building was built in nineteen and eighty.", q: "¿Qué parte está mal?", a: "nineteen and eighty", o: ["The building", "was built", "in"], e: "Los años no llevan «and»: nineteen eighty." },
+          { quote: "You can visit it on May five at three thirty.", q: "¿Qué parte está mal?", a: "May five", o: ["You can visit it", "on", "at three thirty"], e: "Las fechas se dicen con ordinal: May fifth." },
+          { quote: "The apartment is on the twelve floor.", q: "¿Qué parte está mal?", a: "the twelve floor", o: ["The apartment", "is", "on"], e: "Para pisos se usa el ordinal: the twelfth floor." },
+          { quote: "There are hundred of apartments in this area.", q: "¿Qué parte está mal?", a: "hundred of", o: ["There are", "apartments", "in this area"], e: "Sin número delante va con -s: hundreds of apartments." },
+          { quote: "The deposit is two point five thousands dollars.", q: "¿Qué parte está mal?", a: "thousands dollars", o: ["The deposit is", "two point five"], e: "Con un número delante, thousand no lleva -s: two point five thousand dollars." },
+          { quote: "My number is five hundred fifty-five, oh one double two.", q: "¿Qué parte está mal?", a: "five hundred fifty-five", o: ["My number is", "oh one", "double two"], e: "Los teléfonos se dicen dígito por dígito: five five five." },
+          { quote: "Please call me back before the thirty of June.", q: "¿Qué parte está mal?", a: "the thirty of June", o: ["Please call me back", "before"], e: "Fecha con ordinal: the thirtieth of June." }
+        ]
+      },
+      {
+        title: "Matemáticas en inglés",
+        instructions: "plus (+) · minus (−) · times (×) · divided by (÷) · equals (=). Escribe el resultado en palabras.",
+        items: [
+          { type: "write", q: "Twelve plus nine equals ___.", a: ["twenty-one"], e: "12 + 9 = 21 → twenty-one." },
+          { type: "write", q: "A hundred minus forty-five is ___.", a: ["fifty-five"], e: "100 − 45 = 55 → fifty-five." },
+          { type: "write", q: "Seven times eight is ___.", a: ["fifty-six"], e: "7 × 8 = 56 → fifty-six." },
+          { type: "write", q: "Ninety divided by three is ___.", a: ["thirty"], e: "90 ÷ 3 = 30 → thirty." },
+          { type: "write", q: "Half of a thousand is ___.", a: ["five hundred"], e: "1,000 ÷ 2 = 500 → five hundred." },
+          { q: "Your coffee costs $3.40. You pay with a $5 bill. Your change is ___.", a: "one sixty", o: ["one forty", "two sixty", "sixteen"], e: "5.00 − 3.40 = 1.60 → one sixty (o «a dollar sixty»)." },
+          { type: "write", q: "Ana was born in 1990. In 2026 she turns ___.", a: ["thirty-six"], e: "2026 − 1990 = 36 → thirty-six." },
+          { q: "¿Cómo se lee «15 × 4 = 60»?", a: "Fifteen times four equals sixty.", o: ["Fifty times four equals sixteen.", "Fifteen for four is sixty.", "Fifteen plus four equals sixty."], e: "× = times. 15 = fifTEEN y 60 = SIXty." }
         ]
       }
     ]

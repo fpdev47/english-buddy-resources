@@ -336,6 +336,18 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 .ex-section h3 { font-size: 20px; }
 .ex-instr { margin: 4px 0 14px; color: var(--muted); font-size: 14.5px; }
 .qs { display: grid; gap: 12px; }
+.story {
+  margin: 0 0 14px; padding: 18px 20px; border-radius: 18px;
+  background: var(--tag-bg); border: 1px solid rgba(200, 228, 124, .6);
+  color: var(--ink); font-size: 16.5px; line-height: 1.9;
+}
+.has-story .q-num { display: none; }
+.q-text .mark { margin-right: 8px; vertical-align: 1px; }
+.story .mark, .q-text .mark {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 4px;
+  border-radius: 50%; background: var(--solid); color: var(--lime);
+  font-family: var(--font-head); font-weight: 700; font-size: 12px; vertical-align: 2px;
+}
 .q {
   display: flex; gap: 14px; background: var(--surface); border: 1px solid var(--line);
   border-radius: 18px; padding: 16px 18px;
