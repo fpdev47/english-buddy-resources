@@ -13,7 +13,10 @@ index.html          Página principal
 assets/styles.css   Estilos y modo día/noche (paleta y tipografías de Your English Buddy)
 assets/i18n.js      Botón ES / EN y textos fijos de la interfaz en ambos idiomas
 assets/theme.js     Botón de modo día/noche
-assets/gate.js      Clave de acceso
+assets/gate.js      Pantalla de acceso (clave general o clave personal de cada estudiante)
+assets/config.js    Conexión con Supabase (vacía = sin nube)
+assets/cloud.js     Sesión del estudiante y guardado de su progreso en la nube
+setup/supabase.sql  Tabla y funciones para Supabase
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
 data/exercises.js   Banco de ejercicios
@@ -76,7 +79,21 @@ Las lecturas ya traen su inglés, no hace falta tocar `data/en.js`.
 
 La página empieza en inglés. El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta la traducción, ese texto se muestra en español.
 
-## Clave de acceso
+## Progreso por estudiante (Supabase)
+
+Cada estudiante entra con su clave personal y su progreso se guarda en la nube, así lo ve en cualquier dispositivo.
+
+1. Crea un proyecto gratis en https://supabase.com.
+2. En **SQL Editor**, pega y ejecuta `setup/supabase.sql`.
+3. Agrega cada estudiante (también en SQL Editor):
+   `insert into public.students (name, key_hash) values ('Nombre Apellido', public.yeb_hash('su-clave'));`
+4. En **Project Settings → API**, copia *Project URL* y la clave *anon public* en `assets/config.js`.
+
+Las claves nunca se guardan en este repo: en la base de datos solo queda su hash, y la tabla solo se puede usar a través de dos funciones que verifican la clave. El sitio muestra solo el primer nombre. Para ver el avance de todos, usa la consulta que está al final de `setup/supabase.sql`.
+
+Mientras `assets/config.js` esté vacío, el sitio usa la clave general de abajo y guarda el progreso solo en el navegador.
+
+## Clave de acceso general
 
 La página pide una clave antes de mostrar el contenido y la recuerda en cada navegador. En `assets/gate.js` solo se guarda el hash SHA-256 de la clave, no la clave en sí. Para cambiarla:
 

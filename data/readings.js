@@ -8,6 +8,7 @@
   - comprehension: preguntas con C(pregunta, correcta, [incorrectas], explicación ES, explicación EN)
   - vocabulary: preguntas con V("frase con [[palabra]]", correcta ES, [incorrectas ES], [traducción EN de cada opción], explicación ES, explicación EN)
   - source (opcional): enlaces a la fuente original
+  - video (opcional): video de YouTube que se muestra antes del texto
 */
 (function () {
   const C = (q, a, o, e, eEn) => ({ q, a, o, e, en: { e: eEn } });
@@ -23,10 +24,16 @@
     {
       id: "r-steve-jobs", tier: "advanced", level: "B2–C1", minutes: 3,
       title: "Steve Jobs at Stanford (2005)",
+      // The full speech, from Stanford's official channel (the text below is a summary for learners)
+      video: {
+        id: "UF8uR6Z6KLc", start: 0, channel: "Stanford",
+        title: { es: "El discurso completo", en: "The full speech" },
+        tip: { es: "Video oficial de Stanford (15 min). Activa los subtítulos en inglés y sigue el texto oficial completo con el enlace de abajo.", en: "Stanford's official video (15 min). Turn on English subtitles and follow the full official transcript with the link below." }
+      },
       source: {
-        note: { es: "Resumen escrito para estudiantes. Lee el discurso completo o mira el video oficial:", en: "A summary written for learners. Read the full speech or watch the official video:" },
+        note: { es: "Abajo tienes un resumen para estudiantes. El discurso completo está aquí:", en: "Below is a summary for learners. The full speech is here:" },
         links: [
-          { label: { es: "Texto oficial (Stanford)", en: "Official transcript (Stanford)" }, url: "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says" },
+          { label: { es: "Texto completo oficial (Stanford)", en: "Full official transcript (Stanford)" }, url: "https://news.stanford.edu/stories/2005/06/youve-got-find-love-jobs-says" },
           { label: { es: "Video oficial (YouTube)", en: "Official video (YouTube)" }, url: "https://www.youtube.com/watch?v=UF8uR6Z6KLc" }
         ]
       },

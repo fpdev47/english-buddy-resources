@@ -17,6 +17,7 @@
       tiers: { basic: "Básico", intermediate: "Intermedio", advanced: "Avanzado" },
       minRead: (n) => `${n} min de lectura`,
       listenStory: "Escuchar la historia", stopStory: "Detener",
+      fullVideo: "Discurso completo", summary: "Resumen para estudiantes",
       vocabTitle: "Vocabulario útil", vocabHint: "Toca una palabra resaltada en la historia para ver su significado.",
       comprehension: "Comprensión", comprehensionInstr: "Responde las preguntas sobre la historia.",
       vocabInContext: "Vocabulario en contexto", vocabInstr: "Lee la frase y elige el significado de la expresión resaltada.",
@@ -45,7 +46,10 @@
       gateTitle: "Espacio del estudiante",
       gateText: "Escribe la clave de acceso que te dio tu profesor.",
       gateLabel: "Clave de acceso", gatePlaceholder: "Clave de acceso", gateButton: "Entrar",
-      gateError: "Clave incorrecta. Inténtalo de nuevo."
+      gateError: "Clave incorrecta. Inténtalo de nuevo.",
+      gateTextPersonal: "Escribe tu clave personal de acceso.",
+      gateOffline: "No pudimos conectarnos. Revisa tu internet e inténtalo de nuevo.",
+      hi: (n) => `¡Hola, ${n}!`, logout: "Cerrar sesión"
     },
     en: {
       brandTag: "Resources",
@@ -59,6 +63,7 @@
       tiers: { basic: "Basic", intermediate: "Intermediate", advanced: "Advanced" },
       minRead: (n) => `${n} min read`,
       listenStory: "Listen to the story", stopStory: "Stop",
+      fullVideo: "Full speech", summary: "Summary for learners",
       vocabTitle: "Useful vocabulary", vocabHint: "Tap a highlighted word in the story to see what it means.",
       comprehension: "Comprehension", comprehensionInstr: "Answer the questions about the story.",
       vocabInContext: "Vocabulary in context", vocabInstr: "Read the sentence and choose the meaning of the highlighted expression.",
@@ -87,7 +92,10 @@
       gateTitle: "Student area",
       gateText: "Enter the access key your teacher gave you.",
       gateLabel: "Access key", gatePlaceholder: "Access key", gateButton: "Enter",
-      gateError: "Wrong key. Please try again."
+      gateError: "Wrong key. Please try again.",
+      gateTextPersonal: "Enter your personal access key.",
+      gateOffline: "We couldn't connect. Check your internet and try again.",
+      hi: (n) => `Hi, ${n}!`, logout: "Log out"
     }
   };
 

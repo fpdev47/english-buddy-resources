@@ -17,7 +17,10 @@
   const exSecT = (x, si) => { const e = exT(x); return (e && e.sections[si]) || {}; };
   const itemT = (x, si, ii) => { const sec = exSecT(x, si); return (sec.items && sec.items[ii]) || {}; };
   const label = (tr, value) => (tr.labels && tr.labels[value]) || value;
-  const STORE = "yeb-state";
+  // Each student (logged in with their personal key) has their own saved progress
+  const CLOUD = window.YEB_CLOUD;
+  const student = CLOUD && CLOUD.student;
+  const STORE = student ? `yeb-state:${student.id}` : "yeb-state";
 
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const TOPIC_ICONS = {
@@ -48,7 +51,46 @@
   if (!Array.isArray(state.favs)) state.favs = [];
   // One-time move to the new default reading (Steve Jobs), for students who already had the old default saved
   if (state.readDefaultV !== 2) { state.readTopic = READINGS[0] && READINGS[0].id; state.readDefaultV = 2; }
-  const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+  const writeLocal = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+
+  // ——— Cloud sync (only when the student logged in with a personal key) ———
+  // dirty = local changes not yet saved in the cloud; syncedAt = server time of the last sync
+  const progressOnly = () => { const { dirty, syncedAt, ...rest } = state; return rest; };
+  let pushTimer = null, pushing = false;
+  async function push(keepalive) {
+    clearTimeout(pushTimer);
+    if (!student || !state.dirty || (pushing && !keepalive)) return;
+    pushing = true;
+    try {
+      const at = await CLOUD.push(progressOnly(), keepalive);
+      if (at === null) return CLOUD.logout();          // the key was changed or removed
+      state.syncedAt = at; state.dirty = false; writeLocal();
+    } catch (e) { /* offline: stays dirty and is retried on the next change or visit */ }
+    pushing = false;
+  }
+  async function pull() {
+    try {
+      const remote = await CLOUD.pull();
+      if (!remote) return CLOUD.logout();
+      const newer = remote.updated_at && (!state.syncedAt || Date.parse(remote.updated_at) > Date.parse(state.syncedAt));
+      if (newer) {
+        // Progress saved from another device is newer: use it
+        Object.assign(state, remote.progress || {}, { syncedAt: remote.updated_at, dirty: false });
+        if (!Array.isArray(state.favs)) state.favs = [];
+        if (!state.answers || typeof state.answers !== "object") state.answers = {};
+        writeLocal(); render();
+      } else if (state.dirty) push();
+    } catch (e) { /* offline: keep working with the local copy */ }
+  }
+  if (student) {
+    addEventListener("pagehide", () => push(true));
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") push(true); else pull(); });
+  }
+
+  const save = () => {
+    if (student) { state.dirty = true; clearTimeout(pushTimer); pushTimer = setTimeout(push, 1200); }
+    writeLocal();
+  };
 
   // Links: #shadowing (listening), #practicar/numeros (exercises) or #leer/r-miami (a reading)
   function readHash() {
@@ -152,7 +194,7 @@
       </article>`;
   }
 
-  function videoBlock(v, tr) {
+  function videoBlock(v, tr, tag) {
     tr = tr || {};
     return `
       <div class="pick">
@@ -163,7 +205,7 @@
           </button>
         </div>
         <div class="pick-body">
-          <span class="pick-tag">${esc(t("startVideo"))}</span>
+          <span class="pick-tag">${esc(tag || t("startVideo"))}</span>
           <h3>${esc(tr.title || v.title)}</h3>
           <div class="by">${esc(v.channel)}</div>
           <p>${esc(tr.tip || v.tip)}</p>
@@ -428,8 +470,10 @@
         <p>${esc(t("minRead")(x.minutes))}</p>
         ${canSpeak ? `<button type="button" class="speak-btn" data-action="speak">🔊 ${esc(t("listenStory"))}</button>` : ""}
       </div>
-      <article class="reading" lang="en">${readingText(x)}</article>
+      ${x.video ? `<div class="read-video">${videoBlock(x.video, { title: x.video.title[L], tip: x.video.tip[L] }, t("fullVideo"))}</div>` : ""}
       ${x.source ? `<p class="source">${esc(x.source.note[L])} ${x.source.links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label[L])} ↗</a>`).join(" · ")}</p>` : ""}
+      ${x.video ? `<h3 class="summary-title">${esc(t("summary"))}</h3>` : ""}
+      <article class="reading" lang="en">${readingText(x)}</article>
       <section class="vocab-box">
         <h3>${esc(t("vocabTitle"))}</h3>
         <p class="ex-instr">${esc(t("vocabHint"))}</p>
@@ -524,10 +568,19 @@
 
   $("#toast").addEventListener("click", (e) => { if (e.target.closest("[data-action=undo]")) undo(); });
 
+  // ——— Greeting + log out (personal keys only) ———
+  function renderHello() {
+    if (!student) return;
+    $("#badge-text").textContent = `👋 ${t("hi")(student.name)}`;
+    const b = $("#logout"); b.hidden = false; b.textContent = t("logout");
+  }
+  $("#logout").addEventListener("click", async () => { await push(); CLOUD.logout(); });
+
   function render() {
-    renderModes(); renderTopics(); renderPanel();
+    renderHello(); renderModes(); renderTopics(); renderPanel();
   }
   // Switching ES / EN re-renders in place; answers and scores are kept
   document.addEventListener("yeb:lang", render);
   render();
+  if (student) pull();
 })();
