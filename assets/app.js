@@ -36,7 +36,7 @@
   };
 
   // ——— State: remembered per browser; the page works without storage too ———
-  const state = { mode: "escuchar", topic: sections[0].id, exTopic: EXERCISES[0] && EXERCISES[0].id, favs: [], answers: {} };
+  const state = { mode: "practicar", topic: sections[0].id, exTopic: EXERCISES[0] && EXERCISES[0].id, favs: [], answers: {} };
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || "{}")); } catch (e) {}
   if (!state.answers || typeof state.answers !== "object") state.answers = {};
   if (!Array.isArray(state.favs)) state.favs = [];
