@@ -4,7 +4,7 @@
   // Readings reuse the exercise engine: comprehension + vocabulary-in-context sections
   const READINGS = (window.YEB_READINGS || []).map((r) => ({
     ...r,
-    sections: [{ kind: "comprehension", items: r.comprehension }, { kind: "vocab", items: r.vocabulary }]
+    sections: [{ kind: "comprehension", items: r.comprehension }, ...(r.practice || [{ kind: "vocab", items: r.vocabulary }])]
   }));
 
   const EN = window.YEB_EN || { sections: {}, channels: {}, exercises: {} };
@@ -296,7 +296,7 @@
       <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : ""}" id="q-${key}">
         <span class="q-num">${ii + 1}</span>
         <div class="q-body">
-          ${item.quote ? `<blockquote class="quote">${esc(tr.quote || item.quote).replace(/\[\[(.+?)\]\]/g, '<mark class="hl">$1</mark>')}</blockquote>` : ""}
+          ${item.quote ? `<blockquote class="quote">${esc(item.find ? speechQuote(x, item.find) : tr.quote || item.quote).replace(/\[\[(.+?)\]\]/g, '<mark class="hl">$1</mark>')}</blockquote>` : ""}
           <p class="q-text">${prompt}</p>
           ${body}
           ${fb}
@@ -358,13 +358,14 @@
       ${exerciseBody(x)}`;
   }
 
+  const pickLang = (v) => (v && typeof v === "object" ? v[isEN() ? "en" : "es"] : v);
   const KIND_TEXT = { comprehension: ["comprehension", "comprehensionInstr"], vocab: ["vocabInContext", "vocabInstr"] };
   function exerciseBody(x) {
     return `
       <div class="score" id="score">${scoreHTML(x)}</div>
       ${x.sections.map((s, si) => `
         <section class="ex-section${s.story ? " has-story" : ""}">
-          <h3>${esc(exSecT(x, si).title || s.title || t(KIND_TEXT[s.kind][0]))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
+          <h3>${esc(exSecT(x, si).title || pickLang(s.title) || t(KIND_TEXT[s.kind][0]))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `<div class="story">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
@@ -445,17 +446,114 @@
   }
 
   // ——— Reading ———
-  function readingText(x, paragraphs) {
-    // Highlight the first appearance of each vocabulary item; placeholders avoid matching inside the markup
-    const terms = x.vocab.map((v, i) => ({ i, m: (v[3] || v[0]).replace(/[()]/g, "").trim() })).sort((a, b) => b.m.length - a.m.length);
-    let paras = (paragraphs || x.text).map((p) => esc(p));
-    for (const { i, m } of terms) {
-      const re = new RegExp(`\\b(${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "i");
-      const idx = paras.findIndex((p) => re.test(p));
-      if (idx >= 0) paras[idx] = paras[idx].replace(re, `\u0000${i}\u0001$1\u0002`);
-    }
-    return paras.map((p) => `<p>${p.replace(/\u0000(\d+)\u0001(.*?)\u0002/g, (_, i, w) => `<button type="button" class="vw" data-vw="${i}">${w}</button>`)}</p>`).join("");
+  // Words are matched as tokens, so "back" never matches inside "backwards"
+  const TOKEN = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g;
+  const normWord = (w) => w.toLowerCase().replace(/’/g, "'");
+  const tokensOf = (s) => (s.match(TOKEN) || []).map(normWord);
+  const SENTENCE_BREAK = /[.!?;:“”"]/;
+
+  // Tap-to-translate glossary for a reading (data/glossary/*.js), parsed once
+  const glossCache = {};
+  function glossary(x) {
+    if (glossCache[x.id] !== undefined) return glossCache[x.id];
+    const g = (window.YEB_GLOSSARY || {})[x.id];
+    if (!g) return (glossCache[x.id] = null);
+    const pairs = (s) => s.split("\n").map((l) => l.split(" = ")).filter((p) => p.length === 2).map(([k, v]) => [k.trim(), v.trim()]);
+    const words = Object.fromEntries(pairs(g.words).map(([k, v]) => [normWord(k), v]));
+    const phrases = pairs(g.phrases).map(([k, v]) => ({ text: k, es: v, pat: k.split(/\s+/).map((p) => (p === "*" ? "*" : normWord(p))) }));
+    return (glossCache[x.id] = { words, phrases });
   }
+  const glossWord = (G, k) => G && (G.words[k] || G.words[k.replace(/'s$/, "")]);
+
+  // Matches a token pattern at toks[i] without crossing a sentence; "*" = 1–6 words. Returns the matched indexes.
+  function matchAt(pat, toks, i, first = true) {
+    const hit = [];
+    for (let pi = 0; pi < pat.length; pi++) {
+      if (pat[pi] === "*") {
+        for (let n = 1; n <= 6 && i + n < toks.length; n++) {
+          if (toks.slice(i, i + n + 1).some((tk, j) => (j > 0 || pi > 0) && SENTENCE_BREAK.test(tk.sep))) break;
+          const rest = matchAt(pat.slice(pi + 1), toks, i + n, false);
+          if (rest) return [...hit, ...rest];
+        }
+        return null;
+      }
+      const tk = toks[i];
+      if (!tk || tk.k !== pat[pi] || ((pi > 0 || !first) && SENTENCE_BREAK.test(tk.sep))) return null;
+      hit.push(i++);
+    }
+    return hit;
+  }
+
+  // Renders the text with tappable words (glossary) and the first appearance of each vocabulary item highlighted
+  let placedVocab = new Set();
+  function readingText(x, paragraphs) {
+    const G = glossary(x);
+    const paras = (paragraphs || x.text).map((p) => {
+      const toks = []; let last = 0, m;
+      TOKEN.lastIndex = 0;
+      while ((m = TOKEN.exec(p))) { toks.push({ w: m[0], k: normWord(m[0]), sep: p.slice(last, m.index) }); last = m.index + m[0].length; }
+      return { toks, tail: p.slice(last) };
+    });
+    const terms = x.vocab.map((v, i) => ({ i, pat: tokensOf((v[3] || v[0]).replace(/[()]/g, "")) })).sort((a, b) => b.pat.length - a.pat.length);
+    placedVocab = new Set();
+    for (const { i, pat } of terms) {
+      if (!pat.length) continue;
+      search: for (const { toks } of paras) {
+        for (let s = 0; s < toks.length; s++) {
+          const hit = matchAt(pat, toks, s);
+          if (hit && hit.every((h) => toks[h].v === undefined)) {
+            for (let h = hit[0]; h <= hit[hit.length - 1]; h++) toks[h].v = i;
+            toks[hit[0]].vOpen = i; toks[hit[hit.length - 1]].vClose = true;
+            placedVocab.add(i);
+            break search;
+          }
+        }
+      }
+    }
+    if (G) {
+      let occ = 0;
+      const phrases = G.phrases.map((p, pi) => ({ ...p, pi })).sort((a, b) => b.pat.length - a.pat.length);
+      for (const { toks } of paras) {
+        for (const { pat, pi } of phrases) {
+          for (let s = 0; s < toks.length; s++) {
+            const hit = matchAt(pat, toks, s);
+            if (hit && hit.every((h) => toks[h].ph === undefined)) { occ++; hit.forEach((h) => { toks[h].ph = pi; toks[h].po = occ; }); }
+          }
+        }
+      }
+    }
+    return paras.map(({ toks, tail }) => `<p>${toks.map((tk) => {
+      let h = esc(tk.sep);
+      if (tk.vOpen !== undefined) h += `<mark class="vw" data-vw="${tk.vOpen}" tabindex="0" role="button">`;
+      h += tk.ph !== undefined || glossWord(G, tk.k)
+        ? `<span class="w"${tk.ph !== undefined ? ` data-ph="${tk.ph}" data-po="${tk.po}"` : ""}>${esc(tk.w)}</span>`
+        : esc(tk.w);
+      if (tk.vClose) h += "</mark>";
+      return h;
+    }).join("")}${esc(tail)}</p>`).join("");
+  }
+
+  // The sentence of `paragraphs` that contains `find`, with [[find]] marked (shortened when it's very long)
+  function sentenceWith(paragraphs, find) {
+    const f = find.replace(/’/g, "'");
+    const re = new RegExp(`(^|[^A-Za-z])(${f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})${/[A-Za-z]$/.test(f) ? "(?![A-Za-z])" : ""}`, "i");
+    for (const raw of paragraphs || []) {
+      const p = raw.replace(/’/g, "'");
+      const m = re.exec(p);
+      if (!m) continue;
+      const at = m.index + m[1].length, end = at + m[2].length;
+      let start = p.slice(0, at).search(/[^.!?]*$/);
+      let stop = p.slice(end).search(/[.!?]/);
+      stop = stop < 0 ? p.length : end + stop + 1;
+      if (p[stop] === "”" || p[stop] === '"') stop++;
+      let pre = p.slice(start, at).replace(/^[\s”"]+/, ""), post = p.slice(end, stop);
+      if (pre.length > 110) pre = "…" + pre.slice(pre.indexOf(" ", pre.length - 100) + 1);
+      if (post.length > 110) post = post.slice(0, post.lastIndexOf(" ", 100)) + "…";
+      return `${pre}[[${p.slice(at, end)}]]${post}`;
+    }
+    return null;
+  }
+  const speechQuote = (x, find) => sentenceWith(fullText(x) || x.text, find) || `[[${find}]]`;
 
   // Optional full transcript (a .txt file next to the site); loaded once per reading
   const transcripts = {};
@@ -465,7 +563,9 @@
     fetch(x.transcript, { cache: "no-cache" })
       .then((r) => (r.ok ? r.text() : ""))
       .then((txt) => {
+        // A title line stuck to the first paragraph is dropped (the reading already shows its title)
         const paras = txt.split(/\r?\n/).filter((l) => !l.trim().startsWith("#")).join("\n")
+          .replace(/^\s*[^\n.!?]+\n(?=\S)/, "")
           .split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean);
         transcripts[x.id] = paras.length ? paras : false;
         if (paras.length && state.mode === "leer" && state.readTopic === x.id) renderPanel();
@@ -498,11 +598,19 @@
           <button type="button" role="tab" data-action="read-view" data-view="full" aria-selected="${view === "full"}">${esc(t("fullText"))}</button>
           <button type="button" role="tab" data-action="read-view" data-view="summary" aria-selected="${view === "summary"}">${esc(t("summaryShort"))}</button>
         </div>` : x.video ? `<h3 class="summary-title">${esc(t("summary"))}</h3>` : ""}
+      ${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}
       <article class="reading${view === "full" ? " full" : ""}" lang="en">${readingText(x, shownText(x))}</article>
       <section class="vocab-box">
-        <h3>${esc(t("vocabTitle"))}</h3>
+        <h3>${esc(t("vocabTitle"))} <span class="sec-count">${x.vocab.length}</span></h3>
         <p class="ex-instr">${esc(t("vocabHint"))}</p>
-        <dl class="vocab-list">${x.vocab.map((v) => `<div><dt lang="en">${esc(v[0])}</dt><dd>${esc(L === "en" ? v[2] : v[1])}</dd></div>`).join("")}</dl>
+        <dl class="vocab-list">${x.vocab.map((v, i) => {
+          const ex = sentenceWith(shownText(x), v[3] || v[0].replace(/[()]/g, "").trim()) || sentenceWith(fullText(x) || x.text, v[3] || v[0].replace(/[()]/g, "").trim());
+          const findable = placedVocab.has(i);
+          return `<div${findable ? ` class="findable" data-find="${i}" tabindex="0" role="button" aria-label="${esc(`${t("findInText")}: ${v[0]}`)}"` : ""}>
+            <dt lang="en">${esc(v[0])}</dt><dd>${esc(L === "en" ? v[2] : v[1])}</dd>
+            ${ex ? `<dd class="vocab-ex" lang="en">“${esc(ex).replace(/\[\[(.+?)\]\]/, "<b>$1</b>")}”</dd>` : ""}
+          </div>`;
+        }).join("")}</dl>
       </section>
       ${exerciseBody(x)}`;
   }
@@ -525,19 +633,103 @@
     speechSynthesis.speak(u);
   }
 
+  // ——— Tap/hover translation bubble ———
+  const gloss = document.createElement("div");
+  gloss.className = "gloss"; gloss.hidden = true; gloss.setAttribute("role", "status");
+  document.body.appendChild(gloss);
+  let glossPinned = false, glossTimer = 0;
+  function hideGloss() {
+    gloss.hidden = true; glossPinned = false;
+    document.querySelectorAll(".reading .on, .reading .cur").forEach((n) => n.classList.remove("on", "cur"));
+  }
+  function showGloss(target, pin) {
+    const x = currentTopic();
+    const w = target.closest(".w"), vw = target.closest(".vw");
+    if (!x || !x.vocab || (!w && !vw)) return;
+    clearTimeout(glossTimer);
+    const G = glossary(x);
+    let html = "";
+    if (w) {
+      const word = w.textContent, tr = glossWord(G, normWord(word));
+      html += `<div class="g-word"><b lang="en">${esc(word)}</b><button type="button" class="g-say" data-say="${esc(word)}" aria-label="${esc(t("listenWord"))}">🔊</button></div>${tr ? `<p class="g-tr">${esc(tr)}</p>` : ""}`;
+      if (w.dataset.ph && G) {
+        const p = G.phrases[+w.dataset.ph];
+        html += `<div class="g-block"><small>${esc(t("inPhrase"))}</small><b lang="en">${esc(p.text.replace(/\s\*\s/, " … "))}</b><p class="g-tr">${esc(p.es)}</p></div>`;
+      }
+    }
+    if (vw) {
+      const v = x.vocab[+vw.dataset.vw];
+      html += `<div class="g-block"><small>⭐ ${esc(t("keyWord"))}</small><b lang="en">${esc(v[0])}</b><p class="g-tr">${esc(v[1])}</p><p class="g-def" lang="en">${esc(v[2])}</p></div>`;
+    }
+    document.querySelectorAll(".reading .on, .reading .cur").forEach((n) => n.classList.remove("on", "cur"));
+    if (w && w.dataset.po) document.querySelectorAll(`.reading [data-po="${w.dataset.po}"]`).forEach((n) => n.classList.add("on"));
+    (w || vw).classList.add("cur");
+    glossPinned = pin;
+    gloss.innerHTML = html;
+    gloss.hidden = false;
+    // Above the word when there's room (below the sticky header), otherwise below it
+    const r = (w || vw).getBoundingClientRect(), vwW = document.documentElement.clientWidth;
+    const gw = gloss.offsetWidth, gh = gloss.offsetHeight;
+    const left = Math.max(12, Math.min(r.left + r.width / 2 - gw / 2, vwW - gw - 12));
+    const above = r.top - gh - 10 > 76;
+    gloss.style.left = `${left + scrollX}px`;
+    gloss.style.top = `${(above ? r.top - gh - 10 : r.bottom + 10) + scrollY}px`;
+  }
+  function findInText(i) {
+    const m = document.querySelector(`.reading [data-vw="${i}"]`);
+    if (!m) return;
+    m.scrollIntoView({ behavior: "smooth", block: "center" });
+    m.classList.add("flash"); setTimeout(() => m.classList.remove("flash"), 1400);
+  }
+  function sayWord(word) {
+    if (!("speechSynthesis" in window)) return;
+    stopSpeaking();
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = "en-US"; u.rate = 0.85;
+    const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-US");
+    if (voice) u.voice = voice;
+    speechSynthesis.speak(u);
+  }
+  gloss.addEventListener("click", (e) => { const b = e.target.closest("[data-say]"); if (b) sayWord(b.dataset.say); });
+  document.addEventListener("click", (e) => {
+    if (!gloss.hidden && !gloss.contains(e.target) && !e.target.closest(".reading .w, .reading .vw")) hideGloss();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !gloss.hidden) hideGloss();
+    const el = e.target.closest && e.target.closest(".reading .vw, [data-find]");
+    if (el && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      if (el.dataset.find) findInText(el.dataset.find); else showGloss(el, true);
+    }
+  });
+  window.addEventListener("resize", () => { if (!gloss.hidden) hideGloss(); });
+  // Mouse: hovering shows the translation; a click keeps it open
+  if (matchMedia("(hover: hover)").matches) {
+    $("#panel").addEventListener("mouseover", (e) => {
+      const el = e.target.closest(".reading .w, .reading .vw");
+      if (el && !(glossPinned && el.classList.contains("cur"))) showGloss(e.target, false);
+    });
+    $("#panel").addEventListener("mouseout", (e) => {
+      if (glossPinned || !e.target.closest(".reading .w, .reading .vw")) return;
+      const to = e.relatedTarget;
+      if (to && (gloss.contains(to) || (to.closest && to.closest(".reading .w, .reading .vw")))) return;
+      glossTimer = setTimeout(() => { if (!glossPinned) hideGloss(); }, 180);
+    });
+    gloss.addEventListener("mouseleave", () => { if (!glossPinned) glossTimer = setTimeout(hideGloss, 180); });
+    gloss.addEventListener("mouseenter", () => clearTimeout(glossTimer));
+  }
+
   // ——— Panel ———
   function renderPanel() {
     stopSpeaking();
+    hideGloss();
     $("#panel").innerHTML = state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
   }
 
   $("#panel").addEventListener("click", (e) => {
-    const vw = e.target.closest("[data-vw]");
-    if (vw) {
-      const v = currentTopic().vocab[+vw.dataset.vw];
-      toast(`${v[0]} — ${isEN() ? v[2] : v[1]}`);
-      return;
-    }
+    if (e.target.closest(".reading .w, .reading .vw")) { showGloss(e.target, true); return; }
+    const find = e.target.closest("[data-find]");
+    if (find) return findInText(find.dataset.find);
     const jump = e.target.closest("[data-jump]");
     if (jump) {
       const q = document.getElementById(`q-${jump.dataset.jump}`);

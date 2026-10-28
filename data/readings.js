@@ -7,6 +7,9 @@
     La palabra se resalta en el texto (la primera vez que aparece) y se puede tocar.
   - comprehension: preguntas con C(pregunta, correcta, [incorrectas], explicación ES, explicación EN)
   - vocabulary: preguntas con V("frase con [[palabra]]", correcta ES, [incorrectas ES], [traducción EN de cada opción], explicación ES, explicación EN)
+  - practice (opcional): reemplaza «vocabulary» por varias secciones { kind, title: {es, en}, items }.
+    Con S("expresión", ...) la frase se toma del texto completo (la oración que contiene la expresión).
+  - Glosario para tocar palabras (opcional): data/glossary/<lectura>.js
   - source (opcional): enlaces a la fuente original
   - video (opcional): video de YouTube que se muestra antes del texto
   - transcript (opcional): archivo .txt con el texto completo; si tiene texto, la lectura
@@ -19,6 +22,12 @@
     const labels = {};
     [a, ...o].forEach((opt, i) => { if (enLabels[i]) labels[opt] = enLabels[i]; });
     return { quote, q: `¿Qué significa «${word}»?`, a, o, e, en: { q: `What does “${word}” mean?`, labels, e: eEn } };
+  };
+  // Like V, but the sentence comes from the reading's full text (the one that contains `find`)
+  const S = (find, a, o, enLabels, e, eEn, q) => {
+    const v = { ...V(`[[${find}]]`, a, o, enLabels, e, eEn), find };
+    if (q) { v.q = q[0]; v.en.q = q[1]; }
+    return v;
   };
 
   window.YEB_READINGS = [
@@ -48,18 +57,66 @@
         "The third story was about death. After he was diagnosed with cancer, Jobs realized that remembering he would die one day was the best tool for making big decisions. Our time is limited, he said, so we shouldn't waste it living someone else's life.",
         "He ended with the farewell message of a magazine he loved as a young man: “Stay hungry. Stay foolish.”"
       ],
+      // Ordenado como aparece en el discurso. El ejemplo de cada tarjeta se toma del texto completo.
       vocab: [
-        ["commencement speech", "discurso de graduación", "a speech at a graduation ceremony"],
-        ["lecture", "clase magistral, sermón", "a long formal talk"],
+        ["commencement speech", "discurso de graduación", "a speech at a graduation ceremony", "commencement"],
+        ["truth be told", "a decir verdad", "to be honest"],
+        ["no big deal", "no es gran cosa", "not important"],
         ["drop out (of)", "abandonar los estudios", "to leave school before finishing", "dropped out of"],
+        ["quit", "dejar algo del todo, renunciar", "to stop doing something completely"],
+        ["put up for adoption", "dar en adopción", "to give a baby to another family to raise", "put me up for adoption"],
+        ["unexpected", "inesperado", "not planned or predicted"],
+        ["find out", "enterarse, descubrir", "to learn a fact you didn't know", "found out"],
+        ["relent", "ceder, dar el brazo a torcer", "to finally agree after refusing", "relented"],
+        ["naively", "ingenuamente", "without experience or good judgment"],
+        ["savings", "ahorros", "money you keep for the future"],
+        ["tuition", "matrícula (lo que cuesta estudiar)", "the money you pay to study"],
+        ["figure out", "averiguar, entender", "to understand or solve something", "figure it out"],
+        ["work out", "salir bien", "to end well"],
+        ["look back", "mirar atrás, recordar", "to think about the past", "looking back"],
+        ["drop in (on)", "asistir de oyente", "to attend a class informally", "dropping in on"],
+        ["stumble into", "encontrar por casualidad", "to find something by accident", "stumbled into"],
+        ["priceless", "invaluable", "extremely valuable"],
+        ["typeface", "tipo de letra", "a design of letters (a font family)", "typefaces"],
+        ["subtle", "sutil", "not obvious, delicate"],
         ["connect the dots", "unir los puntos", "to see how different events are related"],
-        ["shape", "dar forma, influir", "to have a strong effect on how something develops", "shaped"],
-        ["get fired", "ser despedido", "to lose your job because your boss ends it", "fired"],
+        ["gut", "instinto, corazonada", "your instinct; a feeling you can't explain"],
+        ["let someone down", "decepcionar, fallarle a alguien", "to disappoint someone", "let me down"],
+        ["get fired", "ser despedido", "to lose your job because your boss ends it", "got fired"],
+        ["talented", "talentoso", "with a natural ability"],
+        ["diverge", "separarse, tomar caminos distintos", "to go in different directions"],
+        ["falling out", "pelea fuerte, ruptura", "a serious disagreement that ends a relationship"],
+        ["side with", "ponerse del lado de", "to support someone in an argument", "sided with"],
         ["devastating", "devastador", "extremely sad or shocking"],
+        ["drop the baton", "fallar en una responsabilidad", "to fail at a task someone passed to you", "dropped the baton"],
+        ["screw up", "meter la pata", "to make a big mistake (informal)", "screwing up"],
+        ["dawn on", "darse cuenta (poco a poco)", "to slowly start to understand"],
+        ["reject", "rechazar", "to say no to someone or something", "rejected"],
         ["start over", "empezar de nuevo", "to begin again from the beginning"],
+        ["turn out", "resultar", "to happen in a way you didn't expect", "turned out"],
+        ["remarkable", "extraordinario", "unusual and impressive"],
+        ["lose faith", "perder la fe", "to stop believing"],
         ["settle", "conformarse", "to accept something less than you want"],
+        ["roll on", "pasar (el tiempo)", "to continue, as time passes"],
+        ["encounter", "encontrarse con", "to meet or find something", "encountered"],
+        ["embarrassment", "vergüenza", "the feeling of looking silly in front of others"],
+        ["fall away", "desaparecer, dejar de importar", "to disappear or stop being important"],
+        ["trap", "trampa", "a situation that is hard to escape"],
         ["diagnose", "diagnosticar", "when a doctor identifies an illness", "diagnosed"],
-        ["farewell", "despedida", "a goodbye"]
+        ["incurable", "incurable", "impossible to cure"],
+        ["get your affairs in order", "poner tus asuntos en orden", "to organize your personal matters", "get my affairs in order"],
+        ["buttoned up", "bien atado, resuelto", "completely organized"],
+        ["make way for", "abrir paso a", "to make space for something new"],
+        ["dogma", "dogma", "beliefs people accept without questioning"],
+        ["drown out", "tapar (un sonido)", "to cover a sound with a louder one"],
+        ["courage", "valor, coraje", "the strength to do something that scares you"],
+        ["come along", "aparecer, llegar", "to appear or start to exist", "came along"],
+        ["hitchhike", "hacer autostop, pedir aventón", "to travel by getting free rides from drivers", "hitchhiking"],
+        ["sign off", "despedirse", "to end a message or a show", "signed off"],
+        ["farewell", "despedida", "a goodbye"],
+        ["stay hungry", "mantente con hambre (de más)", "keep wanting to learn and grow"],
+        ["lecture", "clase magistral, sermón", "a long formal talk"],
+        ["shape", "dar forma, influir", "to have a strong effect on how something develops", "shaped"]
       ],
       comprehension: [
         C("How many stories did Jobs tell?", "Three", ["Two", "Five"], "«He told the graduates three short stories from his life.»", "“He told the graduates three short stories from his life.”"),
@@ -69,14 +126,68 @@
         C("What did he do after leaving Apple?", "He founded NeXT and Pixar", ["He went back to college", "He retired"], "«He founded NeXT and Pixar, met his wife and, years later, returned to Apple.»", "“He founded NeXT and Pixar, met his wife and, years later, returned to Apple.”"),
         C("Why is remembering death useful, according to Jobs?", "It helps you make big decisions", ["It makes you work less", "It helps you save money"], "Era «the best tool for making big decisions».", "It was “the best tool for making big decisions”.")
       ],
-      vocabulary: [
-        V("Steve Jobs gave the [[commencement speech]] at Stanford.", "Discurso de graduación", ["Discurso de inicio de clases", "Discurso político"], ["A graduation speech", "A first-day-of-school speech", "A political speech"], "Commencement = ceremonia de graduación (en EE. UU.).", "Commencement = a graduation ceremony (US)."),
-        V("Jobs [[dropped out of]] college after six months.", "Abandonó los estudios", ["Se graduó de", "Se inscribió en"], ["Left before finishing", "Graduated from", "Enrolled in"], "Drop out of school/college = dejar los estudios sin terminar.", "Drop out of school/college = leave before finishing."),
-        V("…that class [[shaped]] the beautiful fonts of the first Macintosh.", "Dio forma, influyó en", ["Copió", "Borró"], ["Strongly influenced", "Copied", "Deleted"], "Shape = influir mucho en cómo algo termina siendo.", "Shape = strongly influence how something ends up."),
-        V("It was [[devastating]].", "Devastador, muy doloroso", ["Divertido", "Sin importancia"], ["Extremely painful", "Fun", "Unimportant"], "Devastating = que te destruye emocionalmente.", "Devastating = emotionally destroying."),
-        V("…it also freed him to [[start over]].", "Empezar de nuevo", ["Terminar", "Rendirse"], ["Begin again", "Finish", "Give up"], "Start over = volver a empezar desde cero.", "Start over = begin again from zero."),
-        V("…find what you love, and don't [[settle]].", "No te conformes", ["No te mudes", "No te sientes"], ["Don't accept less", "Don't move house", "Don't sit down"], "Settle (for) = conformarse con algo menos de lo que quieres.", "Settle (for) = accept less than you want."),
-        V("He ended with the [[farewell]] message of a magazine.", "Despedida", ["Bienvenida", "Advertencia"], ["Goodbye", "Welcome", "Warning"], "Farewell = adiós, despedida.", "Farewell = goodbye.")
+      // Ejercicios de la guía de TikTok (versión más fácil). La frase se toma del texto completo.
+      practice: [
+        {
+          kind: "vocab", title: { es: "Historia 1 · Unir los puntos", en: "Story 1 · Connecting the dots" },
+          items: [
+            S("dropped out", "Dejar los estudios sin terminarlos", ["Graduarse antes de tiempo", "Tomar un descanso corto"], ["Leave school before finishing", "Graduate early", "Take a short break"], "Drop out (of) = abandonar los estudios. Jobs nunca se graduó.", "Drop out (of) = leave school before finishing. Jobs never graduated."),
+            S("dropping in on", "Ir a clases sin estar inscrito", ["Reprobar una materia", "Llegar tarde a clase"], ["Go to classes without being enrolled", "Fail a subject", "Arrive late to class"], "Drop in (on) = asistir de forma informal, como oyente.", "Drop in (on) = attend informally, without being enrolled."),
+            S("work out", "Salir bien", ["Hacer ejercicio", "Renunciar"], ["End well", "Exercise", "Quit"], "Work out también es «hacer ejercicio», pero aquí significa «resolverse bien».", "Work out can mean “exercise”, but here it means “end well”."),
+            S("looking back", "Pensando en el pasado", ["Mirando hacia atrás en la calle", "Planeando el futuro"], ["Thinking about the past", "Physically looking behind", "Planning the future"], "Looking back = en retrospectiva, al recordarlo.", "Looking back = thinking about it later."),
+            S("stumbled into", "Encontrar algo por casualidad", ["Planear algo con cuidado", "Caerse al piso"], ["Find something by chance", "Plan something carefully", "Fall down"], "Stumble = tropezar. Stumble into something = encontrarlo sin buscarlo.", "Stumble = trip. Stumble into something = find it without looking for it."),
+            S("came back to me", "Lo recordé", ["Lo olvidé", "Regresó a mi casa"], ["I remembered it", "I forgot it", "It returned to my house"], "Something comes back to you = vuelve a tu memoria.", "Something comes back to you = you remember it."),
+            S("connect the dots", "Entender cómo se relacionan las cosas", ["Dibujar un mapa", "Hacer nuevos amigos"], ["See how things are related", "Draw a map", "Make new friends"], "Como el juego de unir puntos: al final ves el dibujo completo.", "Like the kids' game: at the end you see the whole picture."),
+            S("trust", "Un verbo: confiar", ["Un sustantivo: confianza", "Un adjetivo: confiable"], ["A verb: to believe in", "A noun: confidence", "An adjective: reliable"], "Va después de «to» o de un sujeto, así que es un verbo. Trust también puede ser sustantivo.", "It comes after “to” or a subject, so it's a verb. “Trust” can also be a noun.", ["¿Qué es «trust» en esta frase?", "What is “trust” in this sentence?"]),
+            S("let me down", "Decepcionarme, fallarme", ["Ayudarme", "Bajarme de un lugar alto"], ["Disappoint me", "Help me", "Help me get down"], "Let someone down = fallarle a alguien. Never let me down = nunca me ha fallado.", "Let someone down = disappoint them. Never let me down = never failed me."),
+            S("romantic", "Idealizado, color de rosa", ["Una relación amorosa", "Triste"], ["Idealized, perfect", "A love relationship", "Sad"], "Dormía en el suelo y caminaba millas por comida: no era tan bonito como suena.", "He slept on the floor and walked miles for food: it wasn't as nice as it sounds.", ["Aquí, «romantic» significa…", "Here, “romantic” means…"])
+          ]
+        },
+        {
+          kind: "vocab", title: { es: "Historia 2 · Amor y pérdida", en: "Story 2 · Love and loss" },
+          items: [
+            S("got fired", "Me despidieron", ["Renuncié", "Me ascendieron"], ["I lost my job", "I quit", "I got promoted"], "Get fired = perder el trabajo porque te echan. Quit = renunciar.", "Get fired = your boss ends your job. Quit = you leave."),
+            S("falling out", "Una pelea fuerte", ["Una caída", "Un acuerdo"], ["A serious argument", "A fall", "An agreement"], "Have a falling out (with someone) = pelearse y romper la relación.", "Have a falling out (with someone) = argue and end the relationship."),
+            S("sided with", "Apoyar a alguien en un conflicto", ["Ignorar a alguien", "Despedir a alguien"], ["Support someone in a conflict", "Ignore someone", "Fire someone"], "Side with = ponerse del lado de alguien.", "Side with = take someone's side."),
+            S("dropped the baton", "Fallar con una responsabilidad", ["Ganar una carrera", "Empezar un proyecto"], ["Fail at a responsibility", "Win a race", "Start a project"], "En una carrera de relevos el testigo (baton) pasa de mano en mano. Dejarlo caer = fallarle al equipo.", "In a relay race you pass the baton. Dropping it = letting the team down."),
+            S("screwing up", "Cometer un gran error", ["Tener mucho éxito", "Ajustar un tornillo"], ["Make a big mistake", "Be very successful", "Tighten a screw"], "Screw up = meter la pata (informal). Screw = tornillo.", "Screw up = make a big mistake (informal). A screw is a small metal piece."),
+            S("running away", "Huir", ["Correr como ejercicio", "Volver"], ["Escape", "Go running for exercise", "Come back"], "Run away from = huir de un problema o un lugar.", "Run away from = escape from a problem or place."),
+            S("dawn on", "Darse cuenta poco a poco", ["Amanecer", "Olvidar algo"], ["Slowly realize", "Become morning", "Forget something"], "Dawn = amanecer. Algo «dawns on you» cuando empiezas a entenderlo, como la luz que llega.", "Dawn = sunrise. Something “dawns on you” when you slowly understand it."),
+            S("start over", "Empezar de nuevo", ["Terminar", "Seguir igual"], ["Begin again", "Finish", "Continue the same way"], "Start over = volver a empezar desde cero.", "Start over = begin again from zero."),
+            S("went on to", "Después logró", ["Se detuvo", "Volvió atrás"], ["Later achieved", "Stopped", "Went back"], "Go on to + verbo = hacer algo después, como siguiente paso.", "Go on to + verb = do something next, later."),
+            S("Don't settle", "No te conformes", ["No te mudes", "No decidas rápido"], ["Don't accept less", "Don't move house", "Don't decide quickly"], "Settle (for less) = aceptar menos de lo que quieres.", "Settle (for less) = accept less than you want.")
+          ]
+        },
+        {
+          kind: "vocab", title: { es: "Historia 3 · La muerte", en: "Story 3 · Death" },
+          items: [
+            S("encountered", "Encontrado", ["Inventado", "Vendido"], ["Found, met", "Invented", "Sold"], "Encounter = encontrarse con algo, a veces sin buscarlo.", "Encounter = meet or find something."),
+            S("fall away", "Dejar de importar, desaparecer", ["Caerse al piso", "Volverse más importantes"], ["Stop mattering, disappear", "Fall on the floor", "Become more important"], "Frente a la muerte, el miedo y el orgullo «fall away»: ya no importan.", "In the face of death, fear and pride “fall away”: they stop mattering."),
+            S("the trap of thinking", "Una forma de pensar que te limita", ["Un juego", "Una trampa para animales"], ["A way of thinking that limits you", "A game", "A trap for animals"], "Trap = trampa. Aquí es una idea que te atrapa sin que lo notes.", "Trap = something that catches you. Here it's an idea that holds you back."),
+            S("follow your heart", "Hacer lo que sientes que es correcto", ["Hacer ejercicio", "Seguir las reglas"], ["Do what feels right to you", "Exercise", "Follow the rules"], "Follow your heart = guiarte por lo que sientes, no solo por la lógica.", "Follow your heart = trust your feelings, not only logic."),
+            S("get my affairs in order", "Organizar mis asuntos antes de morir", ["Limpiar mi casa", "Planear una fiesta"], ["Organize my personal matters before dying", "Clean my house", "Plan a party"], "Affairs = asuntos (dinero, papeles, familia).", "Affairs = personal matters (money, papers, family)."),
+            S("buttoned up", "Todo resuelto y organizado", ["Vestido formal", "Cerrado con llave"], ["Completely organized", "Dressed formally", "Locked"], "Button up = abotonar. Figurado: dejar todo bien cerrado y resuelto.", "Button up = close the buttons. Here: leave everything organized."),
+            S("change agent", "Algo que provoca el cambio", ["Un agente de viajes", "Un vendedor"], ["Something that causes change", "A travel agent", "A salesperson"], "Change agent = lo que hace que las cosas cambien.", "Change agent = something that makes things change."),
+            S("make way for", "Dejar espacio para algo nuevo", ["Bloquear el paso", "Construir un camino"], ["Make space for something new", "Block the way", "Build a road"], "Make way for = abrir paso a algo.", "Make way for = make space for something."),
+            S("drown out", "Tapar un sonido con otro más fuerte", ["Ahogarse en el agua", "Grabar un audio"], ["Cover a sound with a louder one", "Drown in water", "Record audio"], "Drown = ahogarse. Drown out = tapar un sonido: el ruido de otros tapa tu voz interior.", "Drown out = cover a sound: others' noise covers your inner voice."),
+            S("dogma", "Creencias que se aceptan sin cuestionar", ["Una mascota", "Una ley científica"], ["Beliefs people accept without questioning", "A pet", "A scientific law"], "Jobs lo explica: vivir con los resultados de lo que piensan otros.", "Jobs explains it: living with the results of other people's thinking.")
+          ]
+        },
+        {
+          kind: "vocab", title: { es: "Frases célebres", en: "Famous lines" },
+          items: [
+            S("No big deal", "No es gran cosa", ["Es muy importante", "Es un buen negocio"], ["It's not important", "It's very important", "It's a good business deal"], "No big deal = nada del otro mundo.", "No big deal = nothing special."),
+            S("felt very strongly", "Estaba muy convencida", ["Se sentía fuerte", "No tenía opinión"], ["She was very sure", "She felt physically strong", "She had no opinion"], "Feel strongly about something = tener una opinión firme.", "Feel strongly about something = have a firm opinion."),
+            S("public failure", "Un fracaso que todos conocían", ["Un fracaso secreto", "Un evento exitoso"], ["A failure everyone knew about", "A secret failure", "A successful event"], "Public = a la vista de todos. Failure = fracaso.", "Public = everyone can see it. Failure = not succeeding."),
+            S("heaviness", "La presión de mantener el éxito", ["Su peso corporal", "El calor de California"], ["The pressure of staying successful", "His body weight", "The heat in California"], "Heavy = pesado. Lo contrario en la misma frase: lightness (ligereza).", "Heavy = with a lot of weight. The opposite in the same sentence: lightness.", ["Aquí, «heaviness» (pesadez) es…", "Here, “heaviness” is…"]),
+            S("awful tasting medicine", "Algo difícil que al final te hace bien", ["Una medicina real", "Una queja sobre los médicos"], ["Something hard that is good for you", "A real medicine", "A complaint about doctors"], "Es una metáfora: el despido fue duro, pero lo necesitaba.", "It's a metaphor: getting fired was hard, but he needed it."),
+            S("hits you in the head with a brick", "Te pasan cosas muy duras de repente", ["Tienes un accidente de construcción", "Es un chiste sin sentido"], ["Very hard things happen suddenly", "You have a construction accident", "It's a joke with no meaning"], "Brick = ladrillo. La vida a veces golpea fuerte y sin avisar.", "Brick = a building block. Sometimes life hits hard, without warning."),
+            S("already naked", "No tienes nada que perder", ["Estás sin ropa", "Te da vergüenza"], ["You have nothing to lose", "You have no clothes on", "You feel embarrassed"], "Naked = desnudo. Si ya no tienes nada, no hay nada que proteger.", "Naked = with no clothes. If you have nothing, there's nothing to protect.", ["«You are already naked» quiere decir…", "“You are already naked” means…"]),
+            S("came along", "Apareció, llegó a existir", ["Acompañó a alguien", "Estuvo de acuerdo"], ["Appeared, started to exist", "Went with someone", "Agreed"], "Come along = aparecer. Google apareció 35 años después.", "Come along = appear. Google appeared 35 years later."),
+            S("Stay Hungry. Stay Foolish.", "Sigue con ganas de aprender y atrévete", ["Come poco y no pienses", "Ahorra tu dinero"], ["Keep wanting to learn and take risks", "Eat little and don't think", "Save your money"], "Hungry = con ganas de más. Foolish = atrevido, sin miedo a parecer tonto.", "Hungry = always wanting more. Foolish = brave, not afraid to look silly.", ["¿Qué significa «Stay Hungry. Stay Foolish.»?", "What does “Stay Hungry. Stay Foolish.” mean?"]),
+            S("living someone else's life", "Vivir según lo que otros esperan de ti", ["Mudarte con otra persona", "Trabajar en otra empresa"], ["Live the way others expect you to", "Move in with someone", "Work for another company"], "Someone else's = de otra persona. Vive tu propia vida.", "Someone else's = another person's. Live your own life.")
+          ]
+        }
       ]
     },
 
