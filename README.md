@@ -13,9 +13,10 @@ index.html          Página principal
 assets/styles.css   Estilos y modo día/noche (paleta y tipografías de Your English Buddy)
 assets/i18n.js      Botón ES / EN y textos fijos de la interfaz en ambos idiomas
 assets/theme.js     Botón de modo día/noche
-assets/gate.js      Pantalla de acceso (clave general o clave personal de cada estudiante)
+assets/gate.js      Página de inicio de sesión
+assets/accounts.js  Cuentas de estudiantes (usuario, nombre y hash de la contraseña)
+assets/cloud.js     Sesión de cada estudiante y sincronización opcional con Supabase
 assets/config.js    Conexión con Supabase (vacía = sin nube)
-assets/cloud.js     Sesión del estudiante y guardado de su progreso en la nube
 setup/supabase.sql  Tabla y funciones para Supabase
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
@@ -81,29 +82,31 @@ Las lecturas ya traen su inglés, no hace falta tocar `data/en.js`.
 
 La página empieza en inglés. El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta la traducción, ese texto se muestra en español.
 
-## Progreso por estudiante (Supabase)
+## Inicio de sesión de cada estudiante
 
-Cada estudiante entra con su clave personal y su progreso se guarda en la nube, así lo ve en cualquier dispositivo.
+Al abrir el sitio aparece una página de inicio de sesión. Cada estudiante entra con su **usuario y contraseña**, y su progreso (respuestas, ejercicios a medias, favoritos, lectura) se guarda aparte: si otra persona entra en el mismo navegador, no ve lo de nadie más. Al cerrar sesión, el progreso queda guardado para la próxima vez.
+
+Las cuentas están en `assets/accounts.js`. Para agregar a alguien, calcula el hash de su contraseña (en minúsculas):
+
+```bash
+printf '%s' 'nombre-palabra-palabra-1234' | shasum -a 256
+```
+
+y agrega una línea con su usuario, su nombre y ese hash. La contraseña nunca va en el repo. Es una barrera del lado del navegador: separa el progreso de cada uno y evita visitas casuales, pero alguien con conocimientos técnicos podría saltársela.
+
+Sin Supabase, el progreso se guarda en el navegador del estudiante (su teléfono o su computadora).
+
+## Sincronizar entre dispositivos (Supabase, opcional)
+
+Con Supabase, el progreso de cada estudiante se guarda en la nube y lo ve en cualquier dispositivo.
 
 1. Crea un proyecto gratis en https://supabase.com.
 2. En **SQL Editor**, pega y ejecuta `setup/supabase.sql`.
-3. Agrega cada estudiante (también en SQL Editor):
-   `insert into public.students (name, key_hash) values ('Nombre Apellido', public.yeb_hash('su-clave'));`
+3. Agrega cada estudiante con la misma contraseña que tiene en `assets/accounts.js`:
+   `insert into public.students (name, key_hash) values ('Nombre Apellido', public.yeb_hash('su-contraseña'));`
 4. En **Project Settings → API**, copia *Project URL* y la clave *anon public* en `assets/config.js`.
 
-Las claves nunca se guardan en este repo: en la base de datos solo queda su hash, y la tabla solo se puede usar a través de dos funciones que verifican la clave. El sitio muestra solo el primer nombre. Para ver el avance de todos, usa la consulta que está al final de `setup/supabase.sql`.
-
-Mientras `assets/config.js` esté vacío, el sitio usa la clave general de abajo y guarda el progreso solo en el navegador.
-
-## Clave de acceso general
-
-La página pide una clave antes de mostrar el contenido y la recuerda en cada navegador. En `assets/gate.js` solo se guarda el hash SHA-256 de la clave, no la clave en sí. Para cambiarla:
-
-```bash
-printf '%s' 'nuevaclave' | shasum -a 256
-```
-
-y reemplaza `KEY_HASH` con el resultado. Es una barrera simple contra visitas casuales: como el sitio es estático, alguien con conocimientos técnicos podría saltársela.
+En la base de datos solo queda el hash de cada contraseña, y la tabla solo se puede usar a través de dos funciones que la verifican. Para ver el avance de todos, usa la consulta que está al final de `setup/supabase.sql`.
 
 Después de cambiar cualquier archivo de `assets/` o `data/`, sube el número `?v=` de los enlaces en `index.html` (por ejemplo, a la fecha y hora). Así los navegadores de los estudiantes descargan la versión nueva en lugar de usar una copia guardada.
 

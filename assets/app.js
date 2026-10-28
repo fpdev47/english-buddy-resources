@@ -17,9 +17,10 @@
   const exSecT = (x, si) => { const e = exT(x); return (e && e.sections[si]) || {}; };
   const itemT = (x, si, ii) => { const sec = exSecT(x, si); return (sec.items && sec.items[ii]) || {}; };
   const label = (tr, value) => (tr.labels && tr.labels[value]) || value;
-  // Each student (logged in with their personal key) has their own saved progress
+  // Each logged-in student has their own saved progress; with Supabase it also syncs between devices
   const CLOUD = window.YEB_CLOUD;
   const student = CLOUD && CLOUD.student;
+  const syncing = !!(student && CLOUD.enabled);
   const STORE = student ? `yeb-state:${student.id}` : "yeb-state";
 
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -53,13 +54,13 @@
   if (state.readDefaultV !== 2) { state.readTopic = READINGS[0] && READINGS[0].id; state.readDefaultV = 2; }
   const writeLocal = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
 
-  // ——— Cloud sync (only when the student logged in with a personal key) ———
+  // ——— Cloud sync (only with Supabase configured) ———
   // dirty = local changes not yet saved in the cloud; syncedAt = server time of the last sync
   const progressOnly = () => { const { dirty, syncedAt, ...rest } = state; return rest; };
   let pushTimer = null, pushing = false;
   async function push(keepalive) {
     clearTimeout(pushTimer);
-    if (!student || !state.dirty || (pushing && !keepalive)) return;
+    if (!syncing || !state.dirty || (pushing && !keepalive)) return;
     pushing = true;
     try {
       const at = await CLOUD.push(progressOnly(), keepalive);
@@ -82,13 +83,13 @@
       } else if (state.dirty) push();
     } catch (e) { /* offline: keep working with the local copy */ }
   }
-  if (student) {
+  if (syncing) {
     addEventListener("pagehide", () => push(true));
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") push(true); else pull(); });
   }
 
   const save = () => {
-    if (student) { state.dirty = true; clearTimeout(pushTimer); pushTimer = setTimeout(push, 1200); }
+    if (syncing) { state.dirty = true; clearTimeout(pushTimer); pushTimer = setTimeout(push, 1200); }
     writeLocal();
   };
 
@@ -789,7 +790,7 @@
 
   $("#toast").addEventListener("click", (e) => { if (e.target.closest("[data-action=undo]")) undo(); });
 
-  // ——— Greeting + log out (personal keys only) ———
+  // ——— Greeting + log out ———
   function renderHello() {
     if (!student) return;
     $("#badge-text").textContent = `👋 ${t("hi")(student.name)}`;
@@ -803,5 +804,5 @@
   // Switching ES / EN re-renders in place; answers and scores are kept
   document.addEventListener("yeb:lang", render);
   render();
-  if (student) pull();
+  if (syncing) pull();
 })();

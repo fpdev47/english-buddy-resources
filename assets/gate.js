@@ -1,68 +1,57 @@
 /*
-  Pantalla de acceso.
-  - Con Supabase configurado (assets/config.js): cada estudiante entra con su clave personal
-    y su progreso se guarda en la nube (ver assets/cloud.js y setup/supabase.sql).
-  - Sin Supabase: una clave general para todos. Es una barrera del lado del navegador
-    (evita visitas casuales, pero no es seguridad real). Para cambiarla, calcula su SHA-256
-    (por ejemplo: printf '%s' 'nuevaclave' | shasum -a 256) y reemplaza KEY_HASH.
+  Página de inicio de sesión: cada estudiante entra con su usuario y contraseña (assets/accounts.js).
+  Es una barrera del lado del navegador (evita visitas casuales y separa el progreso de cada uno),
+  no seguridad real.
 */
 (function () {
-  const KEY_HASH = "226bdc5e40cd614c09a7352f2133a1082b3b535ba3cd67c51cc962025d429075";
   const CLOUD = window.YEB_CLOUD;
   const root = document.documentElement;
   const t = (k) => (window.YEB_I18N ? window.YEB_I18N.t(k) : k);
 
-  if (CLOUD && CLOUD.enabled) {
-    root.classList.add("cloud");
-    const p = document.getElementById("gate-text");
-    if (p) { p.dataset.i18n = "gateTextPersonal"; p.textContent = t("gateTextPersonal"); }
-  }
-  if (root.classList.contains("unlocked")) return;
-
   const form = document.getElementById("gate-form");
-  const input = document.getElementById("gate-key");
+  const user = document.getElementById("gate-user");
+  const pass = document.getElementById("gate-key");
   const error = document.getElementById("gate-error");
   const button = form.querySelector(".gate-btn");
+  const eye = form.querySelector(".pw-toggle");
   let errorKey = "";
 
-  function showError(key) {
-    errorKey = key;
-    input.setAttribute("aria-invalid", "true");
-    error.textContent = t(key);
-    input.select();
+  // Show / hide the password
+  function syncEye() {
+    const shown = pass.type === "text";
+    eye.setAttribute("aria-pressed", shown);
+    eye.setAttribute("aria-label", t(shown ? "hidePw" : "showPw"));
   }
+  eye.addEventListener("click", () => { pass.type = pass.type === "password" ? "text" : "password"; syncEye(); pass.focus(); });
+  syncEye();
 
-  async function sha256(text) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (root.classList.contains("unlocked")) return;
+  if (!user.value) setTimeout(() => user.focus(), 0);
+
+  function showError(key, field) {
+    errorKey = key;
+    [user, pass].forEach((f) => f.removeAttribute("aria-invalid"));
+    field.setAttribute("aria-invalid", "true");
+    error.textContent = t(key);
+    field.select();
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const key = input.value.trim().toLowerCase();
-    if (!key) return input.focus();
-
-    if (CLOUD && CLOUD.enabled) {
-      button.disabled = true;
-      try {
-        const res = await CLOUD.login(key);
-        if (res) { location.reload(); return; }   // the app starts with this student's progress
-        showError("gateError");
-      } catch (err) {
-        showError("gateOffline");
-      }
-      button.disabled = false;
-      return;
+    if (!user.value.trim()) return user.focus();
+    if (!pass.value.trim()) return pass.focus();
+    button.disabled = true;
+    try {
+      if (await CLOUD.login(user.value, pass.value)) { location.reload(); return; }   // opens with this student's progress
+      showError("gateError", pass);
+    } catch (err) {
+      showError("gateOffline", pass);
     }
-
-    if ((await sha256(key)) === KEY_HASH) {
-      try { localStorage.setItem("yeb-access", "1"); } catch (err) {}
-      root.classList.add("unlocked");
-      window.scrollTo(0, 0);
-    } else {
-      showError("gateError");
-    }
+    button.disabled = false;
   });
-  input.addEventListener("input", () => { input.removeAttribute("aria-invalid"); error.textContent = ""; errorKey = ""; });
-  document.addEventListener("yeb:lang", () => { if (errorKey) error.textContent = t(errorKey); });
+  [user, pass].forEach((f) => f.addEventListener("input", () => {
+    [user, pass].forEach((x) => x.removeAttribute("aria-invalid"));
+    error.textContent = ""; errorKey = "";
+  }));
+  document.addEventListener("yeb:lang", () => { if (errorKey) error.textContent = t(errorKey); syncEye(); });
 })();

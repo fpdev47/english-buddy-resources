@@ -143,10 +143,24 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 .gate-card .brand { justify-content: center; }
 .gate-card h1 { font-size: 24px; margin-top: 6px; }
 .gate-card p { margin: 0; color: var(--muted); font-size: 15px; }
+.gate-card .field { display: grid; gap: 6px; text-align: left; }
+.gate-card label { font-size: 14px; font-weight: 700; color: var(--ink); }
 .gate-card input {
   width: 100%; font: inherit; font-size: 16px; padding: 13px 16px; border-radius: 14px;
-  border: 2px solid var(--line); background: var(--bg-soft); color: var(--ink); text-align: center; outline: none;
+  border: 2px solid var(--line); background: var(--bg-soft); color: var(--ink); outline: none;
 }
+.gate-card input::placeholder { color: var(--muted-2); }
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 54px; }
+.pw-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%); width: 44px; height: 44px;
+  display: grid; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--muted); cursor: pointer;
+}
+.pw-toggle svg { width: 22px; height: 22px; }
+.pw-toggle .eye-off, .pw-toggle[aria-pressed="true"] .eye-open { display: none; }
+.pw-toggle[aria-pressed="true"] .eye-off { display: block; }
+.pw-toggle:focus-visible { outline: 3px solid var(--green-600); }
+.gate-btn:disabled { opacity: .6; cursor: wait; }
 .gate-card input:focus { border-color: var(--brand); }
 .gate-card input[aria-invalid="true"] { border-color: var(--heart); }
 .gate-btn {
