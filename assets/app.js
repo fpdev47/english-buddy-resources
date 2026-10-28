@@ -179,17 +179,25 @@
   function options(item) {
     const all = [item.a, ...item.o];
     // "Find the mistake": when every option is a piece of the quoted sentence, keep reading order
-    const pos = (o) => item.quote.search(new RegExp(`(^|\\W)${o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=\\W|$)`));
+    const plain = (item.quote || "").replace(/\[\[|\]\]/g, "");
+    const pos = (o) => plain.search(new RegExp(`(^|\\W)${o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=\\W|$)`));
     if (item.quote && all.every((o) => pos(o) >= 0)) return all.sort((x, y) => pos(x) - pos(y));
     const rnd = seeded(item.q + "|" + item.a + "|" + (item.quote || ""));
     for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
     return all;
   }
 
+  function savedAnswer(x, si, ii) {
+    const ans = (state.answers[x.id] || {})[`${si}-${ii}`];
+    const item = x.sections[si] && x.sections[si].items[ii];
+    if (!ans || !item) return null;
+    if (item.type !== "write" && ![item.a, ...item.o].includes(ans.v)) return null;
+    return ans;
+  }
+
   function progress(x) {
-    const saved = state.answers[x.id] || {};
     const total = x.sections.reduce((n, s) => n + s.items.length, 0);
-    const vals = Object.values(saved);
+    const vals = x.sections.flatMap((s, si) => s.items.map((_, ii) => savedAnswer(x, si, ii))).filter(Boolean);
     return { total, done: vals.length, correct: vals.filter((v) => v.ok).length };
   }
 
@@ -197,7 +205,7 @@
     const item = x.sections[si].items[ii];
     const tr = itemT(x, si, ii);
     const key = `${si}-${ii}`;
-    const ans = (state.answers[x.id] || {})[key];
+    const ans = savedAnswer(x, si, ii);
     const isWrite = item.type === "write";
     const correct = isWrite ? item.a[0] : label(tr, item.a);
     const prompt = esc(tr.q || item.q).replace(/^\((\d+)\)\s*/, '<span class="mark">$1</span>').replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
@@ -227,12 +235,21 @@
       <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : ""}" id="q-${key}">
         <span class="q-num">${ii + 1}</span>
         <div class="q-body">
-          ${item.quote ? `<blockquote class="quote">${esc(tr.quote || item.quote)}</blockquote>` : ""}
+          ${item.quote ? `<blockquote class="quote">${esc(tr.quote || item.quote).replace(/\[\[(.+?)\]\]/g, '<mark class="hl">$1</mark>')}</blockquote>` : ""}
           <p class="q-text">${prompt}</p>
           ${body}
           ${fb}
         </div>
       </article>`;
+  }
+
+  function storyMarkClass(x, si, n) {
+    const ans = savedAnswer(x, si, n - 1);
+    return "mark jump" + (ans ? (ans.ok ? " ok" : " bad") : "");
+  }
+  function storyHTML(x, si) {
+    return esc(x.sections[si].story).replace(/\((\d+)\)/g, (_, n) =>
+      `<button type="button" class="${storyMarkClass(x, si, +n)}" data-jump="${si}-${+n - 1}" aria-label="${n}">${n}</button>`);
   }
 
   function scoreHTML(x) {
@@ -261,7 +278,7 @@
         <section class="ex-section${s.story ? " has-story" : ""}">
           <h3>${esc(exSecT(x, si).title || s.title)}</h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions)}</p>
-          ${s.story ? `<div class="story">${esc(s.story).replace(/\((\d+)\)/g, '<span class="mark">$1</span>')}</div>` : ""}
+          ${s.story ? `<div class="story">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
@@ -275,6 +292,8 @@
     state.answers[x.id][key] = { v: value, ok };
     save();
     document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
+    const mark = document.querySelector(`.story [data-jump="${key}"]`);
+    if (mark) mark.className = storyMarkClass(x, si, ii + 1);
     $("#score").innerHTML = scoreHTML(x);
     renderTopics();
   }
@@ -285,6 +304,13 @@
   }
 
   $("#panel").addEventListener("click", (e) => {
+    const jump = e.target.closest("[data-jump]");
+    if (jump) {
+      const q = document.getElementById(`q-${jump.dataset.jump}`);
+      q.scrollIntoView({ behavior: "smooth", block: "center" });
+      q.classList.add("flash"); setTimeout(() => q.classList.remove("flash"), 1200);
+      return;
+    }
     const opt = e.target.closest(".opt");
     if (opt && !opt.disabled) return answer(opt.dataset.key, opt.dataset.v);
 

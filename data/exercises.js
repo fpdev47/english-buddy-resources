@@ -141,19 +141,34 @@ window.YEB_EXERCISES = [
         ]
       },
       {
-        title: "Historia: el viaje de María",
-        instructions: "Lee la historia. Luego escribe o elige cómo se dice cada número marcado.",
-        story: "Maria was born in (1) 1994. Last summer she flew to New York on flight (2) 2215. Her ticket cost (3) $349.99. She landed at (4) 6:45 in the evening and took bus (5) 106 to her hotel. Her room was (6) 1412. That night she called her mom at (7) 555‑0193. She stayed until (8) July 21st and promised to come back in (9) 2027.",
+        title: "Historia: el fin de semana 4/20 de Jake",
+        instructions: "Lee la historia y elige cómo se dice cada número. Toca un círculo para ir a su pregunta.",
+        story: "Jake was born in (1) 1994, and he's the most chill stoner in Denver. Last spring he planned the perfect 4/20 weekend. His flight, number (2) 2215, landed at (3) 4:20 p.m. (of course). He paid (4) $349.99 for a \u201c420-friendly\u201d hotel, room (5) 1412. First stop: a dispensary at (6) 1650 Blake Street, where he bought some weed: a pre-roll and a bag of gummies. Two hours later he was totally baked and had the munchies, so he ordered (7) 15 tacos and called his buddy at (8) 555\u20110193 just to say \u201cI love you, man.\u201d He woke up on (9) April 21st with no memory and a taco in his bed.",
         items: [
-          { type: "write", q: "(1) 1994", a: ["nineteen ninety-four"], e: "Año de dos en dos: 19 | 94 → nineteen ninety-four." },
-          { type: "write", q: "(2) flight 2215", a: ["twenty-two fifteen"], e: "Vuelo de dos en dos: 22 | 15 → twenty-two fifteen." },
-          { q: "(3) ¿Cómo dice María el precio $349.99 de forma natural?", a: "three forty-nine ninety-nine", o: ["thirty-four nine ninety-nine", "three four nine point nine nine", "three hundred forty-nine point ninety-nine"], e: "Dólares | centavos: 349 | 99 → three forty-nine ninety-nine." },
-          { type: "write", q: "(4) 6:45", a: ["six forty-five", "a quarter to seven", "quarter to seven"], e: "Hora | minutos: six forty-five (o «a quarter to seven»)." },
-          { type: "write", q: "(5) bus 106", a: ["one oh six", "one o six", "one hundred six", "one hundred and six", "a hundred and six"], e: "Lo natural es 1 | 06 → one oh six (el 0 se dice «oh»)." },
-          { type: "write", q: "(6) room 1412", a: ["fourteen twelve"], e: "Habitación de dos en dos: 14 | 12 → fourteen twelve." },
-          { q: "(7) ¿Cómo dice el teléfono 555-0193?", a: "five five five, oh one nine three", o: ["five hundred fifty-five, nineteen three", "fifty-five five, zero hundred ninety-three", "five fifty-five, one ninety-three"], e: "Teléfonos: dígito por dígito, y el 0 suele decirse «oh»." },
-          { type: "write", q: "(8) July 21st", a: ["july twenty-first", "the twenty-first of july", "july the twenty-first"], e: "Fecha con ordinal: July twenty-first (UK: the twenty-first of July)." },
-          { type: "write", q: "(9) 2027", a: ["twenty twenty-seven", "two thousand twenty-seven", "two thousand and twenty-seven"], e: "Lo más común: 20 | 27 → twenty twenty-seven." }
+          { quote: "Jake was born in [[1994]], and he's the most chill stoner in Denver.", q: "(1) ¿Cómo se dice «1994»?", a: "nineteen ninety-four", o: ["nineteen nine four", "nine ninety-four"], e: "Los años van de dos en dos: 19 | 94 → nineteen ninety-four." },
+          { quote: "His flight, number [[2215]], landed at 4:20 p.m.", q: "(2) ¿Cómo se dice el vuelo «2215»?", a: "twenty-two fifteen", o: ["twenty-two one five", "two twenty fifteen"], e: "Los vuelos van de dos en dos: 22 | 15 → twenty-two fifteen." },
+          { quote: "His flight landed at [[4:20]] p.m. (of course).", q: "(3) ¿Cómo se dice la hora «4:20»?", a: "four twenty", o: ["forty-two", "four two zero"], e: "Hora | minutos → four twenty. «420» (four-twenty) es también el código de la cultura de la marihuana." },
+          { quote: "He paid [[$349.99]] for a “420-friendly” hotel.", q: "(4) ¿Cómo se dice «$349.99» de forma natural?", a: "three forty-nine ninety-nine", o: ["thirty-four nine ninety-nine", "three four nine nine nine"], e: "Dólares | centavos: 349 | 99 → three forty-nine ninety-nine." },
+          { quote: "…a “420-friendly” hotel, room [[1412]].", q: "(5) ¿Cómo se dice la habitación «1412»?", a: "fourteen twelve", o: ["fourteen one two", "one thousand four twelve"], e: "Habitaciones de dos en dos: 14 | 12 → fourteen twelve." },
+          { quote: "First stop: a dispensary at [[1650]] Blake Street.", q: "(6) ¿Cómo se dice la dirección «1650»?", a: "sixteen fifty", o: ["sixty-one fifty", "sixteen five oh"], e: "Direcciones de dos en dos: 16 | 50 → sixteen fifty Blake Street." },
+          { quote: "He had the munchies, so he ordered [[15]] tacos.", q: "(7) ¿Cuántos tacos pidió?", a: "fifteen", o: ["fifty", "five-teen"], e: "15 = fifTEEN (acento al final). 50 = FIFty. ¡Mucha diferencia en tacos!" },
+          { quote: "He called his buddy at [[555‑0193]] just to say “I love you, man.”", q: "(8) ¿Cómo se dice el teléfono «555‑0193»?", a: "five five five, oh one nine three", o: ["five fifty-five, nineteen three", "five hundred fifty-five, one ninety-three"], e: "Teléfonos: dígito por dígito, y el 0 se dice «oh»." },
+          { quote: "He woke up on [[April 21st]] with no memory and a taco in his bed.", q: "(9) ¿Cómo se dice «April 21st»?", a: "April twenty-first", o: ["April twenty-one", "April two first"], e: "Fechas con ordinal: April twenty-first." }
+        ]
+      },
+      {
+        title: "Slang de la historia",
+        instructions: "Inglés callejero e informal: úsalo con amigos, no en el trabajo. ¿Qué significa cada palabra?",
+        items: [
+          { quote: "…he's the most chill [[stoner]] in Denver.", q: "«Stoner» es:", a: "Alguien que fuma marihuana muy seguido", o: ["Alguien que colecciona piedras", "Alguien muy serio"], e: "Stoner (o pothead) = fumador habitual de marihuana. Es informal." },
+          { quote: "…he's the most [[chill]] stoner in Denver.", q: "«Chill» significa:", a: "Relajado, tranquilo", o: ["Con frío", "Aburrido"], e: "Chill = relajado. También «to chill» = relajarse: «Let's just chill tonight»." },
+          { quote: "…where he bought some [[weed]].", q: "«Weed» es:", a: "Marihuana", o: ["Maleza del jardín", "Tabaco"], e: "Weed = marihuana (informal). Literalmente significa «maleza»; el contexto te dice cuál es." },
+          { quote: "…a [[pre-roll]] and a bag of gummies.", q: "«Pre-roll» es:", a: "Un porro que ya viene armado", o: ["Un pan antes de hornear", "Un anuncio antes de un video"], e: "Pre-roll = porro ya armado. Un porro también se dice «joint»." },
+          { quote: "…a pre-roll and a bag of [[gummies]].", q: "Aquí, «gummies» son:", a: "Gomitas con marihuana", o: ["Chicles normales", "Zapatos de goma"], e: "En este contexto son «edibles»: comestibles con marihuana." },
+          { quote: "Two hours later he was totally [[baked]]…", q: "Aquí, «baked» significa:", a: "Muy drogado por la marihuana", o: ["Horneado", "Muy cansado"], e: "Baked = stoned = high: bajo los efectos de la marihuana." },
+          { quote: "…and had [[the munchies]]…", q: "«The munchies» es:", a: "Un hambre enorme después de fumar marihuana", o: ["Un tipo de tacos", "Ganas de dormir"], e: "The munchies = antojo intenso de comida, sobre todo después de fumar." },
+          { quote: "Last spring he planned the perfect [[4/20]] weekend.", q: "«4/20» (four-twenty) es:", a: "El código y el día (20 de abril) de la cultura de la marihuana", o: ["Una hora sin importancia", "Un número de vuelo"], e: "420 / four-twenty se asocia con la marihuana; el 20 de abril (4/20) se celebra." },
+          { quote: "…called his [[buddy]] at 555‑0193…", q: "«Buddy» significa:", a: "Amigo, compa", o: ["Hermano de sangre", "Jefe"], e: "Buddy = amigo (informal). Parecidos: pal, dude, bro." }
         ]
       },
       {

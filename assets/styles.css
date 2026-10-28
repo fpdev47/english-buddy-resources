@@ -343,6 +343,12 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 }
 .has-story .q-num { display: none; }
 .q-text .mark { margin-right: 8px; vertical-align: 1px; }
+.story .mark.jump { border: 0; padding: 0; cursor: pointer; width: 24px; height: 24px; }
+.story .mark.ok { background: var(--ok-line); color: #fff; }
+.story .mark.bad { background: var(--bad-line); color: #fff; }
+.story .mark.jump:focus-visible { outline: 3px solid var(--green-600); outline-offset: 2px; }
+.quote .hl { background: var(--lime); color: var(--teal-900); padding: 0 4px; border-radius: 4px; font-style: normal; font-weight: 700; }
+.q.flash { box-shadow: 0 0 0 3px var(--lime); transition: box-shadow .3s; }
 .story .mark, .q-text .mark {
   display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 4px;
   border-radius: 50%; background: var(--solid); color: var(--lime);

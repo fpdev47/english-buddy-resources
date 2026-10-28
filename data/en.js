@@ -202,16 +202,27 @@ window.YEB_EN = {
           { e: "50 = FIFty; 15 = fifTEEN. Watch the spelling: fifty, not “fivety”." },
           { e: "With no number before it, it takes -s and “of”: thousands of people." }
         ] },
-        { title: "Story: Maria's trip", instructions: "Read the story. Then write or choose how to say each marked number.", items: [
-          { e: "Years in pairs: 19 | 94 → nineteen ninety-four." },
-          { e: "Flight numbers in pairs: 22 | 15 → twenty-two fifteen." },
-          { q: "(3) What's the natural way for Maria to say the price $349.99?", e: "Dollars | cents: 349 | 99 → three forty-nine ninety-nine." },
-          { e: "Hour | minutes: six forty-five (or “a quarter to seven”)." },
-          { e: "The natural way is 1 | 06 → one oh six (0 is said “oh”)." },
-          { e: "Room numbers in pairs: 14 | 12 → fourteen twelve." },
-          { q: "(7) How does she say the phone number 555-0193?", e: "Phone numbers: digit by digit, and 0 is usually said “oh”." },
-          { e: "Dates use ordinals: July twenty-first (UK: the twenty-first of July)." },
-          { e: "The most common way: 20 | 27 → twenty twenty-seven." }
+        { title: "Story: Jake's 4/20 weekend", instructions: "Read the story and choose how to say each number. Tap a circle to jump to its question.", items: [
+          { q: "(1) How do you say “1994”?", e: "Years go in pairs: 19 | 94 → nineteen ninety-four." },
+          { q: "(2) How do you say flight “2215”?", e: "Flight numbers go in pairs: 22 | 15 → twenty-two fifteen." },
+          { q: "(3) How do you say the time “4:20”?", e: "Hour | minutes → four twenty. “420” (four-twenty) is also the code for cannabis culture." },
+          { q: "(4) What's the natural way to say “$349.99”?", e: "Dollars | cents: 349 | 99 → three forty-nine ninety-nine." },
+          { q: "(5) How do you say room “1412”?", e: "Room numbers go in pairs: 14 | 12 → fourteen twelve." },
+          { q: "(6) How do you say the address “1650”?", e: "Addresses go in pairs: 16 | 50 → sixteen fifty Blake Street." },
+          { q: "(7) How many tacos did he order?", e: "15 = fifTEEN (stress at the end). 50 = FIFty. A big difference in tacos!" },
+          { q: "(8) How do you say the phone number “555‑0193”?", e: "Phone numbers: digit by digit, and 0 is said “oh”." },
+          { q: "(9) How do you say “April 21st”?", e: "Dates use ordinals: April twenty-first." }
+        ] },
+        { title: "Slang from the story", instructions: "Informal street English: use it with friends, not at work. What does each word mean?", items: [
+          { q: "A “stoner” is:", labels: { "Alguien que fuma marihuana muy seguido": "Someone who smokes weed a lot", "Alguien que colecciona piedras": "Someone who collects stones", "Alguien muy serio": "A very serious person" }, e: "Stoner (or pothead) = someone who smokes weed regularly. Informal." },
+          { q: "“Chill” means:", labels: { "Relajado, tranquilo": "Relaxed, calm", "Con frío": "Cold", "Aburrido": "Boring" }, e: "Chill = relaxed. Also “to chill” = to relax: “Let's just chill tonight”." },
+          { q: "“Weed” is:", labels: { "Marihuana": "Marijuana", "Maleza del jardín": "A plant you pull out of the garden", "Tabaco": "Tobacco" }, e: "Weed = marijuana (informal). Literally it means an unwanted plant; context tells you which one." },
+          { q: "A “pre-roll” is:", labels: { "Un porro que ya viene armado": "A joint that comes already rolled", "Un pan antes de hornear": "Bread before baking", "Un anuncio antes de un video": "An ad before a video" }, e: "Pre-roll = a ready-made joint. A joint is a rolled marijuana cigarette." },
+          { q: "Here, “gummies” are:", labels: { "Gomitas con marihuana": "Gummy candies with cannabis", "Chicles normales": "Regular chewing gum", "Zapatos de goma": "Rubber shoes" }, e: "In this context they're “edibles”: food with cannabis in it." },
+          { q: "Here, “baked” means:", labels: { "Muy drogado por la marihuana": "Very high from weed", "Horneado": "Cooked in an oven", "Muy cansado": "Very tired" }, e: "Baked = stoned = high: under the effects of marijuana." },
+          { q: "“The munchies” is:", labels: { "Un hambre enorme después de fumar marihuana": "Huge hunger after smoking weed", "Un tipo de tacos": "A type of taco", "Ganas de dormir": "Feeling sleepy" }, e: "The munchies = a strong craving for food, especially after smoking." },
+          { q: "“4/20” (four-twenty) is:", labels: { "El código y el día (20 de abril) de la cultura de la marihuana": "The code and the day (April 20) of cannabis culture", "Una hora sin importancia": "A random time of day", "Un número de vuelo": "A flight number" }, e: "420 / four-twenty is linked to marijuana; April 20 (4/20) is celebrated." },
+          { q: "“Buddy” means:", labels: { "Amigo, compa": "Friend, pal", "Hermano de sangre": "Blood brother", "Jefe": "Boss" }, e: "Buddy = friend (informal). Similar: pal, dude, bro." }
         ] },
         { title: "Find the mistake: a voicemail", instructions: "Tom left you a message about an apartment. Each sentence has one mistake in how a number is said: tap the wrong part.", items: [
           { q: "Which part is wrong?", e: "After a number, hundred has no -s: one thousand two hundred dollars." },

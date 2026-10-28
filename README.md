@@ -54,7 +54,9 @@ Abre `data/exercises.js`. Cada tema tiene secciones y cada sección tiene ejerci
 
 Otras opciones:
 - `quote`: frase que se muestra arriba de la pregunta. Si todas las opciones son partes de esa frase («encuentra el error»), se muestran en el orden de lectura.
-- `story` (en una sección): una historia que se muestra antes de las preguntas; las marcas (1), (2)... se convierten en círculos numerados.
+- `story` (en una sección): una historia que se muestra antes de las preguntas. Las marcas (1), (2)... se vuelven círculos que llevan a su pregunta y se ponen verdes o rojos al responder; la marca (1) corresponde al primer ejercicio de la sección, la (2) al segundo, etc.
+- En `quote`, lo que va entre `[[ ]]` se resalta (por ejemplo `He paid [[$349.99]]`).
+- Si cambias o reordenas ejercicios de un tema, las respuestas guardadas que ya no coinciden se descartan solas.
 
 Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros` (o `#shadowing` para un tema de Escuchar).
 
