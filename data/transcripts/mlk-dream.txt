@@ -1,0 +1,4 @@
+# Texto completo de «I Have a Dream» (Martin Luther King Jr., 1963).
+# El discurso tiene derechos de autor, por eso no viene incluido.
+# Si tienes permiso para usarlo en clase, pega aquí el texto (párrafos separados por una línea en blanco)
+# y la lectura mostrará «Texto completo | Resumen». Las líneas que empiezan con # se ignoran.

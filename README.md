@@ -25,6 +25,9 @@ data/exercises.js   Banco de ejercicios (temas originales)
 data/exercises-unit1.js, exercises-unit2.js, exercises-extra.js
                     Temas del libro Travelers 1 (unidades 1 y 2) y temas complementarios
 data/readings.js    Lecturas (pestaña Reading): historias, vocabulario y preguntas
+data/readings-classics.js
+                    Discursos y clásicos: Padre Nuestro (inglés arcaico), Gettysburg, I Have a Dream,
+                    Alicia, Orgullo y prejuicio y Sherlock Holmes
 data/en.js          Traducción al inglés de temas, canales y ejercicios
 data/glossary/      Traducción de cada palabra al tocarla (lecturas e historias)
 data/transcripts/   Textos completos opcionales de las lecturas
