@@ -145,12 +145,13 @@
   function renderTopics() {
     let tiles;
     if (state.mode === "practicar") {
+      // Only the current topic, plus a button that opens every topic grouped like the book
       const g = topicGroup(state.exTopic);
-      tiles = EXERCISES.filter((x) => !g || topicGroup(x.id) === g).map((x) => {
+      tiles = EXERCISES.filter((x) => !GROUPS.length || x.id === state.exTopic).map((x) => {
         const p = progress(x);
-        return { id: x.id, label: topicTitle(x), sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ${t("exercises")}`}`, icon: "ejercicio", selected: state.exTopic === x.id };
+        return { id: x.id, label: topicTitle(x), sub: `${g ? `${pickLang(g.title)} · ` : ""}${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ${t("exercises")}`}`, icon: "ejercicio", selected: true };
       });
-      if (g) tiles.unshift({ id: "__all", label: t("allTopics"), sub: `${pickLang(g.title)} · ${EXERCISES.length}`, icon: "grupos", selected: false, all: true });
+      if (GROUPS.length) tiles.unshift({ id: "__all", label: t("allTopics"), sub: t("topicsCount")(EXERCISES.length), icon: "grupos", selected: false, all: true });
     } else if (state.mode === "leer") {
       tiles = READINGS.map((x) => {
         const p = progress(x);
