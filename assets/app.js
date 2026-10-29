@@ -446,7 +446,7 @@
         <strong>${ans.ok ? `${t("correct")}${ans.first ? ` <small>${esc(t("secondTry"))}</small>` : ""}` : `${t("answerIs")} ${esc(correct)}`}</strong>
         ${!ans.ok ? why(ans.v) : ""}
         <span>${esc(pickLang(tr.e || item.e))}</span>
-        ${ans.ok ? "" : `<button type="button" class="retry-one" data-action="retry-one" data-key="${key}">↻ ${esc(t("tryAgain"))}</button>`}
+        <button type="button" class="retry-one${ans.ok ? " again" : ""}" data-action="retry-one" data-key="${key}">↻ ${esc(ans.ok ? t("doAgain") : t("tryAgain"))}</button>
       </div>` : tried !== null ? `
       <div class="fb try" role="status">
         <strong>${esc(t("notThis")(isWrite ? tried : label(tr, tried)))}</strong>
@@ -519,7 +519,7 @@
     $("#score").innerHTML = scoreHTML(x);
     x.sections.forEach((_, si) => {
       const el = document.getElementById(`sec-count-${si}`); if (el) el.textContent = sectionCount(x, si);
-      const reset = document.querySelector(`.sec-reset[data-sec="${si}"]`); if (reset) reset.hidden = !sectionTouched(x, si);
+      const reset = document.querySelector(`.sec-reset[data-sec="${si}"]`); if (reset) reset.disabled = !sectionTouched(x, si);
       const chip = document.querySelector(`.sec-chip[data-sec="${si}"]`);
       if (chip) { const c = chipCount(x, si); chip.querySelector("small").textContent = c.text; chip.classList.toggle("done", c.done); }
     });
@@ -553,7 +553,7 @@
       ${x.sections.map((s, si) => `
         <section class="ex-section${s.story ? " has-story" : ""}" id="sec-${si}">
           <h3>${esc(secTitle(x, si))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span>
-            <button type="button" class="sec-reset" data-action="reset-section" data-sec="${si}" ${sectionTouched(x, si) ? "" : "hidden"} title="${esc(t("resetSection"))}" aria-label="${esc(t("resetSection"))}: ${esc(secTitle(x, si))}">↻ <span>${esc(t("resetShort"))}</span></button></h3>
+            <button type="button" class="sec-reset" data-action="reset-section" data-sec="${si}" ${sectionTouched(x, si) ? "" : "disabled"} title="${esc(t("resetSection"))}" aria-label="${esc(t("resetSection"))}: ${esc(secTitle(x, si))}">↻ <span>${esc(t("resetShort"))}</span></button></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || pickLang(s.instructions) || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
