@@ -112,6 +112,22 @@ Un archivo en `data/glossary/` hace que cada palabra de un texto se pueda tocar 
 
 La página empieza en inglés. El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta la traducción, ese texto se muestra en español.
 
+## Progreso del estudiante
+
+La pestaña **Progreso** (y el botón 🔥 junto al saludo) muestra:
+
+- **Racha** de días estudiados, estilo Duolingo: un día cuenta si el estudiante respondió algo o estudió al menos un minuto. La racha sigue viva hasta que termina el día siguiente. También muestra la semana y la mejor racha.
+- **Tiempo**: el de esta sesión (en vivo), el de hoy y el total. Solo cuenta el tiempo activo: la pestaña visible y alguna interacción en los últimos 2 minutos.
+- **Respuestas**: cuántas, el % de correctas, el % correctas al primer intento y los temas completos.
+- **Últimos 14 días**: minutos por día.
+- **Dónde mejorar**: las secciones con menos de 80 % de aciertos (con al menos 3 respuestas), con un botón para practicarlas.
+- **Errores recientes**: la respuesta del estudiante, la correcta y un botón para repasar esa pregunta.
+- **Avance por tema**.
+
+Todo se guarda con el progreso de cada estudiante (`daily` en su estado), así que con Supabase también se sincroniza.
+
+Para limpiar ejercicios: «↻ Reiniciar» en cada sección, «Empezar de nuevo» para todo el tema y «Repetir errores» para borrar solo los fallos. Siempre se puede deshacer.
+
 ## Inicio de sesión de cada estudiante
 
 Al abrir el sitio aparece una página de inicio de sesión. Cada estudiante entra con su **usuario y contraseña**, y su progreso (respuestas, ejercicios a medias, favoritos, lectura) se guarda aparte: si otra persona entra en el mismo navegador, no ve lo de nadie más. Al cerrar sesión, el progreso queda guardado para la próxima vez.

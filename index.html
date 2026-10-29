@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#ffffff">
-  <script src="assets/config.js?v=202610301900"></script>
+  <script src="assets/config.js?v=202610302000"></script>
   <script>
     // Applied before paint: the logged-in student and the student's day/night choice.
     try {
@@ -19,7 +19,7 @@
       if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/styles.css?v=202610301900">
+  <link rel="stylesheet" href="assets/styles.css?v=202610302000">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d3a3e'/><path d='M9 18v-2a7 7 0 0 1 14 0v2' stroke='%23c8e47c' stroke-width='2.4' fill='none' stroke-linecap='round'/><rect x='7' y='17' width='5' height='8' rx='2' fill='%235cf890'/><rect x='20' y='17' width='5' height='8' rx='2' fill='%235cf890'/></svg>">
 </head>
 <body>
@@ -79,13 +79,14 @@
   <main>
     <section class="intro">
       <div class="container">
-        <div class="hello"><span class="badge"><span class="dot"></span><span id="badge-text" data-i18n="badge">Student area</span></span><button type="button" class="logout-btn" id="logout" hidden data-i18n="logout">Log out</button></div>
+        <div class="hello"><span class="badge"><span class="dot"></span><span id="badge-text" data-i18n="badge">Student area</span></span><button type="button" class="streak-chip" id="streak-chip" hidden></button><button type="button" class="logout-btn" id="logout" hidden data-i18n="logout">Log out</button></div>
         <h1 data-i18n-html="title">What will you practice <span class="accent">today</span>?</h1>
         <p class="lead" data-i18n="lead">Listen to real English on YouTube and Spotify, or practice with exercises that are corrected instantly.</p>
         <div class="modes" id="modes" role="tablist" aria-label="What do you want to do" data-i18n-aria="modesLabel">
           <button type="button" class="mode-btn" role="tab" data-mode="practicar" aria-selected="true">✍️ <span data-i18n="practice">Practice</span></button>
           <button type="button" class="mode-btn" role="tab" data-mode="escuchar" aria-selected="false">🎧 <span data-i18n="listen">Listen</span></button>
           <button type="button" class="mode-btn" role="tab" data-mode="leer" aria-selected="false">📖 <span data-i18n="reading">Reading</span></button>
+          <button type="button" class="mode-btn" role="tab" data-mode="progreso" aria-selected="false">📈 <span data-i18n="progressTab">Progress</span></button>
         </div>
       </div>
     </section>
@@ -114,24 +115,24 @@
     </div>
   </footer>
 
-  <script src="assets/i18n.js?v=202610301900"></script>
-  <script src="assets/theme.js?v=202610301900"></script>
-  <script src="assets/accounts.js?v=202610301900"></script>
-  <script src="assets/cloud.js?v=202610301900"></script>
-  <script src="assets/gate.js?v=202610301900"></script>
-  <script src="data/resources.js?v=202610301900"></script>
-  <script src="data/glossary/steve-jobs.js?v=202610301900"></script>
-  <script src="data/readings.js?v=202610301900"></script>
-  <script src="data/glossary/r-lords-prayer.js?v=202610301900"></script>
-  <script src="data/readings-classics.js?v=202610301900"></script>
-  <script src="data/glossary/pronombres-objeto.js?v=202610301900"></script>
-  <script src="data/groups.js?v=202610301900"></script>
-  <script src="data/exercises.js?v=202610301900"></script>
-  <script src="data/exercises-unit1.js?v=202610301900"></script>
-  <script src="data/exercises-unit2.js?v=202610301900"></script>
-  <script src="data/exercises-extra.js?v=202610301900"></script>
-  <script src="data/why-original.js?v=202610301900"></script>
-  <script src="data/en.js?v=202610301900"></script>
-  <script src="assets/app.js?v=202610301900"></script>
+  <script src="assets/i18n.js?v=202610302000"></script>
+  <script src="assets/theme.js?v=202610302000"></script>
+  <script src="assets/accounts.js?v=202610302000"></script>
+  <script src="assets/cloud.js?v=202610302000"></script>
+  <script src="assets/gate.js?v=202610302000"></script>
+  <script src="data/resources.js?v=202610302000"></script>
+  <script src="data/glossary/steve-jobs.js?v=202610302000"></script>
+  <script src="data/readings.js?v=202610302000"></script>
+  <script src="data/glossary/r-lords-prayer.js?v=202610302000"></script>
+  <script src="data/readings-classics.js?v=202610302000"></script>
+  <script src="data/glossary/pronombres-objeto.js?v=202610302000"></script>
+  <script src="data/groups.js?v=202610302000"></script>
+  <script src="data/exercises.js?v=202610302000"></script>
+  <script src="data/exercises-unit1.js?v=202610302000"></script>
+  <script src="data/exercises-unit2.js?v=202610302000"></script>
+  <script src="data/exercises-extra.js?v=202610302000"></script>
+  <script src="data/why-original.js?v=202610302000"></script>
+  <script src="data/en.js?v=202610302000"></script>
+  <script src="assets/app.js?v=202610302000"></script>
 </body>
 </html>

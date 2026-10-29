@@ -101,12 +101,52 @@
     writeLocal();
   };
 
+  // ——— Study activity: time, answers and days studied (saved with each student's progress) ———
+  // state.daily = { "2026-10-30": { ms: active time, n: answers, ok: correct answers } }
+  const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  if (!state.daily || typeof state.daily !== "object") state.daily = {};
+  const today = () => (state.daily[dayKey()] = state.daily[dayKey()] || { ms: 0, n: 0, ok: 0 });
+  // A day counts when the student answered something or studied at least a minute
+  const studied = (k) => { const d = state.daily[k]; return !!d && (d.n > 0 || d.ms >= 60000); };
+  function streak() {
+    const d = new Date();
+    if (!studied(dayKey(d))) d.setDate(d.getDate() - 1);   // today isn't over: yesterday keeps the streak alive
+    let n = 0;
+    while (studied(dayKey(d))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function bestStreak() {
+    let best = 0, run = 0, prev = null;
+    Object.keys(state.daily).filter(studied).sort().forEach((k) => {
+      const d = new Date(`${k}T12:00`);
+      run = prev && Math.round((d - prev) / 864e5) === 1 ? run + 1 : 1;
+      best = Math.max(best, run); prev = d;
+    });
+    return best;
+  }
+  const totalMs = () => Object.values(state.daily).reduce((n, d) => n + (d.ms || 0), 0);
+  // Only active time counts: the tab is visible and the student touched, typed or scrolled in the last 2 minutes
+  let sessionMs = 0, lastInput = Date.now(), lastTick = Date.now(), unsavedMs = 0;
+  ["pointerdown", "keydown", "scroll", "touchstart"].forEach((ev) => addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
+  setInterval(() => {
+    const now = Date.now(), dt = now - lastTick;
+    lastTick = now;
+    if (!student || document.visibilityState !== "visible" || now - lastInput > 120000 || dt > 30000) return;
+    const wasStudied = studied(dayKey());
+    sessionMs += dt; today().ms += dt; unsavedMs += dt;
+    if (unsavedMs >= 30000) { unsavedMs = 0; save(); }
+    updateClock();
+    if (!wasStudied && studied(dayKey())) renderStreak();
+  }, 5000);
+
   // Links: #shadowing (listening), #practicar/numeros (exercises) or #leer/r-miami (a reading)
   function readHash() {
     const [a, b] = decodeURIComponent(location.hash.slice(1)).split("/");
     if (a === "practicar") {
       state.mode = "practicar";
       if (EXERCISES.some((x) => x.id === b)) state.exTopic = b;
+    } else if (a === "progreso") {
+      state.mode = "progreso";
     } else if (a === "leer") {
       state.mode = "leer";
       if (READINGS.some((x) => x.id === b)) state.readTopic = b;
@@ -116,7 +156,7 @@
     }
   }
   function writeHash() {
-    const h = state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    const h = state.mode === "progreso" ? "#progreso" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
   }
   readHash();
@@ -133,6 +173,9 @@
   function renderModes() {
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
     $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : state.mode === "leer" ? t("topicsRead") : t("topicsListen");
+    // The progress page has no topics row
+    const noTopics = state.mode === "progreso";
+    $(".topics-label").style.display = $(".topics-wrap").style.display = noTopics ? "none" : "";
   }
   $("#modes").addEventListener("click", (e) => {
     const b = e.target.closest(".mode-btn");
@@ -143,6 +186,7 @@
 
   // ——— Topics row ———
   function renderTopics() {
+    if (state.mode === "progreso") return;
     let tiles;
     if (state.mode === "practicar") {
       // Only the current topic, plus a button that opens every topic grouped like the book
@@ -448,7 +492,7 @@
         <div class="score-text">${text}</div>
         <div class="score-actions">
           ${wrong ? `<button type="button" class="score-btn primary" data-action="retry-wrong">↻ ${esc(t("retryWrong"))} (${wrong})</button>` : ""}
-          ${p.done ? `<button type="button" class="score-btn" data-action="start-over">${esc(t("startOver"))}</button>` : ""}
+          ${p.done || x.sections.some((_, si) => sectionTouched(x, si)) ? `<button type="button" class="score-btn" data-action="start-over">↻ ${esc(t("startOver"))}</button>` : ""}
         </div>
       </div>
       <div class="score-bar" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
@@ -462,6 +506,7 @@
     return { text: `${done}/${n}`, done: done === n };
   }
 
+  const sectionTouched = (x, si) => x.sections[si].items.some((_, ii) => rawAnswer(x, si, ii));
   function sectionCount(x, si) {
     const items = x.sections[si].items;
     const answered = items.map((_, ii) => savedAnswer(x, si, ii)).filter(Boolean);
@@ -474,6 +519,7 @@
     $("#score").innerHTML = scoreHTML(x);
     x.sections.forEach((_, si) => {
       const el = document.getElementById(`sec-count-${si}`); if (el) el.textContent = sectionCount(x, si);
+      const reset = document.querySelector(`.sec-reset[data-sec="${si}"]`); if (reset) reset.hidden = !sectionTouched(x, si);
       const chip = document.querySelector(`.sec-chip[data-sec="${si}"]`);
       if (chip) { const c = chipCount(x, si); chip.querySelector("small").textContent = c.text; chip.classList.toggle("done", c.done); }
     });
@@ -506,7 +552,8 @@
       </div>
       ${x.sections.map((s, si) => `
         <section class="ex-section${s.story ? " has-story" : ""}" id="sec-${si}">
-          <h3>${esc(secTitle(x, si))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
+          <h3>${esc(secTitle(x, si))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span>
+            <button type="button" class="sec-reset" data-action="reset-section" data-sec="${si}" ${sectionTouched(x, si) ? "" : "hidden"} title="${esc(t("resetSection"))}" aria-label="${esc(t("resetSection"))}: ${esc(secTitle(x, si))}">↻ <span>${esc(t("resetShort"))}</span></button></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || pickLang(s.instructions) || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
@@ -574,7 +621,11 @@
     state.answers[x.id] = state.answers[x.id] || {};
     // First mistake: say why and let them try again; the answer is only shown after the second one
     if (!ok && allowsRetry(item) && !(prev && prev.pending)) state.answers[x.id][key] = { v: value, pending: true };
-    else state.answers[x.id][key] = { v: value, ok, ...(prev && prev.pending ? { first: prev.v } : {}) };
+    else {
+      state.answers[x.id][key] = { v: value, ok, t: Date.now(), ...(prev && prev.pending ? { first: prev.v } : {}) };
+      const d = today(); d.n++; if (ok) d.ok++;
+      if (d.n === 1) renderStreak();
+    }
     save();
     document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
     const q = document.getElementById(`q-${key}`);
@@ -634,6 +685,17 @@
     const target = onlyWrong && firstKey ? document.getElementById(`q-${firstKey}`) : $("#results");
     if (target) target.scrollIntoView({ behavior: "smooth", block: onlyWrong ? "center" : "start" });
     toast(onlyWrong ? t("wrongCleared") : t("allCleared"), snapshot);
+  }
+
+  function clearSection(si) {
+    const x = currentTopic();
+    const saved = state.answers[x.id] || {};
+    const snapshot = { id: x.id, answers: JSON.parse(JSON.stringify(saved)) };
+    x.sections[si].items.forEach((_, ii) => { delete saved[`${si}-${ii}`]; });
+    state.answers[x.id] = saved;
+    save(); renderPanel(); renderTopics();
+    goSection(si);
+    toast(t("sectionCleared"), snapshot);
   }
 
   function undo() {
@@ -927,7 +989,7 @@
   function renderPanel() {
     stopSpeaking();
     hideGloss();
-    $("#panel").innerHTML = state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    $("#panel").innerHTML = state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
     syncStuck(); spySection();
   }
 
@@ -958,6 +1020,8 @@
       else if (a === "retry-one") retryOne(action.dataset.key);
       else if (a === "retry-wrong") clearAnswers(true);
       else if (a === "start-over") clearAnswers(false);
+      else if (a === "reset-section") clearSection(+action.dataset.sec);
+      else if (a === "goto") goTo(action.dataset.topic, action.dataset.key);
       return;
     }
 
@@ -996,12 +1060,158 @@
 
   $("#toast").addEventListener("click", (e) => { if (e.target.closest("[data-action=undo]")) undo(); });
 
+  // ——— Progress page: streak, time, activity, weak points and recent mistakes ———
+  const fmtTime = (ms) => {
+    const m = Math.floor(ms / 60000), h = Math.floor(m / 60);
+    return h ? `${h} h ${String(m % 60).padStart(2, "0")} min` : `${m} min`;
+  };
+  const fmtClock = (ms) => { const sec = Math.floor(ms / 1000); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; };
+  const allTopics = () => [...EXERCISES.map((x) => ({ x, kind: "practicar" })), ...READINGS.map((x) => ({ x, kind: "leer" }))];
+  const topicName = (x) => (x.tier ? x.title : topicTitle(x));
+  function updateClock() {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set("pg-session", fmtClock(sessionMs));
+    set("pg-today", fmtTime(today().ms));
+    set("pg-total", fmtTime(totalMs()));
+  }
+  function renderStreak() {
+    const chip = $("#streak-chip");
+    if (!chip || !student) return;
+    const n = streak(), done = studied(dayKey());
+    chip.hidden = false;
+    chip.className = `streak-chip${done ? " on" : ""}`;
+    chip.innerHTML = `🔥 <b>${n}</b>`;
+    chip.title = t("streakDays")(n);
+    chip.setAttribute("aria-label", `${t("streakDays")(n)}. ${t("progressTab")}`);
+  }
+  function goTo(id, key) {
+    const r = READINGS.some((x) => x.id === id);
+    state.mode = r ? "leer" : "practicar";
+    if (r) state.readTopic = id; else state.exTopic = id;
+    save(); writeHash(); render();
+    const el = key ? document.getElementById(`q-${key}`) || document.getElementById(`sec-${key}`) : $("#results");
+    if (el) {
+      if (key && !key.includes("-")) goSection(+key);
+      else el.scrollIntoView({ behavior: "smooth", block: key ? "center" : "start" });
+      if (el.classList.contains("q")) { el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1400); }
+    }
+  }
+
+  function renderProgress() {
+    const n = streak(), best = bestStreak(), done = studied(dayKey());
+    // Overall numbers come from the saved answers
+    let answered = 0, correct = 0, firstTry = 0, complete = 0;
+    const weak = [], mistakes = [], rows = [];
+    allTopics().forEach(({ x }) => {
+      const p = progress(x);
+      answered += p.done; correct += p.correct;
+      if (p.total && p.done === p.total) complete++;
+      x.sections.forEach((sec, si) => {
+        let sDone = 0, sOk = 0;
+        sec.items.forEach((item, ii) => {
+          const a = savedAnswer(x, si, ii);
+          if (!a) return;
+          sDone++;
+          if (a.ok) sOk++;
+          if (a.ok && !a.first) firstTry++;
+          if (!a.ok || a.first) mistakes.push({ x, si, ii, item, a });
+        });
+        if (sDone >= 3 && sOk / sDone < 0.8) weak.push({ x, si, sDone, sOk, total: sec.items.length });
+      });
+      if (p.done) rows.push({ x, p });
+    });
+    weak.sort((a, b) => a.sOk / a.sDone - b.sOk / b.sDone || b.sDone - a.sDone);
+    mistakes.sort((a, b) => (b.a.t || 0) - (a.a.t || 0));
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+
+    // Last 7 days (streak strip) and last 14 days (activity bars)
+    const days = (count) => Array.from({ length: count }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (count - 1 - i)); return d; });
+    const dayName = (d) => d.toLocaleDateString(isEN() ? "en-US" : "es-ES", { weekday: "narrow" });
+    const week = days(7).map((d) => {
+      const k = dayKey(d), isToday = k === dayKey();
+      return `<span class="wk${studied(k) ? " on" : ""}${isToday ? " today" : ""}"><i>${studied(k) ? "✓" : ""}</i><small>${esc(dayName(d))}</small></span>`;
+    }).join("");
+    const last14 = days(14).map((d) => ({ d, v: state.daily[dayKey(d)] || { ms: 0, n: 0 } }));
+    const maxMin = Math.max(5, ...last14.map((o) => o.v.ms / 60000));
+    const bars = last14.map(({ d, v }) => {
+      const min = Math.round(v.ms / 60000);
+      const label = `${d.toLocaleDateString(isEN() ? "en-US" : "es-ES", { day: "numeric", month: "short" })}: ${min} min · ${v.n || 0} ${t("answersWord")}`;
+      return `<span class="bar" title="${esc(label)}" aria-label="${esc(label)}"><i style="height:${Math.max(v.ms ? 4 : 0, (v.ms / 60000 / maxMin) * 100)}%"></i><small>${esc(dayName(d))}</small></span>`;
+    }).join("");
+
+    const tile = (icon, value, label, id) => `<div class="pg-tile"><span class="pg-icon" aria-hidden="true">${icon}</span><strong${id ? ` id="${id}"` : ""}>${esc(value)}</strong><small>${esc(label)}</small></div>`;
+    const mistakeHTML = mistakes.slice(0, 8).map(({ x, si, ii, item, a }) => {
+      const tr = (isEN() && item.en) || itemT(x, si, ii);
+      const shown = (v) => (item.type === "write" ? v : label(tr, v));
+      const right = item.type === "write" ? item.a[0] : label(tr, item.a);
+      return `<li class="mistake">
+        <small>${esc(topicName(x))} › ${esc(secTitle(x, si))}</small>
+        <p lang="en">${esc((tr.q || item.q).replace(/^\(\d+\)\s*/, ""))}</p>
+        <div class="m-ans">${a.ok
+          ? `<span class="m-second">${esc(t("secondTryNote"))}: <s>${esc(shown(a.first))}</s> → ${esc(shown(a.v))}</span>`
+          : `<span class="m-bad">${esc(t("yourAnswerWas"))}: <s>${esc(shown(a.v))}</s></span><span class="m-ok">${esc(t("rightAnswer"))}: ${esc(right)}</span>`}</div>
+        <button type="button" class="link-go" data-action="goto" data-topic="${x.id}" data-key="${si}-${ii}">${esc(t("reviewIt"))} →</button>
+      </li>`;
+    }).join("");
+
+    return `
+      <div class="panel-head">
+        <h2>${esc(t("progressTitle")(student ? student.name : ""))}</h2>
+        <p>${esc(t("progressIntro"))}</p>
+      </div>
+      <section class="pg-streak${done ? " done" : ""}">
+        <div class="pg-flame" aria-hidden="true">🔥</div>
+        <div class="pg-streak-text">
+          <strong>${esc(t("streakDays")(n))}</strong>
+          <small>${esc(done ? t("streakDone") : n ? t("streakKeep") : t("streakStart"))} · ${esc(t("bestStreak")(best))}</small>
+        </div>
+        <div class="pg-week">${week}</div>
+      </section>
+      <div class="pg-tiles">
+        ${tile("⏱️", fmtClock(sessionMs), t("sessionTime"), "pg-session")}
+        ${tile("📅", fmtTime(today().ms), t("todayTime"), "pg-today")}
+        ${tile("⌛", fmtTime(totalMs()), t("totalTime"), "pg-total")}
+        ${tile("✅", `${answered}`, t("answersStat")(pct(correct, answered)))}
+        ${tile("🎯", `${pct(firstTry, answered)}%`, t("firstTryStat"))}
+        ${tile("🏁", `${complete}`, t("topicsDone"))}
+      </div>
+      <section class="pg-card">
+        <h3>${esc(t("last14"))}</h3>
+        <div class="bars">${bars}</div>
+      </section>
+      <section class="pg-card">
+        <h3>${esc(t("improveTitle"))}</h3>
+        ${weak.length ? `<ul class="weak">${weak.slice(0, 6).map(({ x, si, sDone, sOk }) => `
+          <li>
+            <div><strong>${esc(secTitle(x, si))}</strong><small>${esc(topicName(x))} · ${sOk}/${sDone} ✓</small></div>
+            <span class="meter" aria-hidden="true"><i style="width:${pct(sOk, sDone)}%"></i></span>
+            <button type="button" class="link-go" data-action="goto" data-topic="${x.id}" data-key="${si}">${esc(t("practiceIt"))} →</button>
+          </li>`).join("")}</ul>` : `<p class="pg-empty">${esc(answered ? t("improveNone") : t("improveEmpty"))}</p>`}
+      </section>
+      <section class="pg-card">
+        <h3>${esc(t("mistakesTitle"))}</h3>
+        ${mistakes.length ? `<ul class="mistakes">${mistakeHTML}</ul>` : `<p class="pg-empty">${esc(t("mistakesEmpty"))}</p>`}
+      </section>
+      <section class="pg-card">
+        <h3>${esc(t("byTopic"))}</h3>
+        ${rows.length ? `<ul class="by-topic">${rows.sort((a, b) => b.p.done / b.p.total - a.p.done / a.p.total).map(({ x, p }) => `
+          <li>
+            <button type="button" data-action="goto" data-topic="${x.id}">
+              <span><strong>${esc(topicName(x))}</strong><small>${p.done}/${p.total} · ${pct(p.correct, p.done)}% ${esc(t("correctWord"))}</small></span>
+              <span class="meter" aria-hidden="true"><i style="width:${pct(p.done, p.total)}%"></i></span>
+            </button>
+          </li>`).join("")}</ul>` : `<p class="pg-empty">${esc(t("improveEmpty"))}</p>`}
+      </section>`;
+  }
+
   // ——— Greeting + log out ———
   function renderHello() {
     if (!student) return;
     $("#badge-text").textContent = `👋 ${t("hi")(student.name)}`;
     const b = $("#logout"); b.hidden = false; b.textContent = t("logout");
+    renderStreak();
   }
+  $("#streak-chip").addEventListener("click", () => { state.mode = "progreso"; save(); writeHash(); render(); $("#results").scrollIntoView({ behavior: "smooth", block: "start" }); });
   $("#logout").addEventListener("click", async () => { await push(); CLOUD.logout(); });
 
   function render() {
