@@ -267,7 +267,7 @@ window.YEB_EN = (function () {
           { q: "(4) What's the natural way to say “$349.99”?", e: "Dollars | cents: 349 | 99 → three forty-nine ninety-nine." },
           { q: "(5) How do you say room “1412”?", e: "Room numbers go in pairs: 14 | 12 → fourteen twelve." },
           { q: "(6) How do you say the address “1650”?", e: "Addresses go in pairs: 16 | 50 → sixteen fifty Blake Street." },
-          { q: "(7) How many tacos did he order?", e: "15 = fifTEEN (stress at the end). 50 = FIFty. A big difference in tacos!" },
+          { q: "(7) How many tacos does he order?", e: "15 = fifTEEN (stress at the end). 50 = FIFty. A big difference in tacos!" },
           { q: "(8) How do you say the phone number “555‑0193”?", e: "Phone numbers: digit by digit, and 0 is said “oh”." },
           { q: "(9) How do you say “April 21st”?", e: "Dates use ordinals: April twenty-first." }
         ] },
