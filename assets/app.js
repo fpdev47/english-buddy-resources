@@ -50,7 +50,10 @@
   const ICONS = {
     yt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-4.8.5-4.8s0-3.2-.5-4.8zM9.7 15.1V8.9l5.8 3.1-5.8 3.1z"/></svg>',
     sp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22zm5 15.9a.7.7 0 0 1-1 .2c-2.7-1.6-6-2-10-1.1a.7.7 0 1 1-.3-1.4c4.3-1 8-.6 11 1.3.3.2.4.7.3 1zm1.4-3a.9.9 0 0 1-1.2.3c-3-1.9-7.7-2.4-11.3-1.3a.9.9 0 1 1-.5-1.7c4.1-1.2 9.3-.6 12.7 1.5.4.3.5.8.3 1.2zm.1-3.2C14.9 8.6 9 8.4 5.6 9.4a1 1 0 1 1-.6-2c3.9-1.2 10.4-1 14.5 1.5a1 1 0 0 1-1 1.8z"/></svg>',
-    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z"/></svg>'
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l15 8-15 8z"/></svg>',
+    speaker: svg("M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"),
+    flame: svg("M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4.1 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"),
+    check: svg("M5 12.5l4.5 4.5L19 7.5")
   };
 
   // ——— State: remembered per browser; the page works without storage too ———
@@ -555,7 +558,7 @@
           <h3>${esc(secTitle(x, si))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span>
             <button type="button" class="sec-reset" data-action="reset-section" data-sec="${si}" ${sectionTouched(x, si) ? "" : "disabled"} title="${esc(t("resetSection"))}" aria-label="${esc(t("resetSection"))}: ${esc(secTitle(x, si))}">↻ <span>${esc(t("resetShort"))}</span></button></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || pickLang(s.instructions) || t(KIND_TEXT[s.kind][1]))}</p>
-          ${s.story ? `${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
+          ${s.story ? `${glossary(x) ? `<p class="gloss-hint">${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
@@ -855,7 +858,7 @@
         <span class="level-pill">${esc(t("tiers")[x.tier])} · ${esc(x.level)}</span>
         <h2>${esc(x.title)}</h2>
         <p>${esc(t("minRead")(x.minutes))}</p>
-        ${canSpeak ? `<button type="button" class="speak-btn" data-action="speak">🔊 ${esc(t("listenStory"))}</button>` : ""}
+        ${canSpeak ? `<button type="button" class="speak-btn" data-action="speak">${ICONS.speaker}<span>${esc(t("listenStory"))}</span></button>` : ""}
       </div>
       ${x.video ? `<div class="read-video">${videoBlock(x.video, { title: x.video.title[L], tip: x.video.tip[L] }, t("fullVideo"))}</div>` : ""}
       ${x.source ? `<p class="source">${esc(x.source.note[L])} ${x.source.links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label[L])} ↗</a>`).join(" · ")}</p>` : ""}
@@ -864,7 +867,7 @@
           <button type="button" role="tab" data-action="read-view" data-view="full" aria-selected="${view === "full"}">${esc(t("fullText"))}</button>
           <button type="button" role="tab" data-action="read-view" data-view="summary" aria-selected="${view === "summary"}">${esc(t("summaryShort"))}</button>
         </div>` : x.video ? `<h3 class="summary-title">${esc(t("summary"))}</h3>` : ""}
-      ${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}
+      ${glossary(x) ? `<p class="gloss-hint">${esc(t("glossHint"))}</p>` : ""}
       <article class="reading glossable${view === "full" ? " full" : ""}" lang="en">${readingText(x, shownText(x))}</article>
       <section class="vocab-box">
         <h3>${esc(t("vocabTitle"))} <span class="sec-count">${x.vocab.length}</span></h3>
@@ -885,7 +888,7 @@
   function stopSpeaking() {
     if ("speechSynthesis" in window) speechSynthesis.cancel();
     const b = document.querySelector("[data-action=speak]");
-    if (b) { b.classList.remove("on"); b.textContent = `🔊 ${t("listenStory")}`; }
+    if (b) { b.classList.remove("on"); b.innerHTML = `${ICONS.speaker}<span>${esc(t("listenStory"))}</span>`; }
   }
   function speak(btn) {
     if (speechSynthesis.speaking) return stopSpeaking();
@@ -895,7 +898,7 @@
     const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-US") || speechSynthesis.getVoices().find((v) => /^en/.test(v.lang));
     if (voice) u.voice = voice;
     u.onend = u.onerror = stopSpeaking;
-    btn.classList.add("on"); btn.textContent = `■ ${t("stopStory")}`;
+    btn.classList.add("on"); btn.innerHTML = `<span aria-hidden="true">■</span><span>${esc(t("stopStory"))}</span>`;
     speechSynthesis.speak(u);
   }
 
@@ -917,7 +920,7 @@
     let html = "";
     if (w) {
       const word = w.textContent, tr = glossWord(G, normWord(word));
-      html += `<div class="g-word"><b lang="en">${esc(word)}</b><button type="button" class="g-say" data-say="${esc(word)}" aria-label="${esc(t("listenWord"))}">🔊</button></div>${tr ? `<p class="g-tr">${esc(tr)}</p>` : ""}`;
+      html += `<div class="g-word"><b lang="en">${esc(word)}</b><button type="button" class="g-say" data-say="${esc(word)}" aria-label="${esc(t("listenWord"))}">${ICONS.speaker}</button></div>${tr ? `<p class="g-tr">${esc(tr)}</p>` : ""}`;
       if (w.dataset.ph && G) {
         const p = G.phrases[+w.dataset.ph];
         html += `<div class="g-block"><small>${esc(t("inPhrase"))}</small><b lang="en">${esc(p.text.replace(/\s\*\s/, " … "))}</b><p class="g-tr">${esc(p.es)}</p></div>`;
@@ -925,7 +928,7 @@
     }
     if (vw) {
       const v = x.vocab[+vw.dataset.vw];
-      html += `<div class="g-block"><small>⭐ ${esc(t("keyWord"))}</small><b lang="en">${esc(v[0])}</b><p class="g-tr">${esc(v[1])}</p><p class="g-def" lang="en">${esc(v[2])}</p></div>`;
+      html += `<div class="g-block"><small>${esc(t("keyWord"))}</small><b lang="en">${esc(v[0])}</b><p class="g-tr">${esc(v[1])}</p><p class="g-def" lang="en">${esc(v[2])}</p></div>`;
     }
     document.querySelectorAll(".glossable .on, .glossable .cur").forEach((n) => n.classList.remove("on", "cur"));
     if (w && w.dataset.po) document.querySelectorAll(`.glossable [data-po="${w.dataset.po}"]`).forEach((n) => n.classList.add("on"));
@@ -1063,7 +1066,7 @@
   // ——— Progress page: streak, time, activity, weak points and recent mistakes ———
   const fmtTime = (ms) => {
     const m = Math.floor(ms / 60000), h = Math.floor(m / 60);
-    return h ? `${h} h ${String(m % 60).padStart(2, "0")} min` : `${m} min`;
+    return h ? `${h} h ${String(m % 60).padStart(2, "0")}` : `${m} min`;
   };
   const fmtClock = (ms) => { const sec = Math.floor(ms / 1000); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; };
   const allTopics = () => [...EXERCISES.map((x) => ({ x, kind: "practicar" })), ...READINGS.map((x) => ({ x, kind: "leer" }))];
@@ -1080,7 +1083,7 @@
     const n = streak(), done = studied(dayKey());
     chip.hidden = false;
     chip.className = `streak-chip${done ? " on" : ""}`;
-    chip.innerHTML = `🔥 <b>${n}</b>`;
+    chip.innerHTML = `${ICONS.flame}<b>${n}</b>`;
     chip.title = t("streakDays")(n);
     chip.setAttribute("aria-label", `${t("streakDays")(n)}. ${t("progressTab")}`);
   }
@@ -1099,115 +1102,140 @@
 
   function renderProgress() {
     const n = streak(), best = bestStreak(), done = studied(dayKey());
-    // Overall numbers come from the saved answers
-    let answered = 0, correct = 0, firstTry = 0, complete = 0;
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+    // Everything below comes from the saved answers
+    let answered = 0, first = 0, second = 0, wrong = 0, topicsStarted = 0, complete = 0;
     const weak = [], mistakes = [], rows = [];
     allTopics().forEach(({ x }) => {
       const p = progress(x);
-      answered += p.done; correct += p.correct;
+      if (p.done) { topicsStarted++; rows.push({ x, p }); }
       if (p.total && p.done === p.total) complete++;
       x.sections.forEach((sec, si) => {
         let sDone = 0, sOk = 0;
         sec.items.forEach((item, ii) => {
           const a = savedAnswer(x, si, ii);
           if (!a) return;
-          sDone++;
+          answered++; sDone++;
           if (a.ok) sOk++;
-          if (a.ok && !a.first) firstTry++;
+          if (a.ok && !a.first) first++; else if (a.ok) second++; else wrong++;
           if (!a.ok || a.first) mistakes.push({ x, si, ii, item, a });
         });
-        if (sDone >= 3 && sOk / sDone < 0.8) weak.push({ x, si, sDone, sOk, total: sec.items.length });
+        if (sDone >= 3 && sOk / sDone < 0.8) weak.push({ x, si, sDone, sOk });
       });
-      if (p.done) rows.push({ x, p });
     });
     weak.sort((a, b) => a.sOk / a.sDone - b.sOk / b.sDone || b.sDone - a.sDone);
     mistakes.sort((a, b) => (b.a.t || 0) - (a.a.t || 0));
-    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 
-    // Last 7 days (streak strip) and last 14 days (activity bars)
+    const locale = isEN() ? "en-US" : "es-ES";
     const days = (count) => Array.from({ length: count }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (count - 1 - i)); return d; });
-    const dayName = (d) => d.toLocaleDateString(isEN() ? "en-US" : "es-ES", { weekday: "narrow" });
+    const dayName = (d) => d.toLocaleDateString(locale, { weekday: "narrow" });
     const week = days(7).map((d) => {
-      const k = dayKey(d), isToday = k === dayKey();
-      return `<span class="wk${studied(k) ? " on" : ""}${isToday ? " today" : ""}"><i>${studied(k) ? "✓" : ""}</i><small>${esc(dayName(d))}</small></span>`;
+      const k = dayKey(d);
+      return `<li class="wk${studied(k) ? " on" : ""}${k === dayKey() ? " today" : ""}" title="${esc(d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }))}">
+        <i>${studied(k) ? ICONS.check : ""}</i><small>${esc(dayName(d))}</small></li>`;
     }).join("");
-    const last14 = days(14).map((d) => ({ d, v: state.daily[dayKey(d)] || { ms: 0, n: 0 } }));
-    const maxMin = Math.max(5, ...last14.map((o) => o.v.ms / 60000));
-    const bars = last14.map(({ d, v }) => {
-      const min = Math.round(v.ms / 60000);
-      const label = `${d.toLocaleDateString(isEN() ? "en-US" : "es-ES", { day: "numeric", month: "short" })}: ${min} min · ${v.n || 0} ${t("answersWord")}`;
-      return `<span class="bar" title="${esc(label)}" aria-label="${esc(label)}"><i style="height:${Math.max(v.ms ? 4 : 0, (v.ms / 60000 / maxMin) * 100)}%"></i><small>${esc(dayName(d))}</small></span>`;
+    const last14 = days(14).map((d) => ({ d, min: Math.round(((state.daily[dayKey(d)] || {}).ms || 0) / 60000) }));
+    const maxMin = Math.max(10, ...last14.map((o) => o.min));
+    const bars = last14.map(({ d, min }) => {
+      const label = `${d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "short" })}: ${min} min`;
+      return `<li class="bar${dayKey(d) === dayKey() ? " today" : ""}" title="${esc(label)}" aria-label="${esc(label)}">
+        <b>${min || ""}</b><i style="height:${(min / maxMin) * 100}%"></i><small>${esc(dayName(d))}</small></li>`;
     }).join("");
 
-    const tile = (icon, value, label, id) => `<div class="pg-tile"><span class="pg-icon" aria-hidden="true">${icon}</span><strong${id ? ` id="${id}"` : ""}>${esc(value)}</strong><small>${esc(label)}</small></div>`;
+    const stat = (label, value, id) => `<div><dt>${esc(label)}</dt><dd${id ? ` id="${id}"` : ""}>${esc(value)}</dd></div>`;
+    const seg = (cls, count) => (count ? `<i class="${cls}" style="width:${pct(count, answered)}%"></i>` : "");
+    const legend = (cls, label, count) => `<li><span class="dot ${cls}"></span>${esc(label)} <b>${count}</b> <small>(${pct(count, answered)} %)</small></li>`;
+
     const mistakeHTML = mistakes.slice(0, 8).map(({ x, si, ii, item, a }) => {
       const tr = (isEN() && item.en) || itemT(x, si, ii);
       const shown = (v) => (item.type === "write" ? v : label(tr, v));
       const right = item.type === "write" ? item.a[0] : label(tr, item.a);
       return `<li class="mistake">
-        <small>${esc(topicName(x))} › ${esc(secTitle(x, si))}</small>
+        <small>${esc(topicName(x))} · ${esc(secTitle(x, si))}</small>
         <p lang="en">${esc((tr.q || item.q).replace(/^\(\d+\)\s*/, ""))}</p>
         <div class="m-ans">${a.ok
-          ? `<span class="m-second">${esc(t("secondTryNote"))}: <s>${esc(shown(a.first))}</s> → ${esc(shown(a.v))}</span>`
+          ? `<span class="m-second">${esc(t("firstTried"))}: <s>${esc(shown(a.first))}</s>. ${esc(t("thenRight"))}: ${esc(shown(a.v))}</span>`
           : `<span class="m-bad">${esc(t("yourAnswerWas"))}: <s>${esc(shown(a.v))}</s></span><span class="m-ok">${esc(t("rightAnswer"))}: ${esc(right)}</span>`}</div>
-        <button type="button" class="link-go" data-action="goto" data-topic="${x.id}" data-key="${si}-${ii}">${esc(t("reviewIt"))} →</button>
+        <button type="button" class="link-go" data-action="goto" data-topic="${x.id}" data-key="${si}-${ii}">${esc(t("reviewIt"))}</button>
       </li>`;
     }).join("");
 
     return `
       <div class="panel-head">
-        <h2>${esc(t("progressTitle")(student ? student.name : ""))}</h2>
+        <h2>${esc(t("progressTitle"))}</h2>
         <p>${esc(t("progressIntro"))}</p>
       </div>
-      <section class="pg-streak${done ? " done" : ""}">
-        <div class="pg-flame" aria-hidden="true">🔥</div>
-        <div class="pg-streak-text">
-          <strong>${esc(t("streakDays")(n))}</strong>
-          <small>${esc(done ? t("streakDone") : n ? t("streakKeep") : t("streakStart"))} · ${esc(t("bestStreak")(best))}</small>
+
+      <section class="pg-card pg-streak${done ? " done" : ""}">
+        <div class="pg-streak-main">
+          <span class="pg-flame" aria-hidden="true">${ICONS.flame}</span>
+          <div>
+            <p class="pg-big"><strong>${n}</strong> ${esc(t("daysInARow")(n))}</p>
+            <p class="pg-help">${esc(done ? t("streakDone") : n ? t("streakKeep") : t("streakStart"))} ${esc(t("bestStreak")(best))}</p>
+          </div>
         </div>
-        <div class="pg-week">${week}</div>
+        <h4>${esc(t("thisWeek"))}</h4>
+        <ol class="pg-week">${week}</ol>
       </section>
-      <div class="pg-tiles">
-        ${tile("⏱️", fmtClock(sessionMs), t("sessionTime"), "pg-session")}
-        ${tile("📅", fmtTime(today().ms), t("todayTime"), "pg-today")}
-        ${tile("⌛", fmtTime(totalMs()), t("totalTime"), "pg-total")}
-        ${tile("✅", `${answered}`, t("answersStat")(pct(correct, answered)))}
-        ${tile("🎯", `${pct(firstTry, answered)}%`, t("firstTryStat"))}
-        ${tile("🏁", `${complete}`, t("topicsDone"))}
-      </div>
+
       <section class="pg-card">
-        <h3>${esc(t("last14"))}</h3>
-        <div class="bars">${bars}</div>
+        <h3>${esc(t("timeTitle"))}</h3>
+        <p class="pg-help">${esc(t("timeHelp"))}</p>
+        <dl class="pg-stats">
+          ${stat(t("sessionTime"), fmtClock(sessionMs), "pg-session")}
+          ${stat(t("todayTime"), fmtTime(today().ms), "pg-today")}
+          ${stat(t("totalTime"), fmtTime(totalMs()), "pg-total")}
+        </dl>
+        <h4>${esc(t("last14"))}</h4>
+        <ol class="bars">${bars}</ol>
       </section>
+
+      <section class="pg-card">
+        <h3>${esc(t("answersTitle"))}</h3>
+        ${answered ? `
+          <p class="pg-sentence">${t("answersSentence")(answered, topicsStarted, complete)}</p>
+          <div class="stack" role="img" aria-label="${esc(t("answersChart")(pct(first, answered), pct(second, answered), pct(wrong, answered)))}">${seg("s-first", first)}${seg("s-second", second)}${seg("s-wrong", wrong)}</div>
+          <ul class="legend">
+            ${legend("s-first", t("firstTryLabel"), first)}
+            ${legend("s-second", t("secondTryLabel"), second)}
+            ${legend("s-wrong", t("wrongLabel"), wrong)}
+          </ul>` : `<p class="pg-help">${esc(t("noAnswersYet"))}</p>`}
+      </section>
+
       <section class="pg-card">
         <h3>${esc(t("improveTitle"))}</h3>
+        <p class="pg-help">${esc(weak.length ? t("improveHelp") : answered ? t("improveNone") : t("noAnswersYet"))}</p>
         ${weak.length ? `<ul class="weak">${weak.slice(0, 6).map(({ x, si, sDone, sOk }) => `
           <li>
-            <div><strong>${esc(secTitle(x, si))}</strong><small>${esc(topicName(x))} · ${sOk}/${sDone} ✓</small></div>
+            <div><strong>${esc(secTitle(x, si))}</strong><small>${esc(topicName(x))} · ${esc(t("rightOf")(sOk, sDone))}</small></div>
             <span class="meter" aria-hidden="true"><i style="width:${pct(sOk, sDone)}%"></i></span>
-            <button type="button" class="link-go" data-action="goto" data-topic="${x.id}" data-key="${si}">${esc(t("practiceIt"))} →</button>
-          </li>`).join("")}</ul>` : `<p class="pg-empty">${esc(answered ? t("improveNone") : t("improveEmpty"))}</p>`}
+            <button type="button" class="link-go" data-action="goto" data-topic="${x.id}" data-key="${si}">${esc(t("practiceIt"))}</button>
+          </li>`).join("")}</ul>` : ""}
       </section>
+
       <section class="pg-card">
         <h3>${esc(t("mistakesTitle"))}</h3>
-        ${mistakes.length ? `<ul class="mistakes">${mistakeHTML}</ul>` : `<p class="pg-empty">${esc(t("mistakesEmpty"))}</p>`}
+        <p class="pg-help">${esc(mistakes.length ? t("mistakesHelp") : t("mistakesEmpty"))}</p>
+        ${mistakes.length ? `<ul class="mistakes">${mistakeHTML}</ul>` : ""}
       </section>
+
       <section class="pg-card">
         <h3>${esc(t("byTopic"))}</h3>
+        <p class="pg-help">${esc(rows.length ? t("byTopicHelp") : t("noAnswersYet"))}</p>
         ${rows.length ? `<ul class="by-topic">${rows.sort((a, b) => b.p.done / b.p.total - a.p.done / a.p.total).map(({ x, p }) => `
           <li>
             <button type="button" data-action="goto" data-topic="${x.id}">
-              <span><strong>${esc(topicName(x))}</strong><small>${p.done}/${p.total} · ${pct(p.correct, p.done)}% ${esc(t("correctWord"))}</small></span>
+              <span><strong>${esc(topicName(x))}</strong><small>${esc(t("answeredOf")(p.done, p.total))} · ${esc(t("rightOf")(p.correct, p.done))}</small></span>
               <span class="meter" aria-hidden="true"><i style="width:${pct(p.done, p.total)}%"></i></span>
             </button>
-          </li>`).join("")}</ul>` : `<p class="pg-empty">${esc(t("improveEmpty"))}</p>`}
+          </li>`).join("")}</ul>` : ""}
       </section>`;
   }
 
   // ——— Greeting + log out ———
   function renderHello() {
     if (!student) return;
-    $("#badge-text").textContent = `👋 ${t("hi")(student.name)}`;
+    $("#badge-text").textContent = t("hi")(student.name);
     const b = $("#logout"); b.hidden = false; b.textContent = t("logout");
     renderStreak();
   }
