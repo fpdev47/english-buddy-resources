@@ -1,6 +1,12 @@
 (function () {
   const { sections, channels } = window.YEB_DATA;
-  const EXERCISES = window.YEB_EXERCISES || [];
+  // Topic groups (data/groups.js) set the order; a topic missing from every group goes last
+  const GROUPS = window.YEB_EX_GROUPS || [];
+  const groupRank = (id) => { const i = GROUPS.findIndex((g) => g.topics.includes(id)); return i < 0 ? GROUPS.length : i; };
+  const EXERCISES = (window.YEB_EXERCISES || [])
+    .map((x, i) => ({ x, i }))
+    .sort((a, b) => groupRank(a.x.id) - groupRank(b.x.id) || (GROUPS[groupRank(a.x.id)] ? GROUPS[groupRank(a.x.id)].topics.indexOf(a.x.id) - GROUPS[groupRank(b.x.id)].topics.indexOf(b.x.id) : a.i - b.i))
+    .map((o) => o.x);
   // Readings reuse the exercise engine: comprehension + vocabulary-in-context sections
   const READINGS = (window.YEB_READINGS || []).map((r) => ({
     ...r,
@@ -37,6 +43,7 @@
     examenes: svg("M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"),
     guardados: svg("M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"),
     ejercicio: svg("M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"),
+    grupos: svg("M4 5h16M4 12h16M4 19h16"),
     lectura: svg("M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z")
   };
   const ICONS = {
@@ -137,10 +144,12 @@
   function renderTopics() {
     let tiles;
     if (state.mode === "practicar") {
-      tiles = EXERCISES.map((x) => {
+      const g = topicGroup(state.exTopic);
+      tiles = EXERCISES.filter((x) => !g || topicGroup(x.id) === g).map((x) => {
         const p = progress(x);
-        return { id: x.id, label: (exT(x) || x).title, sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ${t("exercises")}`}`, icon: "ejercicio", selected: state.exTopic === x.id };
+        return { id: x.id, label: topicTitle(x), sub: `${x.level} · ${p.done ? `${p.correct}/${p.total}` : `${p.total} ${t("exercises")}`}`, icon: "ejercicio", selected: state.exTopic === x.id };
       });
+      if (g) tiles.unshift({ id: "__all", label: t("allTopics"), sub: `${pickLang(g.title)} · ${EXERCISES.length}`, icon: "grupos", selected: false, all: true });
     } else if (state.mode === "leer") {
       tiles = READINGS.map((x) => {
         const p = progress(x);
@@ -154,7 +163,7 @@
       if (state.favs.length) tiles.push({ id: "guardados", label: t("saved"), sub: `${state.favs.length} ${state.favs.length === 1 ? t("channel") : t("channels")}`, icon: "guardados", selected: state.topic === "guardados" });
     }
     $("#topics").innerHTML = tiles.map((t) => `
-      <button type="button" class="topic" role="tab" aria-selected="${t.selected}" data-topic="${t.id}">
+      <button type="button" class="topic${t.all ? " all-topics" : ""}" ${t.all ? 'aria-haspopup="dialog"' : 'role="tab"'} aria-selected="${t.selected}" data-topic="${t.id}">
         <span class="topic-icon">${TOPIC_ICONS[t.icon] || ""}</span>
         <span class="topic-text"><strong>${esc(t.label)}</strong><small>${esc(t.sub)}</small></span>
       </button>`).join("");
@@ -165,6 +174,7 @@
   $("#topics").addEventListener("click", (e) => {
     const b = e.target.closest("button.topic");
     if (!b) return;
+    if (b.dataset.topic === "__all") return openTopicSheet();
     if (state.mode === "practicar") state.exTopic = b.dataset.topic;
     else if (state.mode === "leer") state.readTopic = b.dataset.topic;
     else state.topic = b.dataset.topic;
@@ -172,6 +182,46 @@
     save(); renderTopics(); renderPanel(); writeHash();
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   });
+
+  // ——— «All topics» sheet: every group with its topics and progress ———
+  function topicGroup(id) { return GROUPS.find((g) => g.topics.includes(id)) || (GROUPS.length ? OTHER_GROUP : null); }
+  const OTHER_GROUP = { id: "otros", title: { es: "Otros temas", en: "Other topics" }, topics: [] };
+  const topicTitle = (x) => pickLang((exT(x) || x).title);
+  function openTopicSheet() {
+    let sheet = $("#topic-sheet");
+    if (!sheet) {
+      sheet = document.createElement("dialog");
+      sheet.id = "topic-sheet"; sheet.className = "sheet";
+      document.body.appendChild(sheet);
+      sheet.addEventListener("click", (e) => {
+        if (e.target === sheet || e.target.closest("[data-close]")) return sheet.close();
+        const b = e.target.closest("[data-pick]");
+        if (!b) return;
+        state.exTopic = b.dataset.pick;
+        if (undoSnapshot) hideToast();
+        sheet.close();
+        save(); renderTopics(); renderPanel(); writeHash();
+        $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+    const groups = [...GROUPS, OTHER_GROUP].map((g) => ({ g, list: EXERCISES.filter((x) => topicGroup(x.id) === g) })).filter((o) => o.list.length);
+    sheet.innerHTML = `
+      <div class="sheet-head"><h2>${esc(t("allTopics"))}</h2><button type="button" class="sheet-close" data-close aria-label="${esc(t("close"))}">✕</button></div>
+      <div class="sheet-body">${groups.map(({ g, list }) => `
+        <section class="sheet-group">
+          <h3>${esc(pickLang(g.title))}${g.sub ? ` <small>${esc(pickLang(g.sub))}</small>` : ""}</h3>
+          ${list.map((x) => {
+            const p = progress(x), pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+            return `<button type="button" class="sheet-topic" data-pick="${x.id}" ${state.exTopic === x.id ? 'aria-current="true"' : ""}>
+              <span class="st-main"><strong>${esc(topicTitle(x))}</strong><small>${esc(x.level)} · ${p.done ? `${p.correct}/${p.total} ✓` : `${p.total} ${t("exercises")}`}</small></span>
+              <span class="st-bar" aria-hidden="true"><span style="width:${pct}%"></span></span>
+            </button>`;
+          }).join("")}
+        </section>`).join("")}</div>`;
+    sheet.showModal();
+    const cur = sheet.querySelector("[aria-current]");
+    if (cur) cur.scrollIntoView({ block: "center" });
+  }
 
   // ——— Listening: channel cards ———
   function card(c) {
@@ -296,7 +346,8 @@
     const fb = ans ? `
       <div class="fb ${ans.ok ? "ok" : "bad"}" role="status">
         <strong>${ans.ok ? t("correct") : `${t("answerIs")} ${esc(correct)}`}</strong>
-        <span>${esc(tr.e || item.e)}</span>
+        ${!ans.ok && item.w && item.w[ans.v] ? `<span class="why"><b>${esc(label(tr, ans.v))}</b> ${esc(pickLang(item.w[ans.v]))}</span>` : ""}
+        <span>${esc(pickLang(tr.e || item.e))}</span>
         ${ans.ok ? "" : `<button type="button" class="retry-one" data-action="retry-one" data-key="${key}">↻ ${esc(t("tryAgain"))}</button>`}
       </div>` : "";
 
@@ -378,14 +429,15 @@
       <div class="panel-head ex-head">
         <div>
           <span class="level-pill">${esc(x.level)}</span>
-          <h2>${esc((exT(x) || x).title)}</h2>
+          <h2>${esc(topicTitle(x))}</h2>
           <p>${esc(t("practiceIntro"))}</p>
         </div>
       </div>
       ${exerciseBody(x)}`;
   }
 
-  const pickLang = (v) => (v && typeof v === "object" ? v[isEN() ? "en" : "es"] : v);
+  // Bilingual content written inline: { es, en } or ["es", "en"]
+  const pickLang = (v) => (Array.isArray(v) ? v[isEN() ? 1 : 0] : v && typeof v === "object" ? v[isEN() ? "en" : "es"] : v);
   const KIND_TEXT = { comprehension: ["comprehension", "comprehensionInstr"], vocab: ["vocabInContext", "vocabInstr"] };
   function exerciseBody(x) {
     return `
@@ -396,7 +448,7 @@
       ${x.sections.map((s, si) => `
         <section class="ex-section${s.story ? " has-story" : ""}" id="sec-${si}">
           <h3>${esc(secTitle(x, si))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
-          <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions || t(KIND_TEXT[s.kind][1]))}</p>
+          <p class="ex-instr">${esc(exSecT(x, si).instructions || pickLang(s.instructions) || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;

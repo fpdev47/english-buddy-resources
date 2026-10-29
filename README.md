@@ -20,7 +20,10 @@ assets/config.js    Conexión con Supabase (vacía = sin nube)
 setup/supabase.sql  Tabla y funciones para Supabase
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
-data/exercises.js   Banco de ejercicios
+data/groups.js      Grupos de temas de «Practicar» y ayudantes para escribir ejercicios bilingües
+data/exercises.js   Banco de ejercicios (temas originales)
+data/exercises-unit1.js, exercises-unit2.js, exercises-extra.js
+                    Temas del libro Travelers 1 (unidades 1 y 2) y temas complementarios
 data/readings.js    Lecturas (pestaña Reading): historias, vocabulario y preguntas
 data/en.js          Traducción al inglés de temas, canales y ejercicios
 data/glossary/      Traducción de cada palabra al tocarla (lecturas e historias)
@@ -48,6 +51,18 @@ Abre `data/resources.js` y copia un objeto dentro de `channels`:
 Para crear un tema nuevo, agrega un objeto a `sections` con `id`, `short`, `title`, `text` y, si quieres, un `video` recomendado. Si el tema es nuevo, agrégale un ícono en `TOPIC_ICONS` dentro de `assets/app.js`.
 
 ## Agregar ejercicios
+
+Los temas nuevos se escriben con su español y su inglés juntos, con los ayudantes de `data/groups.js` (mira `data/exercises-unit1.js` como ejemplo):
+
+```js
+M("My sister ___ very friendly.", "is", ["are", "am", "be"],
+  ["My sister = she → is.", "My sister = she → is."],                    // explicación ES / EN
+  { are: ["«are» es para you, we, they…", "“are” is for you, we, they…"] }) // por qué está mal esa opción (opcional)
+```
+
+Si el estudiante elige una opción que tiene explicación en `w`, ve por qué su respuesta no sirve, además de la explicación de la correcta. Cada tema va en un grupo de `data/groups.js` (el orden de los grupos sigue el libro).
+
+Formato de los temas originales (`data/exercises.js`, con su inglés en `data/en.js`):
 
 Abre `data/exercises.js`. Cada tema tiene secciones y cada sección tiene ejercicios:
 

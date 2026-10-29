@@ -202,36 +202,8 @@ window.YEB_EN = (function () {
           { e: "My boyfriend = he → “for him”." },
           { e: "“We never complain” → we are the ones who get the homework: “us”." }
         ] },
-        { title: "Story: Biscuit, the boss of the house", instructions: "Read the story (tap or hover over any word to see its translation). Some marked pronouns are right and some are wrong: decide which. Tap a circle to jump to its question.", items: [
-          SJ(1, "I", "It should be “me”", "It should be “my”", "Wrong. After “stares at” we need the object: “stares at me”."),
-          SJ(2, "him", null, null, "Correct. “Him” = Biscuit, after the verb “follow”.", ["he", "it"]),
-          SJ(3, "it", null, null, "Correct. “It” = the food (one thing).", ["them", "him"]),
-          SJ(4, "them", "It should be “it”", "It should be “him”", "Wrong. “A test” is one thing: “I always fail it”."),
-          SJ(5, "he", "It should be “him”", "It should be “his”", "Wrong. Leo receives the action: “wakes him up”."),
-          SJ(6, "it", null, null, "Correct. “It” = the pillow (one thing).", ["them", "him"]),
-          SJ(7, "her", null, null, "Correct. “Her” = Nina, after the verb “adores”.", ["she", "hers"]),
-          SJ(8, "she", "It should be “her”", "It should be “hers”", "Wrong. After “loves” we need the object: “loves her”. “She” is only a subject."),
-          SJ(9, "us", null, null, "Correct. She asks the roommates (we): “asks us”.", ["we", "them"]),
-          SJ(10, "it", "It should be “them”", "It should be “they”", "Wrong. He's looking for the socks (plural): “find them”."),
-          SJ(11, "them", null, null, "Correct. “Them” = the socks; “to her” = to Mrs. Patel.", ["it", "they"]),
-          SJ(12, "hers", "It should be “him”", "It should be “her”", "Wrong. Mrs. Patel likes Biscuit (a male cat): “likes him”. “Hers” is a possessive."),
-          SJ(13, "him", "It should be “it”", "It should be “them”", "Wrong. He needs the laptop, not the cat: “I need it for work”."),
-          SJ(14, "me", null, null, "Correct. After “looks at” we use the object: “me”.", ["I", "my"]),
-          SJ(15, "we", "It should be “us”", "It should be “our”", "Wrong. After “lets” we use the object: “lets us sit there”.")
-        ] },
-        { title: "Vocabulary from the story", instructions: "What does each word mean in Biscuit's story?", items: [
-          { q: "Here, “ego” is:", labels: { "Lo importante que alguien se cree": "How important someone thinks they are", "Su apetito": "His appetite", "Su tamaño": "His size" }, e: "A huge ego = he thinks he's very important." },
-          { q: "“Stare at” means:", labels: { "Mirar fijamente": "To look at someone for a long time", "Gritarle a alguien": "To shout at someone", "Saltar sobre alguien": "To jump on someone" }, e: "Stare at = look at someone or something without looking away." },
-          { q: "“Sniff” means:", labels: { "Olfatear": "To smell with your nose", "Morder": "To bite", "Tocar": "To touch" }, e: "Sniff = smell something quickly with your nose." },
-          { q: "“With disgust” means:", labels: { "Con asco": "Feeling that something is gross", "Con hambre": "Hungrily", "Con alegría": "Happily" }, e: "Disgust = a strong feeling that something is gross. Disgusting = gross." },
-          { q: "“A light sleeper” is:", labels: { "Alguien que se despierta con cualquier ruido": "Someone who wakes up with any noise", "Alguien que duerme mucho": "Someone who sleeps a lot", "Alguien que duerme con la luz encendida": "Someone who sleeps with the light on" }, e: "Light sleeper = wakes up easily. The opposite: a heavy sleeper." },
-          { q: "“Grumble” means:", labels: { "Quejarse entre dientes": "To complain quietly", "Reírse": "To laugh", "Cantar": "To sing" }, e: "Grumble = complain in a low, unhappy voice." },
-          { q: "“Pretend” means:", labels: { "Fingir": "To act as if something is true", "Pretender, intentar": "To try, to intend", "Preferir": "To prefer" }, e: "False friend for Spanish speakers! Pretend = act as if something is true, not “try”." },
-          { q: "Here, “treats” are:", labels: { "Premios o golosinas para mascotas": "Special snacks for pets", "Tratos o acuerdos": "Deals or agreements", "Juguetes": "Toys" }, e: "Treats = special snacks. “Trick or treat!”" },
-          { q: "“Sneak onto” means:", labels: { "Meterse a escondidas": "To go somewhere secretly", "Caerse de": "To fall off", "Dormir en": "To sleep on" }, e: "Sneak = move secretly so nobody sees you." },
-          { q: "A “clothesline” is:", labels: { "Un tendedero (cuerda para la ropa)": "A rope where you hang clothes to dry", "Un armario": "A closet", "Una lavadora": "A washing machine" }, e: "Clothes + line (rope) = a rope to dry clothes." },
-          { q: "“Pay the rent” means:", labels: { "Pagar el alquiler": "To pay for the place where you live", "Pagar la comida": "To pay for food", "Pagar la luz": "To pay the electricity bill" }, e: "Rent = money you pay to live in a place." }
-        ] }
+        {},   // story: English is inline in data/exercises.js
+        {}    // story vocabulary: same
       ]
     },
 
