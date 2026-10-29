@@ -344,6 +344,14 @@
       <div class="score-bar" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
   }
 
+  const secTitle = (x, si) => exSecT(x, si).title || pickLang(x.sections[si].title) || t(KIND_TEXT[x.sections[si].kind][0]);
+  // Chip in the sticky section menu: answered / total, green when the section is finished
+  function chipCount(x, si) {
+    const n = x.sections[si].items.length;
+    const done = x.sections[si].items.filter((_, ii) => savedAnswer(x, si, ii)).length;
+    return { text: `${done}/${n}`, done: done === n };
+  }
+
   function sectionCount(x, si) {
     const items = x.sections[si].items;
     const answered = items.map((_, ii) => savedAnswer(x, si, ii)).filter(Boolean);
@@ -354,7 +362,11 @@
   // Refresh everything that depends on the answers of the current topic, without re-rendering the page
   function refreshPractice(x) {
     $("#score").innerHTML = scoreHTML(x);
-    x.sections.forEach((_, si) => { const el = document.getElementById(`sec-count-${si}`); if (el) el.textContent = sectionCount(x, si); });
+    x.sections.forEach((_, si) => {
+      const el = document.getElementById(`sec-count-${si}`); if (el) el.textContent = sectionCount(x, si);
+      const chip = document.querySelector(`.sec-chip[data-sec="${si}"]`);
+      if (chip) { const c = chipCount(x, si); chip.querySelector("small").textContent = c.text; chip.classList.toggle("done", c.done); }
+    });
     renderTopics();
   }
 
@@ -377,15 +389,70 @@
   const KIND_TEXT = { comprehension: ["comprehension", "comprehensionInstr"], vocab: ["vocabInContext", "vocabInstr"] };
   function exerciseBody(x) {
     return `
-      <div class="score" id="score">${scoreHTML(x)}</div>
+      <div class="ex-sticky">
+        <div class="score" id="score">${scoreHTML(x)}</div>
+        ${secNavHTML(x)}
+      </div>
       ${x.sections.map((s, si) => `
-        <section class="ex-section${s.story ? " has-story" : ""}">
-          <h3>${esc(exSecT(x, si).title || pickLang(s.title) || t(KIND_TEXT[s.kind][0]))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
+        <section class="ex-section${s.story ? " has-story" : ""}" id="sec-${si}">
+          <h3>${esc(secTitle(x, si))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
+
+  // ——— Section menu (sticky, under the score): jump to a section; the one on screen is highlighted ———
+  function secNavHTML(x) {
+    if (x.sections.length < 2) return "";
+    return `<nav class="sec-nav" aria-label="${esc(t("sections"))}">${x.sections.map((_, si) => {
+      const c = chipCount(x, si), title = secTitle(x, si);
+      return `<button type="button" class="sec-chip${c.done ? " done" : ""}" data-sec="${si}" title="${esc(title)}"><span class="sec-n">${si + 1}</span><span class="sec-t">${esc(title)}</span><small>${c.text}</small></button>`;
+    }).join("")}</nav>`;
+  }
+  // Where the sticky bar ends once it's stuck (the sections scroll under it)
+  function stickyBottom() {
+    const bar = $(".ex-sticky");
+    return bar ? parseFloat(getComputedStyle(bar).top) + bar.offsetHeight : 0;
+  }
+  // «stuck» lets the bar shrink on phones while it floats over the questions
+  function syncStuck() {
+    const bar = $(".ex-sticky");
+    if (bar) bar.classList.toggle("stuck", !!bar.querySelector(".sec-nav") && bar.getBoundingClientRect().top <= parseFloat(getComputedStyle(bar).top) + 1);
+  }
+  let navLock = null, navLockTimer;
+  function goSection(si) {
+    const sec = document.getElementById(`sec-${si}`);
+    if (!sec) return;
+    navLock = si; clearTimeout(navLockTimer); navLockTimer = setTimeout(() => { navLock = null; spySection(); }, 900);
+    setActiveChip(si);
+    $(".ex-sticky").classList.add("stuck");   // measure the bar as it will look after scrolling
+    window.scrollTo({ top: sec.getBoundingClientRect().top + window.scrollY - stickyBottom() - 12, behavior: "smooth" });
+  }
+  function setActiveChip(si) {
+    const nav = $(".sec-nav");
+    if (!nav) return;
+    nav.querySelectorAll(".sec-chip").forEach((c) => {
+      const on = +c.dataset.sec === si;
+      if (on) c.setAttribute("aria-current", "true"); else c.removeAttribute("aria-current");
+      if (on && c.dataset.on !== "1") nav.scrollTo({ left: c.offsetLeft - 16, behavior: "smooth" });
+      c.dataset.on = on ? "1" : "";
+    });
+  }
+  function spySection() {
+    if (navLock !== null || !$(".sec-nav")) return;
+    const line = stickyBottom() + 40;
+    const secs = [...document.querySelectorAll(".ex-section")];
+    let active = 0;
+    secs.forEach((s, i) => { if (s.getBoundingClientRect().top <= line) active = i; });
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) active = secs.length - 1;
+    setActiveChip(active);
+  }
+  let spyFrame;
+  window.addEventListener("scroll", () => {
+    cancelAnimationFrame(spyFrame);
+    spyFrame = requestAnimationFrame(() => { syncStuck(); spySection(); });
+  }, { passive: true });
 
   function answer(key, value) {
     const x = currentTopic();
@@ -745,12 +812,15 @@
     stopSpeaking();
     hideGloss();
     $("#panel").innerHTML = state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    syncStuck(); spySection();
   }
 
   $("#panel").addEventListener("click", (e) => {
     if (e.target.closest(".glossable .w, .glossable .vw")) { showGloss(e.target, true); return; }
     const find = e.target.closest("[data-find]");
     if (find) return findInText(find.dataset.find);
+    const chip = e.target.closest(".sec-chip");
+    if (chip) return goSection(+chip.dataset.sec);
     const jump = e.target.closest("[data-jump]");
     if (jump) {
       const q = document.getElementById(`q-${jump.dataset.jump}`);
