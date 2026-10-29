@@ -753,14 +753,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .wk.today i { border-color: #f97316; }
 .wk small { font-size: 12px; color: var(--muted); text-transform: uppercase; }
 .wk.today small { color: var(--ink); font-weight: 700; }
+.wk em { font-style: normal; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.wk.on em { color: var(--text); font-weight: 600; }
 .pg-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0; }
 .pg-stats div { padding: 10px 12px; border-radius: 12px; background: var(--bg-soft); }
 .pg-stats dt { font-size: 12.5px; color: var(--muted); }
 .pg-stats dd { margin: 2px 0 0; font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .bars { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; align-items: end; height: 130px; }
-.bar { display: grid; grid-template-rows: auto 1fr auto; height: 100%; justify-items: center; align-items: end; gap: 3px; }
-.bar b { font-size: 10.5px; font-weight: 700; color: var(--muted); min-height: 13px; }
-.bar i { width: 100%; max-width: 20px; border-radius: 5px 5px 2px 2px; background: var(--green-600); align-self: end; }
+.bar { display: grid; grid-template-rows: 1fr auto; height: 100%; justify-items: center; gap: 4px; }
+/* The number sits right on top of its bar */
+.bar .col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 100%; height: 100%; }
+.bar b { font-size: 10.5px; font-weight: 700; color: var(--text); white-space: nowrap; margin-bottom: 2px; }
+.bar i { display: block; width: 100%; max-width: 22px; border-radius: 5px 5px 2px 2px; background: var(--green-600); }
+.chart-note { margin: 10px 0 0; }
 .bar small { font-size: 11px; color: var(--muted); text-transform: uppercase; }
 .bar.today small { color: var(--ink); font-weight: 700; }
 .pg-sentence { margin: 4px 0 12px; font-size: 15.5px; color: var(--text); }
@@ -799,6 +804,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .pg-stats dd { font-size: 17px; }
   .bars { height: 110px; gap: 3px; }
   .bar b { font-size: 9.5px; }
+  .bar b span { display: none; }   /* phones: just the number; the title says they're minutes */
 
 }
 @media (max-width: 380px) { .modes .mode-btn { font-size: 12px; } }

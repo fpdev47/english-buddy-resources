@@ -1129,19 +1129,12 @@
     const locale = isEN() ? "en-US" : "es-ES";
     const days = (count) => Array.from({ length: count }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (count - 1 - i)); return d; });
     const dayName = (d) => d.toLocaleDateString(locale, { weekday: "narrow" });
+    const minutesOf = (k) => Math.round(((state.daily[k] || {}).ms || 0) / 60000);
     const week = days(7).map((d) => {
       const k = dayKey(d);
       return `<li class="wk${studied(k) ? " on" : ""}${k === dayKey() ? " today" : ""}" title="${esc(d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }))}">
-        <i>${studied(k) ? ICONS.check : ""}</i><small>${esc(dayName(d))}</small></li>`;
+        <i>${studied(k) ? ICONS.check : ""}</i><small>${esc(dayName(d))}</small><em>${minutesOf(k) ? `${minutesOf(k)} min` : "–"}</em></li>`;
     }).join("");
-    const last14 = days(14).map((d) => ({ d, min: Math.round(((state.daily[dayKey(d)] || {}).ms || 0) / 60000) }));
-    const maxMin = Math.max(10, ...last14.map((o) => o.min));
-    const bars = last14.map(({ d, min }) => {
-      const label = `${d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "short" })}: ${min} min`;
-      return `<li class="bar${dayKey(d) === dayKey() ? " today" : ""}" title="${esc(label)}" aria-label="${esc(label)}">
-        <b>${min || ""}</b><i style="height:${(min / maxMin) * 100}%"></i><small>${esc(dayName(d))}</small></li>`;
-    }).join("");
-
     const stat = (label, value, id) => `<div><dt>${esc(label)}</dt><dd${id ? ` id="${id}"` : ""}>${esc(value)}</dd></div>`;
     const seg = (cls, count) => (count ? `<i class="${cls}" style="width:${pct(count, answered)}%"></i>` : "");
     const legend = (cls, label, count) => `<li><span class="dot ${cls}"></span>${esc(label)} <b>${count}</b> <small>(${pct(count, answered)} %)</small></li>`;
@@ -1186,8 +1179,7 @@
           ${stat(t("todayTime"), fmtTime(today().ms), "pg-today")}
           ${stat(t("totalTime"), fmtTime(totalMs()), "pg-total")}
         </dl>
-        <h4>${esc(t("last14"))}</h4>
-        <ol class="bars">${bars}</ol>
+
       </section>
 
       <section class="pg-card">
