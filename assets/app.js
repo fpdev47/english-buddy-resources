@@ -325,13 +325,20 @@
     return all;
   }
 
-  function savedAnswer(x, si, ii) {
+  // A final answer ({ v, ok, first? }). A first wrong try waiting for the second one is { v, pending: true }.
+  function rawAnswer(x, si, ii) {
     const ans = (state.answers[x.id] || {})[`${si}-${ii}`];
     const item = x.sections[si] && x.sections[si].items[ii];
     if (!ans || !item) return null;
     if (item.type !== "write" && ![item.a, ...item.o].includes(ans.v)) return null;
     return ans;
   }
+  function savedAnswer(x, si, ii) {
+    const ans = rawAnswer(x, si, ii);
+    return ans && !ans.pending ? ans : null;
+  }
+  // Second try before showing the answer (not when there are only two options: it would be a free answer)
+  const allowsRetry = (item) => item.type === "write" || item.o.length >= 2;
 
   function progress(x) {
     const total = x.sections.reduce((n, s) => n + s.items.length, 0);
@@ -344,8 +351,26 @@
     const tr = (isEN() && item.en) || itemT(x, si, ii);
     const key = `${si}-${ii}`;
     const ans = savedAnswer(x, si, ii);
+    const raw = rawAnswer(x, si, ii);
+    const tried = raw && raw.pending ? raw.v : null;     // first wrong try, waiting for the second
     const isWrite = item.type === "write";
     const correct = isWrite ? item.a[0] : label(tr, item.a);
+    // Why the chosen option is wrong. On the first try the right answer is hidden (___) so the hint doesn't give it away.
+    const why = (v, hide) => {
+      if (!item.w || !item.w[v]) return "";
+      let text = pickLang(item.w[v]);
+      if (hide) {
+        const re = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const word = (a) => new RegExp(`(^|[^\\w'’])${re(a)}(?=[^\\w'’]|$)`, "gi");
+        for (const a of (isWrite ? item.a : [label(tr, item.a)]).flatMap((x) => x.split(" / "))) {
+          text = text.replace(new RegExp(`([→:]\\s*)${re(a)}(?=[\\s.,;)!?]|$)`, "gi"), "$1___");
+          // «a» and «no» are also everyday words (Spanish, or the English article): if they still show, skip the hint
+          if (/^(a|no)$/i.test(a)) { if (word(a).test(text)) return ""; }
+          else text = text.replace(word(a), "$1___");
+        }
+      }
+      return `<span class="why">${hide ? "" : `<b>${esc(label(tr, v))}</b> `}${esc(text)}</span>`;
+    };
     // Several gaps (___ … ___) take the parts of an answer like "she / her" in order
     const parts = correct.split(" / ");
     let gap = 0;
@@ -365,21 +390,27 @@
     } else {
       body = `<div class="opts">${options(item).map((o) => {
         let cls = "opt";
-        if (ans) cls += o === item.a ? " right" : o === ans.v ? " wrong" : " dim";
-        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
+        if (ans) cls += o === item.a ? " right" : o === ans.v || o === ans.first ? " wrong" : " dim";
+        else if (o === tried) cls += " wrong";
+        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans || o === tried ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
       }).join("")}</div>`;
     }
 
     const fb = ans ? `
       <div class="fb ${ans.ok ? "ok" : "bad"}" role="status">
-        <strong>${ans.ok ? t("correct") : `${t("answerIs")} ${esc(correct)}`}</strong>
-        ${!ans.ok && item.w && item.w[ans.v] ? `<span class="why"><b>${esc(label(tr, ans.v))}</b> ${esc(pickLang(item.w[ans.v]))}</span>` : ""}
+        <strong>${ans.ok ? `${t("correct")}${ans.first ? ` <small>${esc(t("secondTry"))}</small>` : ""}` : `${t("answerIs")} ${esc(correct)}`}</strong>
+        ${!ans.ok ? why(ans.v) : ""}
         <span>${esc(pickLang(tr.e || item.e))}</span>
         ${ans.ok ? "" : `<button type="button" class="retry-one" data-action="retry-one" data-key="${key}">↻ ${esc(t("tryAgain"))}</button>`}
+      </div>` : tried !== null ? `
+      <div class="fb try" role="status">
+        <strong>${esc(t("notThis")(isWrite ? tried : label(tr, tried)))}</strong>
+        ${why(tried, true)}
+        <span>${esc(t("tryOnceMore"))}</span>
       </div>` : "";
 
     return `
-      <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : ""}" id="q-${key}">
+      <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : tried !== null ? " is-try" : ""}" id="q-${key}">
         <span class="q-num">${ii + 1}</span>
         <div class="q-body">
           ${item.quote ? `<blockquote class="quote">${esc(item.find ? speechQuote(x, item.find) : tr.quote || item.quote).replace(/\[\[(.+?)\]\]/g, '<mark class="hl">$1</mark>')}</blockquote>` : ""}
@@ -538,10 +569,15 @@
     const [si, ii] = key.split("-").map(Number);
     const item = x.sections[si].items[ii];
     const ok = item.type === "write" ? item.a.some((a) => normalize(a) === normalize(value)) : value === item.a;
+    const prev = rawAnswer(x, si, ii);
     state.answers[x.id] = state.answers[x.id] || {};
-    state.answers[x.id][key] = { v: value, ok };
+    // First mistake: say why and let them try again; the answer is only shown after the second one
+    if (!ok && allowsRetry(item) && !(prev && prev.pending)) state.answers[x.id][key] = { v: value, pending: true };
+    else state.answers[x.id][key] = { v: value, ok, ...(prev && prev.pending ? { first: prev.v } : {}) };
     save();
     document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
+    const q = document.getElementById(`q-${key}`);
+    if (q.classList.contains("is-try")) { const next = q.querySelector(".opt:not(:disabled), .write-input"); if (next) next.focus({ preventScroll: true }); }
     const mark = document.querySelector(`.story [data-jump="${key}"]`);
     if (mark) mark.className = storyMarkClass(x, si, ii + 1);
     refreshPractice(x);
@@ -589,7 +625,7 @@
     const snapshot = { id: x.id, answers: JSON.parse(JSON.stringify(saved)) };
     let firstKey = null;
     x.sections.forEach((s, si) => s.items.forEach((_, ii) => {
-      const key = `${si}-${ii}`, ans = savedAnswer(x, si, ii);
+      const key = `${si}-${ii}`, ans = rawAnswer(x, si, ii);
       if (ans && (!onlyWrong || !ans.ok)) { delete saved[key]; if (!firstKey) firstKey = key; }
     }));
     state.answers[x.id] = saved;

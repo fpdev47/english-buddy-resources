@@ -20,6 +20,8 @@ assets/config.js    Conexión con Supabase (vacía = sin nube)
 setup/supabase.sql  Tabla y funciones para Supabase
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
+data/why-original.js
+                    «Por qué está mal» cada opción en los temas originales
 data/groups.js      Grupos de temas de «Practicar» y ayudantes para escribir ejercicios bilingües
 data/exercises.js   Banco de ejercicios (temas originales)
 data/exercises-unit1.js, exercises-unit2.js, exercises-extra.js
@@ -63,7 +65,9 @@ M("My sister ___ very friendly.", "is", ["are", "am", "be"],
   { are: ["«are» es para you, we, they…", "“are” is for you, we, they…"] }) // por qué está mal esa opción (opcional)
 ```
 
-Si el estudiante elige una opción que tiene explicación en `w`, ve por qué su respuesta no sirve, además de la explicación de la correcta. Cada tema va en un grupo de `data/groups.js` (el orden de los grupos sigue el libro).
+**Dos intentos.** Si el estudiante se equivoca, primero ve por qué su opción no sirve (lo que diga `w` para esa opción, con la respuesta correcta tapada con ___) y puede intentarlo otra vez. La respuesta solo aparece después del segundo error. Las preguntas con dos opciones (correcta / incorrecta) se corrigen al primer intento, porque el segundo sería regalado. Una respuesta correcta en el segundo intento cuenta como correcta y lo dice («al segundo intento»).
+
+Las explicaciones por opción de los temas originales están en `data/why-original.js`. Cada tema va en un grupo de `data/groups.js` (el orden de los grupos sigue el libro).
 
 Formato de los temas originales (`data/exercises.js`, con su inglés en `data/en.js`):
 

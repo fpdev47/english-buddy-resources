@@ -503,6 +503,7 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 }
 .q.is-ok { border-color: var(--ok-line); }
 .q.is-bad { border-color: var(--bad-line); }
+.q.is-try { border-color: var(--harder-fg); }
 .q-num {
   flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
   background: var(--bg-soft); color: var(--muted); font-family: var(--font-head); font-weight: 700; font-size: 13px;
@@ -538,6 +539,9 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 .fb.bad { background: var(--bad-bg); color: var(--bad-fg); }
 .fb span { color: var(--text); }
 .fb .why { color: var(--bad-fg); }
+/* First mistake: a hint, the question stays open for a second try */
+.fb.try { background: var(--harder-bg); color: var(--harder-fg); }
+.fb strong small { font-weight: 600; opacity: .8; }
 .fb .why b { font-weight: 800; }
 .fb .why b::after { content: " →"; font-weight: 400; }
 @media (hover: hover) {
