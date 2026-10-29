@@ -646,6 +646,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 @media (max-width: 560px) {
   .intro { padding: 32px 0 28px; }
+  /* Logged-in students come back often: a compact hero leaves the exercises in view */
+  .unlocked .intro { padding: 18px 0 16px; }
+  .unlocked .intro h1 { font-size: 26px; margin: 10px 0 12px; }
+  .unlocked .intro .lead { display: none; }
+  .unlocked .topics-label { padding-top: 14px; }
+  .sheet-topic { padding: 8px 12px; gap: 5px; }
+  .sheet-topic strong { font-size: 14.5px; }
   html { scroll-padding-top: 132px; }
   /* Topics become a sticky, swipeable chip row so students can switch topics anywhere */
   .topics-label { padding-top: 24px; }
