@@ -1129,11 +1129,13 @@
     const locale = isEN() ? "en-US" : "es-ES";
     const days = (count) => Array.from({ length: count }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (count - 1 - i)); return d; });
     const dayName = (d) => d.toLocaleDateString(locale, { weekday: "narrow" });
+    const weekRange = (() => { const [a, b] = [days(7)[0], new Date()]; const f = (d) => d.toLocaleDateString(locale, { day: "numeric", month: "short" }).replace(".", ""); return `${f(a)} – ${f(b)}`; })();
+    const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
     const minutesOf = (k) => Math.round(((state.daily[k] || {}).ms || 0) / 60000);
     const week = days(7).map((d) => {
       const k = dayKey(d);
       return `<li class="wk${studied(k) ? " on" : ""}${k === dayKey() ? " today" : ""}" title="${esc(d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }))}">
-        <i>${studied(k) ? ICONS.check : ""}</i><small>${esc(dayName(d))}</small><em>${minutesOf(k) ? `${minutesOf(k)} min` : "–"}</em></li>`;
+        <i>${studied(k) ? ICONS.check : ""}</i><small><span class="d-long">${esc(cap(d.toLocaleDateString(locale, { weekday: "long" })))}</span><span class="d-short">${esc(cap(d.toLocaleDateString(locale, { weekday: "short" }).replace(".", "")))}</span> <b>${d.getDate()}</b></small><em>${minutesOf(k) ? `${minutesOf(k)} min` : "–"}</em></li>`;
     }).join("");
     const stat = (label, value, id) => `<div><dt>${esc(label)}</dt><dd${id ? ` id="${id}"` : ""}>${esc(value)}</dd></div>`;
     const seg = (cls, count) => (count ? `<i class="${cls}" style="width:${pct(count, answered)}%"></i>` : "");
@@ -1167,7 +1169,7 @@
             <p class="pg-help">${esc(done ? t("streakDone") : n ? t("streakKeep") : t("streakStart"))} ${esc(t("bestStreak")(best))}</p>
           </div>
         </div>
-        <h4>${esc(t("thisWeek"))}</h4>
+        <h4>${esc(t("last7"))} · ${esc(weekRange)}</h4>
         <ol class="pg-week">${week}</ol>
       </section>
 
