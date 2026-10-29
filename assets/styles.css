@@ -330,6 +330,22 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 .play svg { width: 24px; height: 24px; margin-left: 4px; fill: var(--teal-900); }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .pick-body { padding: 24px 26px; align-self: center; }
+/* Video gallery (Listen): small cards that play right here */
+.vg-title { font-size: 18px; margin: 28px 0 4px; }
+.vg-text { margin: 0 0 12px; color: var(--muted); font-size: 14.5px; }
+.vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 10px; }
+.vcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+.vcard .play { transform: translate(-50%, -50%) scale(.72); }
+.vc-body { padding: 10px 14px 12px; display: grid; gap: 2px; }
+.vc-body strong { font-size: 14.5px; line-height: 1.35; color: var(--ink); }
+.vc-body small { font-size: 12.5px; color: var(--muted); }
+.plists { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 10px; }
+.plist { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); text-decoration: none; color: var(--ink); }
+.plist svg { width: 28px; height: 28px; color: #ff0033; flex: none; }
+.plist span { display: grid; }
+.plist small { color: var(--muted); font-size: 12.5px; }
+@media (hover: hover) { .plist:hover { border-color: var(--brand); } }
+@media (max-width: 560px) { .vgrid { grid-template-columns: 1fr 1fr; gap: 10px; } .vc-body { padding: 8px 10px 10px; } .vc-body strong { font-size: 13px; } }
 .pick-tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--teal-900); background: var(--lime); padding: 4px 12px; border-radius: 999px; }
 .pick h3 { font-size: 20px; margin: 12px 0 2px; }
 .pick .by { color: var(--lime); font-weight: 600; font-size: 14px; }

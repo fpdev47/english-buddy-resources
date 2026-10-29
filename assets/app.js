@@ -43,6 +43,7 @@
     examenes: svg("M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"),
     guardados: svg("M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"),
     ejercicio: svg("M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"),
+    entretenimiento: svg("M2 7h20v13H2zM7 3l5 4 5-4"),
     grupos: svg("M4 5h16M4 12h16M4 19h16"),
     lectura: svg("M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z")
   };
@@ -275,7 +276,33 @@
         <p>${esc(isFavs ? t("savedText") : secT(sec).text || sec.text)}</p>
       </div>
       ${!isFavs && sec.video ? videoBlock(sec.video, secT(sec).video) : ""}
+      ${!isFavs && sec.videos ? videoGallery(sec) : ""}
       <div class="cards">${list.map(card).join("")}</div>`;
+  }
+  // More videos to play right here, plus links to full YouTube playlists
+  function videoGallery(sec) {
+    const vcard = (v) => `
+      <article class="vcard">
+        <div class="video">
+          <button type="button" data-yt="${esc(v.id)}" data-start="${v.start || 0}" aria-label="${t("play")}: ${esc(v.title)}">
+            <img src="https://i.ytimg.com/vi/${esc(v.id)}/mqdefault.jpg" alt="" loading="lazy">
+            <span class="play">${ICONS.play}</span>
+          </button>
+        </div>
+        <div class="vc-body">
+          <strong>${esc(v.title)}</strong>
+          <small>${esc([v.channel, v.level].filter(Boolean).join(" · "))}</small>
+        </div>
+      </article>`;
+    const groups = sec.videos.map((g) => `
+      <h3 class="vg-title">${esc(pickLang(g.title))}</h3>
+      ${g.text ? `<p class="vg-text">${esc(pickLang(g.text))}</p>` : ""}
+      <div class="vgrid">${g.items.map(vcard).join("")}</div>`).join("");
+    const lists = (sec.playlists || []).map((l) => `
+      <a class="plist" href="https://www.youtube.com/playlist?list=${esc(l.list)}" target="_blank" rel="noopener">
+        ${ICONS.yt}<span><strong>${esc(l.title)}</strong><small>${esc(l.channel)} · ${esc(t("videosCount")(l.count))}</small></span>
+      </a>`).join("");
+    return `${groups}${lists ? `<h3 class="vg-title">${esc(t("fullPlaylists"))}</h3><div class="plists">${lists}</div>` : ""}<h3 class="vg-title">${esc(t("channelsTitle"))}</h3>`;
   }
 
   // ——— Practice: exercises ———

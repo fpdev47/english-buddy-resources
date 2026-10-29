@@ -20,7 +20,38 @@ window.YEB_DATA = {
       short: "Pronunciación y shadowing",
       title: "Pronunciación y shadowing",
       text: "Escucha y repite en voz alta justo después del hablante para entrenar ritmo, entonación y fluidez.",
-      video: { id: "37x7oLjYPgM", start: 11, title: "4.5 horas de práctica de speaking", channel: "English is EZ with Connor", tip: "Escucha cada frase, pausa y repítela imitando la entonación. Con 15 minutos al día es suficiente." }
+      video: { id: "37x7oLjYPgM", start: 11, title: "4.5 horas de práctica de speaking", channel: "English is EZ with Connor", tip: "Escucha cada frase, pausa y repítela imitando la entonación. Con 15 minutos al día es suficiente." },
+      videos: [
+        { title: { es: "Escenas de series y películas", en: "Scenes from series and movies" }, text: { es: "Escucha la frase, pausa y repítela igual: misma velocidad, mismas pausas, misma emoción.", en: "Listen to the line, pause and repeat it the same way: same speed, same pauses, same emotion." }, items: [
+        { id: "x1igjXewiAY", title: "Friends: a wedding-day surprise", channel: "Shadowing for dummies!", level: "B1" },
+        { id: "V9jBrDzSgA4", title: "Jennifer Aniston in Friends", channel: "Shadowing for dummies!", level: "B1" },
+        { id: "ttvBd0l_t8I", title: "Lisa Kudrow (Phoebe, Friends)", channel: "Parrot Shadowing", level: "B1" },
+        { id: "uYENa3tUjJA", title: "The Office: how NOT to talk at work", channel: "Shadowing for dummies!", level: "B1–B2" },
+        { id: "UCnFlpDT3qY", title: "Emily in Paris: starting a conversation", channel: "Shadowing for dummies!", level: "B1" },
+        { id: "bY9g5MBLQpU", title: "Suits: confidence in a job interview", channel: "Shadowing for dummies!", level: "B2" },
+        { id: "YX7Ud4EeLyA", title: "The Devil Wears Prada: business English", channel: "Shadowing for dummies!", level: "B2" },
+        { id: "BAGKax-ceTE", title: "Despicable Me: everyday English at home", channel: "Shadowing for dummies!", level: "A2–B1" },
+        { id: "bSAoLcD5oCs", title: "Ratatouille: natural movie dialogue", channel: "Shadowing for dummies!", level: "B1" },
+        { id: "P4purqwM-FM", title: "Kung Fu Panda: can you escape your destiny?", channel: "Shadowing for dummies!", level: "B1" },
+        { id: "WpcQHaBdPcQ", title: "Wednesday: the queen of one-liners", channel: "Parrot Shadowing", level: "C1" }
+        ] },
+        { title: { es: "Famosos y discursos", en: "Celebrities and speeches" }, text: { es: "Entrevistas y discursos reales. Empieza por los de nivel B1 y sube poco a poco.", en: "Real interviews and speeches. Start with the B1 ones and move up little by little." }, items: [
+        { id: "X-vONe3wf8A", title: "Barack Obama", channel: "Shadowing for dummies!", level: "B1–B2" },
+        { id: "kEWzJGUlfIo", title: "Martin Luther King: “I Have a Dream”", channel: "Shadowing for dummies!", level: "B2–C1" },
+        { id: "xrpQ_y7DEMM", title: "Steve Jobs: business vocabulary", channel: "Shadowing for dummies!", level: "B2" },
+        { id: "5TwQukCqhmw", title: "Meryl Streep", channel: "Parrot Shadowing", level: "B2" },
+        { id: "XeveltH38ns", title: "Morgan Freeman", channel: "Parrot Shadowing", level: "B2" },
+        { id: "Kvkva4yODxE", title: "Keanu Reeves", channel: "Parrot Shadowing", level: "B1–B2" },
+        { id: "0qdIzZcbRnM", title: "Taylor Swift at NYU", channel: "Parrot Shadowing", level: "B2" },
+        { id: "xAGGpPr2EZI", title: "Pedro Pascal", channel: "Shadowing for dummies!", level: "B1–B2" },
+        { id: "nHL2t3aLa78", title: "Sam Claflin (British accent)", channel: "Parrot Shadowing", level: "B2" },
+        { id: "SP4KQrELib4", title: "TED: Andrew Solomon", channel: "Parrot Shadowing", level: "C1" }
+        ] }
+      ],
+      playlists: [
+        { list: "PLL8rrkKVLqeRdeFKmygYujTkwOefatZ6G", title: "English Shadowing – American accent", channel: "Shadowing for dummies!", count: 72 },
+        { list: "PLVhmSjw4wVyYqOW5BTL6yuJi3NJH5LTvt", title: "American Accent English Shadowing Exercises", channel: "Parrot Shadowing", count: 44 }
+      ]
     },
     {
       id: "vocabulario",
@@ -51,7 +82,28 @@ window.YEB_DATA = {
       id: "ted",
       short: "TED y discursos",
       title: "Charlas TED y discursos",
-      text: "Charlas y discursos con subtítulos en inglés. Muchos acentos distintos y un tema concreto en cada video."
+      text: "Charlas y discursos con subtítulos en inglés. Muchos acentos distintos y un tema concreto en cada video.",
+      videos: [
+        { title: { es: "Charlas recomendadas", en: "Recommended talks" }, text: { es: "Mira primero con subtítulos en inglés; la segunda vez, sin subtítulos. Las de nivel B1–B2 son las más fáciles de seguir.", en: "Watch first with English subtitles; the second time, without them. The B1–B2 ones are the easiest to follow." }, items: [
+        { id: "arj7oStGLkU", title: "Tim Urban: Inside the mind of a master procrastinator", channel: "TED", level: "B2" },
+        { id: "5MgBikgcWnY", title: "Josh Kaufman: The first 20 hours – how to learn anything", channel: "TEDxCSU", level: "B1–B2" },
+        { id: "eIho2S0ZahI", title: "Julian Treasure: How to speak so that people want to listen", channel: "TED", level: "B2" },
+        { id: "qp0HIF3SfI4", title: "Simon Sinek: How great leaders inspire action", channel: "TEDx Puget Sound", level: "B2–C1" },
+        { id: "iCvmsMzlF7o", title: "Brené Brown: The power of vulnerability", channel: "TEDxHouston", level: "B2–C1" },
+        { id: "Ks-_Mh1QhMc", title: "Amy Cuddy: Your body language may shape who you are", channel: "TED", level: "B2" },
+        { id: "fLJsdqxnZb0", title: "Shawn Achor: The happy secret to better work", channel: "TEDxBloomington", level: "B2" },
+        { id: "RcGyVTAoXEU", title: "Kelly McGonigal: How to make stress your friend", channel: "TED", level: "B2" },
+        { id: "H14bBuluwB8", title: "Angela Lee Duckworth: Grit", channel: "TED", level: "B2" },
+        { id: "8KkKuTCFvzI", title: "Robert Waldinger: What makes a good life?", channel: "TEDxBeaconStreet", level: "B2" },
+        { id: "iG9CE55wbtY", title: "Ken Robinson: Do schools kill creativity?", channel: "TED", level: "C1" }
+        ] }
+      ]
+    },
+    {
+      id: "entretenimiento",
+      short: "Famosos y talk shows",
+      title: "Famosos, talk shows y entretenimiento",
+      text: "Podcasts y programas de actores y comediantes. Conversaciones naturales, con humor y a velocidad real: ideales para nivel B2 en adelante."
     },
     {
       id: "negocios",
@@ -74,6 +126,29 @@ window.YEB_DATA = {
   ],
 
   channels: [
+    // ——— Famosos y talk shows ———
+    { name: "Mayim Bialik's Breakdown", host: "Mayim Bialik (Amy en The Big Bang Theory)", section: "entretenimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "La actriz que hizo de Amy, la novia de Sheldon, y doctora en neurociencia, conversa sobre salud mental, ciencia y bienestar. Habla claro y pausado.",
+      youtube: "https://www.youtube.com/@mayimbialik", spotify: "https://open.spotify.com/search/Mayim%20Bialik%27s%20Breakdown/podcasts" },
+    { name: "SmartLess", host: "Jason Bateman, Sean Hayes y Will Arnett", section: "entretenimiento", level: ["B2", "C1"], accent: "Mix", format: "podcast",
+      text: "Tres actores entrevistan a un invitado sorpresa. Mucho humor e inglés muy natural, con interrupciones y bromas.",
+      youtube: "https://www.youtube.com/@SmartLess", spotify: "https://open.spotify.com/search/SmartLess/podcasts" },
+    { name: "Armchair Expert", host: "Dax Shepard y Monica Padman", section: "entretenimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "Conversaciones largas y profundas con actores, científicos y escritores. Bueno para escuchar inglés conversacional por mucho rato.",
+      youtube: "https://www.youtube.com/@ArmchairExpertPod", spotify: "https://open.spotify.com/search/Armchair%20Expert/podcasts" },
+    { name: "Conan O'Brien Needs A Friend", host: "Team Coco", section: "entretenimiento", level: ["B2", "C1"], accent: "US", format: "podcast",
+      text: "El comediante Conan O'Brien charla con famosos. Muy gracioso; el humor rápido es un buen reto para nivel avanzado.",
+      youtube: "https://www.youtube.com/@TeamCoco", spotify: "https://open.spotify.com/search/Conan%20O%27Brien%20Needs%20A%20Friend/podcasts" },
+    { name: "The Tonight Show Starring Jimmy Fallon", host: "NBC", section: "entretenimiento", level: ["B1", "C1"], accent: "US", format: "video",
+      text: "Juegos, entrevistas cortas y sketches con celebridades. Los videos duran pocos minutos y casi todos tienen subtítulos.",
+      youtube: "https://www.youtube.com/@FallonTonight", spotify: "" },
+    { name: "Late Night with Seth Meyers", host: "NBC", section: "entretenimiento", level: ["B2", "C1"], accent: "US", format: "video",
+      text: "Entrevistas y monólogos de humor sobre la actualidad. Útil para aprender expresiones y referencias culturales.",
+      youtube: "https://www.youtube.com/@LateNightSeth", spotify: "" },
+    { name: "Hot Ones", host: "First We Feast", section: "entretenimiento", level: ["B1", "C1"], accent: "US", format: "video",
+      text: "Entrevistas a famosos mientras comen alitas cada vez más picantes. Preguntas cortas, respuestas espontáneas y mucha risa.",
+      youtube: "https://www.youtube.com/@FirstWeFeast", spotify: "" },
+
     // ——— Podcasts para aprender ———
     { name: "6 Minute English", host: "BBC Learning English", section: "aprender", level: ["A2", "B1"], accent: "UK", format: "podcast",
       text: "Episodios de 6 minutos sobre temas actuales con el vocabulario clave explicado. El mejor punto de partida.",
@@ -116,6 +191,12 @@ window.YEB_DATA = {
       youtube: "https://www.youtube.com/@LukesEnglishPodcast", spotify: "https://open.spotify.com/show/4X48gpjrctXNJWtOnUgwq8" },
 
     // ——— Pronunciación y shadowing ———
+    { name: "Shadowing for dummies!", host: "Shadowing for dummies!", section: "shadowing", level: ["A2", "B2"], accent: "US", format: "video",
+      text: "Escenas de series, películas y entrevistas de famosos para repetir frase por frase. Cada video muestra el texto y hace pausas para que repitas.",
+      youtube: "https://www.youtube.com/@Shadowingfordummies", spotify: "" },
+    { name: "Parrot Shadowing", host: "Parrot Shadowing", section: "shadowing", level: ["B1", "C1"], accent: "US", format: "video",
+      text: "Ejercicios de imitación con actores y discursos famosos: acento americano, entonación y ritmo.",
+      youtube: "https://www.youtube.com/@ParrotShadowing", spotify: "" },
     { name: "English is EZ with Connor", host: "Connor", section: "shadowing", level: ["A2", "B2"], accent: "US", format: "video",
       text: "Sesiones largas de «escucha y repite» con frases útiles. Excelente para practicar shadowing todos los días.",
       youtube: "https://www.youtube.com/@EnglishisEZ", spotify: "" },

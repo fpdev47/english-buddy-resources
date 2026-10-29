@@ -24,6 +24,7 @@ window.YEB_EN = (function () {
       video: { title: "4.5 hours of speaking practice", tip: "Listen to each sentence, pause, and repeat it copying the intonation. 15 minutes a day is enough." } },
     vocabulario: { short: "Vocabulary & grammar", title: "Vocabulary and grammar", text: "Short video lessons with native teachers: phrasal verbs, expressions, common mistakes and grammar explained in English." },
     conversacion: { short: "Everyday conversation", title: "Everyday conversation", text: "English for every day: street interviews, chats between friends and real situations." },
+    entretenimiento: { short: "Celebrities & talk shows", title: "Celebrities, talk shows and entertainment", text: "Podcasts and shows by actors and comedians. Natural conversations, with humor and at real speed: great from B2 up." },
     noticias: { short: "News", title: "News in English", text: "News told more slowly or in levels, so you can follow current events while you practice." },
     crecimiento: { short: "Personal growth", title: "Mindset and personal growth", text: "Conversations between native speakers about habits, motivation and well-being. Real English at normal speed.",
       video: { title: "The Power of Reinvention", tip: "Turn on English subtitles and write down 5 new expressions while you listen." } },
@@ -34,6 +35,15 @@ window.YEB_EN = (function () {
   },
 
   channels: {
+    "Mayim Bialik's Breakdown": "The actress who played Amy, Sheldon's girlfriend, and a PhD in neuroscience, talks about mental health, science and well-being. She speaks clearly and calmly.",
+    "SmartLess": "Three actors interview a surprise guest. Lots of humor and very natural English, with interruptions and jokes.",
+    "Armchair Expert": "Long, deep conversations with actors, scientists and writers. Good for listening to conversational English for a long time.",
+    "Conan O'Brien Needs A Friend": "Comedian Conan O'Brien chats with celebrities. Very funny; the fast humor is a good challenge for advanced learners.",
+    "The Tonight Show Starring Jimmy Fallon": "Games, short interviews and sketches with celebrities. The videos are a few minutes long and almost all have subtitles.",
+    "Late Night with Seth Meyers": "Interviews and comedy monologues about current events. Useful for learning expressions and cultural references.",
+    "Hot Ones": "Celebrity interviews while eating hotter and hotter wings. Short questions, spontaneous answers and lots of laughs.",
+    "Shadowing for dummies!": "Scenes from series, movies and celebrity interviews to repeat line by line. Each video shows the text and pauses so you can repeat.",
+    "Parrot Shadowing": "Imitation exercises with actors and famous speeches: American accent, intonation and rhythm.",
     "6 Minute English": "6-minute episodes on current topics with the key vocabulary explained. The best place to start.",
     "Learning English Conversations": "Includes “The English We Speak”: one everyday expression per episode, explained in a few minutes.",
     "Coffee Break English": "15-minute lessons that build step by step, with a teacher and a student. They speak slowly.",
