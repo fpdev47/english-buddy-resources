@@ -269,7 +269,14 @@
     const ans = savedAnswer(x, si, ii);
     const isWrite = item.type === "write";
     const correct = isWrite ? item.a[0] : label(tr, item.a);
-    const prompt = esc(tr.q || item.q).replace(/^\((\d+)\)\s*/, '<span class="mark">$1</span>').replace("___", ans ? `<span class="blank filled">${esc(correct)}</span>` : `<span class="blank">______</span>`);
+    // Several gaps (___ … ___) take the parts of an answer like "she / her" in order
+    const parts = correct.split(" / ");
+    let gap = 0;
+    const prompt = esc(tr.q || item.q).replace(/^\((\d+)\)\s*/, '<span class="mark">$1</span>').replace(/___/g, () => {
+      const fill = parts.length > 1 ? parts[gap] || "" : correct;
+      gap++;
+      return ans ? `<span class="blank filled">${esc(fill)}</span>` : `<span class="blank">______</span>`;
+    });
 
     let body;
     if (isWrite) {
@@ -309,9 +316,16 @@
     const ans = savedAnswer(x, si, n - 1);
     return "mark jump" + (ans ? (ans.ok ? " ok" : " bad") : "");
   }
+  // Story with (n) jump marks; with a glossary (data/glossary/<topic id>.js) every word can be tapped.
+  // Text is split at the marks, so a phrase never includes a marked word (no free answers).
   function storyHTML(x, si) {
-    return esc(x.sections[si].story).replace(/\((\d+)\)/g, (_, n) =>
-      `<button type="button" class="${storyMarkClass(x, si, +n)}" data-jump="${si}-${+n - 1}" aria-label="${n}">${n}</button>`);
+    const G = glossary(x);
+    const mark = (n) => `<button type="button" class="${storyMarkClass(x, si, +n)}" data-jump="${si}-${+n - 1}" aria-label="${n}">${n}</button>`;
+    return x.sections[si].story.split(/\n\s*\n/).map((para) => {
+      const chunks = para.split(/\((\d+)\)/).map((c, i) => (i % 2 ? c : tokenize(c)));
+      markPhrases(G, chunks.filter((c) => typeof c === "object"));
+      return `<p>${chunks.map((c) => (typeof c === "string" ? mark(c) : c.toks.map((tk) => esc(tk.sep) + wordHTML(G, tk)).join("") + esc(c.tail))).join("")}</p>`;
+    }).join("");
   }
 
   function scoreHTML(x) {
@@ -368,7 +382,7 @@
         <section class="ex-section${s.story ? " has-story" : ""}">
           <h3>${esc(exSecT(x, si).title || pickLang(s.title) || t(KIND_TEXT[s.kind][0]))} <span class="sec-count" id="sec-count-${si}">${sectionCount(x, si)}</span></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || s.instructions || t(KIND_TEXT[s.kind][1]))}</p>
-          ${s.story ? `<div class="story">${storyHTML(x, si)}</div>` : ""}
+          ${s.story ? `${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
           <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
@@ -485,16 +499,35 @@
     return hit;
   }
 
+  const tokenize = (p) => {
+    const toks = []; let last = 0, m;
+    TOKEN.lastIndex = 0;
+    while ((m = TOKEN.exec(p))) { toks.push({ w: m[0], k: normWord(m[0]), sep: p.slice(last, m.index) }); last = m.index + m[0].length; }
+    return { toks, tail: p.slice(last) };
+  };
+  // Marks every glossary phrase in the paragraphs (longest first; a word belongs to one phrase)
+  let phraseOcc = 0;
+  function markPhrases(G, paras) {
+    if (!G) return;
+    const phrases = G.phrases.map((p, pi) => ({ ...p, pi })).sort((a, b) => b.pat.length - a.pat.length);
+    for (const { toks } of paras) {
+      for (const { pat, pi } of phrases) {
+        for (let s = 0; s < toks.length; s++) {
+          const hit = matchAt(pat, toks, s);
+          if (hit && hit.every((h) => toks[h].ph === undefined)) { phraseOcc++; hit.forEach((h) => { toks[h].ph = pi; toks[h].po = phraseOcc; }); }
+        }
+      }
+    }
+  }
+  const wordHTML = (G, tk) => (tk.ph !== undefined || glossWord(G, tk.k)
+    ? `<span class="w"${tk.ph !== undefined ? ` data-ph="${tk.ph}" data-po="${tk.po}"` : ""}>${esc(tk.w)}</span>`
+    : esc(tk.w));
+
   // Renders the text with tappable words (glossary) and the first appearance of each vocabulary item highlighted
   let placedVocab = new Set();
   function readingText(x, paragraphs) {
     const G = glossary(x);
-    const paras = (paragraphs || x.text).map((p) => {
-      const toks = []; let last = 0, m;
-      TOKEN.lastIndex = 0;
-      while ((m = TOKEN.exec(p))) { toks.push({ w: m[0], k: normWord(m[0]), sep: p.slice(last, m.index) }); last = m.index + m[0].length; }
-      return { toks, tail: p.slice(last) };
-    });
+    const paras = (paragraphs || x.text).map(tokenize);
     const terms = x.vocab.map((v, i) => ({ i, pat: tokensOf((v[3] || v[0]).replace(/[()]/g, "")) })).sort((a, b) => b.pat.length - a.pat.length);
     placedVocab = new Set();
     for (const { i, pat } of terms) {
@@ -511,24 +544,11 @@
         }
       }
     }
-    if (G) {
-      let occ = 0;
-      const phrases = G.phrases.map((p, pi) => ({ ...p, pi })).sort((a, b) => b.pat.length - a.pat.length);
-      for (const { toks } of paras) {
-        for (const { pat, pi } of phrases) {
-          for (let s = 0; s < toks.length; s++) {
-            const hit = matchAt(pat, toks, s);
-            if (hit && hit.every((h) => toks[h].ph === undefined)) { occ++; hit.forEach((h) => { toks[h].ph = pi; toks[h].po = occ; }); }
-          }
-        }
-      }
-    }
+    markPhrases(G, paras);
     return paras.map(({ toks, tail }) => `<p>${toks.map((tk) => {
       let h = esc(tk.sep);
       if (tk.vOpen !== undefined) h += `<mark class="vw" data-vw="${tk.vOpen}" tabindex="0" role="button">`;
-      h += tk.ph !== undefined || glossWord(G, tk.k)
-        ? `<span class="w"${tk.ph !== undefined ? ` data-ph="${tk.ph}" data-po="${tk.po}"` : ""}>${esc(tk.w)}</span>`
-        : esc(tk.w);
+      h += wordHTML(G, tk);
       if (tk.vClose) h += "</mark>";
       return h;
     }).join("")}${esc(tail)}</p>`).join("");
@@ -600,7 +620,7 @@
           <button type="button" role="tab" data-action="read-view" data-view="summary" aria-selected="${view === "summary"}">${esc(t("summaryShort"))}</button>
         </div>` : x.video ? `<h3 class="summary-title">${esc(t("summary"))}</h3>` : ""}
       ${glossary(x) ? `<p class="gloss-hint">👆 ${esc(t("glossHint"))}</p>` : ""}
-      <article class="reading${view === "full" ? " full" : ""}" lang="en">${readingText(x, shownText(x))}</article>
+      <article class="reading glossable${view === "full" ? " full" : ""}" lang="en">${readingText(x, shownText(x))}</article>
       <section class="vocab-box">
         <h3>${esc(t("vocabTitle"))} <span class="sec-count">${x.vocab.length}</span></h3>
         <p class="ex-instr">${esc(t("vocabHint"))}</p>
@@ -641,12 +661,12 @@
   let glossPinned = false, glossTimer = 0;
   function hideGloss() {
     gloss.hidden = true; glossPinned = false;
-    document.querySelectorAll(".reading .on, .reading .cur").forEach((n) => n.classList.remove("on", "cur"));
+    document.querySelectorAll(".glossable .on, .glossable .cur").forEach((n) => n.classList.remove("on", "cur"));
   }
   function showGloss(target, pin) {
     const x = currentTopic();
     const w = target.closest(".w"), vw = target.closest(".vw");
-    if (!x || !x.vocab || (!w && !vw)) return;
+    if (!x || (!w && !vw)) return;
     clearTimeout(glossTimer);
     const G = glossary(x);
     let html = "";
@@ -662,8 +682,8 @@
       const v = x.vocab[+vw.dataset.vw];
       html += `<div class="g-block"><small>⭐ ${esc(t("keyWord"))}</small><b lang="en">${esc(v[0])}</b><p class="g-tr">${esc(v[1])}</p><p class="g-def" lang="en">${esc(v[2])}</p></div>`;
     }
-    document.querySelectorAll(".reading .on, .reading .cur").forEach((n) => n.classList.remove("on", "cur"));
-    if (w && w.dataset.po) document.querySelectorAll(`.reading [data-po="${w.dataset.po}"]`).forEach((n) => n.classList.add("on"));
+    document.querySelectorAll(".glossable .on, .glossable .cur").forEach((n) => n.classList.remove("on", "cur"));
+    if (w && w.dataset.po) document.querySelectorAll(`.glossable [data-po="${w.dataset.po}"]`).forEach((n) => n.classList.add("on"));
     (w || vw).classList.add("cur");
     glossPinned = pin;
     gloss.innerHTML = html;
@@ -693,11 +713,11 @@
   }
   gloss.addEventListener("click", (e) => { const b = e.target.closest("[data-say]"); if (b) sayWord(b.dataset.say); });
   document.addEventListener("click", (e) => {
-    if (!gloss.hidden && !gloss.contains(e.target) && !e.target.closest(".reading .w, .reading .vw")) hideGloss();
+    if (!gloss.hidden && !gloss.contains(e.target) && !e.target.closest(".glossable .w, .glossable .vw")) hideGloss();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !gloss.hidden) hideGloss();
-    const el = e.target.closest && e.target.closest(".reading .vw, [data-find]");
+    const el = e.target.closest && e.target.closest(".glossable .vw, [data-find]");
     if (el && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
       if (el.dataset.find) findInText(el.dataset.find); else showGloss(el, true);
@@ -707,13 +727,13 @@
   // Mouse: hovering shows the translation; a click keeps it open
   if (matchMedia("(hover: hover)").matches) {
     $("#panel").addEventListener("mouseover", (e) => {
-      const el = e.target.closest(".reading .w, .reading .vw");
+      const el = e.target.closest(".glossable .w, .glossable .vw");
       if (el && !(glossPinned && el.classList.contains("cur"))) showGloss(e.target, false);
     });
     $("#panel").addEventListener("mouseout", (e) => {
-      if (glossPinned || !e.target.closest(".reading .w, .reading .vw")) return;
+      if (glossPinned || !e.target.closest(".glossable .w, .glossable .vw")) return;
       const to = e.relatedTarget;
-      if (to && (gloss.contains(to) || (to.closest && to.closest(".reading .w, .reading .vw")))) return;
+      if (to && (gloss.contains(to) || (to.closest && to.closest(".glossable .w, .glossable .vw")))) return;
       glossTimer = setTimeout(() => { if (!glossPinned) hideGloss(); }, 180);
     });
     gloss.addEventListener("mouseleave", () => { if (!glossPinned) glossTimer = setTimeout(hideGloss, 180); });
@@ -728,7 +748,7 @@
   }
 
   $("#panel").addEventListener("click", (e) => {
-    if (e.target.closest(".reading .w, .reading .vw")) { showGloss(e.target, true); return; }
+    if (e.target.closest(".glossable .w, .glossable .vw")) { showGloss(e.target, true); return; }
     const find = e.target.closest("[data-find]");
     if (find) return findInText(find.dataset.find);
     const jump = e.target.closest("[data-jump]");

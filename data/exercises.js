@@ -7,6 +7,9 @@
     Se aceptan mayúsculas o minúsculas, guiones o espacios y signos de puntuación distintos.
   - quote (opcional): frase original que se muestra encima de la pregunta.
   - story (opcional, en la sección): texto que se muestra antes de las preguntas, con marcas (1), (2)...
+    Los párrafos se separan con una línea en blanco (\n\n). Si existe data/glossary/<id del tema>.js,
+    cada palabra de la historia se puede tocar para ver su traducción.
+  - Dos huecos en la misma frase: escribe ___ dos veces y la respuesta como "she / her" (en orden).
 */
 window.YEB_EXERCISES = [
   {
@@ -73,6 +76,93 @@ window.YEB_EXERCISES = [
           { q: "Kevin and ___ are in the same class.", a: "I", o: ["me", "my"], e: "Es parte del sujeto. Truco: quita «Kevin and» → «I am in the same class»." },
           { q: "My parents called my brother and ___ last night.", a: "me", o: ["I", "myself"], e: "Recibe la llamada: objeto. Truco: «called me»." },
           { q: "Who broke the window? — Not ___!", a: "me", o: ["my", "mine"], e: "En respuestas cortas se usa el objeto: «Not me!»." }
+        ]
+      },
+      {
+        title: "Completa según el contexto",
+        instructions: "Lee toda la frase antes de elegir: el contexto te dice de quién o de qué se habla. Algunas tienen dos huecos.",
+        items: [
+          { q: "I'm not angry with you. Please don't be afraid of ___.", a: "me", o: ["I", "you", "my"], e: "Quien habla dice «I'm not angry»: no tengas miedo de mí → «afraid of me»." },
+          { q: "This podcast is so boring. ___ never ends! Can you turn ___ off?", a: "It / it", o: ["He / him", "It / them", "They / it"], e: "El podcast es una cosa: sujeto «It never ends», objeto «turn it off»." },
+          { q: "These are my headphones. Can you give ___ to ___? I need them for the gym.", a: "them / me", o: ["it / me", "them / I", "it / I"], e: "«Headphones» es plural → «them». Después de «to» va el objeto → «me»." },
+          { q: "My sister is stuck in traffic and ___ needs a ride. Can we pick ___ up?", a: "she / her", o: ["her / she", "she / him", "her / her"], e: "Primero hace la acción (sujeto «she»), después la recogemos (objeto «her»)." },
+          { q: "Carlos is so funny. Every time I talk to ___, ___ makes me laugh.", a: "him / he", o: ["he / him", "him / him", "his / he"], e: "«Talk to him» (objeto después de «to»); «he makes me laugh» (sujeto)." },
+          { q: "We're having a barbecue on Saturday. Do you want to come with ___?", a: "us", o: ["we", "them", "our"], e: "Los que hacen la barbacoa somos «we»; después de «with» → «us»." },
+          { q: "Don't buy that milk. ___ expires tomorrow.", a: "It", o: ["They", "Them", "He"], e: "La leche es una cosa y aquí es el sujeto: «It expires tomorrow»." },
+          { q: "I hate mosquitoes. ___ always bite ___ at night, but never my husband!", a: "They / me", o: ["Them / me", "They / I", "It / me"], e: "Los mosquitos pican (sujeto plural «They») a quien habla (objeto «me»)." },
+          { q: "Tom is looking for his keys. He can't find ___, and ___ is late for work.", a: "them / he", o: ["it / he", "them / him", "they / he"], e: "«Keys» es plural → «find them». Tom llega tarde → sujeto «he»." },
+          { q: "Excuse me, my friend and I are lost. Can you help ___?", a: "us", o: ["me", "them", "we"], e: "«My friend and I» = nosotros → objeto «us»." },
+          { q: "Grandpa can't hear very well, so speak to ___ slowly and ___ will understand you.", a: "him / he", o: ["he / him", "him / him", "her / she"], e: "Grandpa = él. «Speak to him» (objeto), «he will understand» (sujeto)." },
+          { q: "My cousins arrive tomorrow. I'm so excited to see ___!", a: "them", o: ["they", "it", "him"], e: "«My cousins» es plural → «see them»." }
+        ]
+      },
+      {
+        title: "¿Bien o mal?",
+        instructions: "Lee la frase y decide si el pronombre está bien usado. Piensa a quién o a qué se refiere.",
+        items: [
+          { quote: "My grandparents are visiting, and I love spending time with them.", q: "¿La frase es correcta?", a: "Correcta", o: ["Incorrecta"], e: "Bien: «them» = my grandparents, después de «with»." },
+          { quote: "This jacket is too big for me. I don't want them.", q: "¿La frase es correcta?", a: "Incorrecta", o: ["Correcta"], e: "Una chaqueta es una cosa: «I don't want it»." },
+          { quote: "Laura doesn't know the answer. Can you help she?", q: "¿La frase es correcta?", a: "Incorrecta", o: ["Correcta"], e: "Después de «help» va el objeto: «help her»." },
+          { quote: "Me and Pedro play football every Saturday.", q: "¿La frase es correcta?", a: "Incorrecta", o: ["Correcta"], e: "Es el sujeto: «Pedro and I play football». Truco: «I play football», no «me play»." },
+          { quote: "The teacher always asks Ana and me difficult questions.", q: "¿La frase es correcta?", a: "Correcta", o: ["Incorrecta"], e: "Bien: recibimos las preguntas → objeto. Truco: «asks me»." },
+          { quote: "I can't find my glasses. Have you seen it?", q: "¿La frase es correcta?", a: "Incorrecta", o: ["Correcta"], e: "«Glasses» (lentes) siempre es plural: «Have you seen them?»." },
+          { quote: "Mark's dog is very friendly. Everyone wants to pet him.", q: "¿La frase es correcta?", a: "Correcta", o: ["Incorrecta"], e: "Bien: para mascotas con nombre o dueño se usa «him» o «her»." },
+          { quote: "Our neighbors are very nice. We invite they to dinner every month.", q: "¿La frase es correcta?", a: "Incorrecta", o: ["Correcta"], e: "Después de «invite» va el objeto: «We invite them»." },
+          { quote: "Between you and I, this coffee is terrible.", q: "¿La frase es correcta?", a: "Incorrecta", o: ["Correcta"], e: "Después de «between» va el objeto: «between you and me»." },
+          { quote: "Who wants ice cream? — Me!", q: "¿La frase es correcta?", a: "Correcta", o: ["Incorrecta"], e: "Bien: en respuestas cortas e informales se usa el objeto: «Me!»." }
+        ]
+      },
+      {
+        title: "Escribe el pronombre",
+        instructions: "Escribe el pronombre objeto que falta (me, you, him, her, it, us, them).",
+        items: [
+          { type: "write", q: "My parents live far away, so I call ___ every Sunday.", a: ["them"], e: "«My parents» es plural → «call them»." },
+          { type: "write", q: "This pizza is delicious. Do you want to try ___?", a: ["it"], e: "La pizza es una cosa → «try it»." },
+          { type: "write", q: "It's Sara's birthday today. Let's sing for ___!", a: ["her"], e: "Sara = ella → después de «for» va «her»." },
+          { type: "write", q: "Hey, I'm over here! Can you see ___?", a: ["me"], e: "Quien habla dice «I'm over here» → «see me»." },
+          { type: "write", q: "You and your brother are always welcome. We love having ___ here.", a: ["you"], e: "«You and your brother» = ustedes → «you»." },
+          { type: "write", q: "My new jeans are too long, so my mom is fixing ___.", a: ["them"], e: "«Jeans» siempre es plural → «fixing them»." },
+          { type: "write", q: "My boyfriend loves surprises, so I'm planning one for ___.", a: ["him"], e: "My boyfriend = él → «for him»." },
+          { type: "write", q: "Our teacher gives ___ a lot of homework, but we never complain.", a: ["us"], e: "«We never complain» → los que reciben la tarea somos nosotros: «us»." }
+        ]
+      },
+      {
+        title: "Historia: Biscuit, el jefe de la casa",
+        instructions: "Lee la historia (toca o pasa el cursor sobre cualquier palabra para ver su traducción). Algunos pronombres marcados están bien y otros mal: decide cuáles. Toca un círculo para ir a su pregunta.",
+        story: "I live with two roommates, Leo and Nina, but the real boss of our apartment is Biscuit, a fat orange cat with a huge ego. Every morning at five o'clock, Biscuit jumps on my bed and stares at (1) I until I open my eyes. Then he walks to the kitchen, and I follow (2) him like a sleepy zombie. I fill his bowl, but he never eats right away. First he sniffs the food, then he looks at (3) it with disgust, and then he looks at me. It's a test, and I always fail (4) them.\n\nLeo is a light sleeper, so Biscuit wakes (5) he up too. Leo grumbles, grabs a pillow and throws (6) it at the door. Biscuit doesn't care. He just yawns and walks away.\n\nNina is different. She adores Biscuit, and he adores (7) her too, or at least he pretends to. She buys him fancy treats and brushes his fur every night. When she gets home, Biscuit runs to the door and rubs against her legs. Leo and I have a theory: he only loves (8) she because she always has snacks in her pockets.\n\nOur neighbor, Mrs. Patel, is not a fan. Biscuit sneaks onto her balcony and steals the socks from her clothesline. Every Sunday she knocks on our door with a very serious face and asks (9) us, “Where are my socks?” I usually find (10) it under the sofa, and I give (11) them back to her with a big apology. Mrs. Patel says she hates Biscuit, but I think she secretly likes (12) hers. She always brings him a little piece of chicken.\n\nAt night, Biscuit sleeps on the warmest spot in the apartment: my laptop. I need (13) him for work, but when I try to move him, he looks at (14) me like I'm the problem. So Leo, Nina and I sit on the floor while Biscuit sleeps on the sofa. He never lets (15) we sit there. He's the boss. We just pay the rent.",
+        items: [
+          { quote: "Biscuit jumps on my bed and stares at [[I]] until I open my eyes.", q: "(1) ¿Está bien «I»?", a: "Debe ser «me»", o: ["Está bien", "Debe ser «my»"], e: "Mal. Después de «stares at» va el objeto: «stares at me»." },
+          { quote: "Then he walks to the kitchen, and I follow [[him]] like a sleepy zombie.", q: "(2) ¿Está bien «him»?", a: "Está bien", o: ["Debe ser «he»", "Debe ser «it»"], e: "Bien. «Him» = Biscuit, y va después del verbo «follow»." },
+          { quote: "First he sniffs the food, then he looks at [[it]] with disgust…", q: "(3) ¿Está bien «it»?", a: "Está bien", o: ["Debe ser «them»", "Debe ser «him»"], e: "Bien. «It» = the food (una cosa)." },
+          { quote: "It's a test, and I always fail [[them]].", q: "(4) ¿Está bien «them»?", a: "Debe ser «it»", o: ["Está bien", "Debe ser «him»"], e: "Mal. «A test» es una sola cosa: «I always fail it»." },
+          { quote: "Leo is a light sleeper, so Biscuit wakes [[he]] up too.", q: "(5) ¿Está bien «he»?", a: "Debe ser «him»", o: ["Está bien", "Debe ser «his»"], e: "Mal. Leo recibe la acción: «wakes him up»." },
+          { quote: "Leo grumbles, grabs a pillow and throws [[it]] at the door.", q: "(6) ¿Está bien «it»?", a: "Está bien", o: ["Debe ser «them»", "Debe ser «him»"], e: "Bien. «It» = the pillow (una cosa)." },
+          { quote: "She adores Biscuit, and he adores [[her]] too…", q: "(7) ¿Está bien «her»?", a: "Está bien", o: ["Debe ser «she»", "Debe ser «hers»"], e: "Bien. «Her» = Nina, después del verbo «adores»." },
+          { quote: "…he only loves [[she]] because she always has snacks in her pockets.", q: "(8) ¿Está bien «she»?", a: "Debe ser «her»", o: ["Está bien", "Debe ser «hers»"], e: "Mal. Después de «loves» va el objeto: «loves her». «She» solo es sujeto." },
+          { quote: "Every Sunday she knocks on our door with a very serious face and asks [[us]], “Where are my socks?”", q: "(9) ¿Está bien «us»?", a: "Está bien", o: ["Debe ser «we»", "Debe ser «them»"], e: "Bien. Les pregunta a los compañeros de piso (nosotros): «asks us»." },
+          { quote: "I usually find [[it]] under the sofa…", q: "(10) ¿Está bien «it»?", a: "Debe ser «them»", o: ["Está bien", "Debe ser «they»"], e: "Mal. Busca las medias («socks», plural): «find them»." },
+          { quote: "…and I give [[them]] back to her with a big apology.", q: "(11) ¿Está bien «them»?", a: "Está bien", o: ["Debe ser «it»", "Debe ser «they»"], e: "Bien. «Them» = the socks; «to her» = a Mrs. Patel." },
+          { quote: "Mrs. Patel says she hates Biscuit, but I think she secretly likes [[hers]].", q: "(12) ¿Está bien «hers»?", a: "Debe ser «him»", o: ["Está bien", "Debe ser «her»"], e: "Mal. A Mrs. Patel le cae bien Biscuit (un gato macho): «likes him». «Hers» es posesivo." },
+          { quote: "…my laptop. I need [[him]] for work…", q: "(13) ¿Está bien «him»?", a: "Debe ser «it»", o: ["Está bien", "Debe ser «them»"], e: "Mal. Necesita la laptop, no al gato: «I need it for work»." },
+          { quote: "…when I try to move him, he looks at [[me]] like I'm the problem.", q: "(14) ¿Está bien «me»?", a: "Está bien", o: ["Debe ser «I»", "Debe ser «my»"], e: "Bien. Después de «looks at» va el objeto: «me»." },
+          { quote: "He never lets [[we]] sit there.", q: "(15) ¿Está bien «we»?", a: "Debe ser «us»", o: ["Está bien", "Debe ser «our»"], e: "Mal. Después de «lets» va el objeto: «lets us sit there»." }
+        ]
+      },
+      {
+        title: "Vocabulario de la historia",
+        instructions: "¿Qué significa cada palabra en la historia de Biscuit?",
+        items: [
+          { quote: "…a fat orange cat with a huge [[ego]].", q: "Aquí, «ego» es:", a: "Lo importante que alguien se cree", o: ["Su apetito", "Su tamaño"], e: "A huge ego = se cree muy importante." },
+          { quote: "Every morning at five o'clock, Biscuit jumps on my bed and [[stares at]]…", q: "«Stare at» significa:", a: "Mirar fijamente", o: ["Gritarle a alguien", "Saltar sobre alguien"], e: "Stare at = mirar fijamente, sin dejar de mirar." },
+          { quote: "First he [[sniffs]] the food…", q: "«Sniff» significa:", a: "Olfatear", o: ["Morder", "Tocar"], e: "Sniff = olfatear, oler con la nariz." },
+          { quote: "…he looks at it [[with disgust]]…", q: "«With disgust» significa:", a: "Con asco", o: ["Con hambre", "Con alegría"], e: "Disgust = asco. Disgusting = asqueroso." },
+          { quote: "Leo is a [[light sleeper]]…", q: "«A light sleeper» es:", a: "Alguien que se despierta con cualquier ruido", o: ["Alguien que duerme mucho", "Alguien que duerme con la luz encendida"], e: "Light sleeper = tiene el sueño ligero. Lo contrario: a heavy sleeper." },
+          { quote: "Leo [[grumbles]], grabs a pillow…", q: "«Grumble» significa:", a: "Quejarse entre dientes", o: ["Reírse", "Cantar"], e: "Grumble = refunfuñar, quejarse en voz baja." },
+          { quote: "…or at least he [[pretends to]].", q: "«Pretend» significa:", a: "Fingir", o: ["Pretender, intentar", "Preferir"], e: "¡Falso amigo! Pretend = fingir. «Pretender» (intentar) es «to try» o «to intend»." },
+          { quote: "She buys him fancy [[treats]]…", q: "Aquí, «treats» son:", a: "Premios o golosinas para mascotas", o: ["Tratos o acuerdos", "Juguetes"], e: "Treats = premios, golosinas. «Trick or treat!» = ¡dulce o truco!" },
+          { quote: "Biscuit [[sneaks onto]] her balcony…", q: "«Sneak onto» significa:", a: "Meterse a escondidas", o: ["Caerse de", "Dormir en"], e: "Sneak = moverse a escondidas, sin que nadie lo vea." },
+          { quote: "…steals the socks from her [[clothesline]].", q: "«Clothesline» es:", a: "Un tendedero (cuerda para la ropa)", o: ["Un armario", "Una lavadora"], e: "Clothes (ropa) + line (cuerda) = tendedero." },
+          { quote: "He's the boss. We just [[pay the rent]].", q: "«Pay the rent» significa:", a: "Pagar el alquiler", o: ["Pagar la comida", "Pagar la luz"], e: "Rent = alquiler, renta." }
         ]
       }
     ]

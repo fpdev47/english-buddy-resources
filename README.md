@@ -23,6 +23,8 @@ data/resources.js   Catálogo de canales y temas (con su video recomendado)
 data/exercises.js   Banco de ejercicios
 data/readings.js    Lecturas (pestaña Reading): historias, vocabulario y preguntas
 data/en.js          Traducción al inglés de temas, canales y ejercicios
+data/glossary/      Traducción de cada palabra al tocarla (lecturas e historias)
+data/transcripts/   Textos completos opcionales de las lecturas
 ```
 
 ## Agregar o editar un canal
@@ -61,6 +63,8 @@ Otras opciones:
 - `quote`: frase que se muestra arriba de la pregunta. Si todas las opciones son partes de esa frase («encuentra el error»), se muestran en el orden de lectura.
 - `story` (en una sección): una historia que se muestra antes de las preguntas. Las marcas (1), (2)... se vuelven círculos que llevan a su pregunta y se ponen verdes o rojos al responder; la marca (1) corresponde al primer ejercicio de la sección, la (2) al segundo, etc.
 - En `quote`, lo que va entre `[[ ]]` se resalta (por ejemplo `He paid [[$349.99]]`).
+- Dos huecos en una frase: escribe `___` dos veces y la respuesta como `"she / her"` (en orden).
+- En la historia, los párrafos se separan con una línea en blanco (`\n\n`).
 - Si cambias o reordenas ejercicios de un tema, las respuestas guardadas que ya no coinciden se descartan solas.
 
 Para compartir un tema directo: `…/english-buddy-resources/#practicar/numeros` (o `#shadowing` para un tema de Escuchar).
@@ -76,7 +80,11 @@ V("Frase literal con [[palabra]]", "significado correcto ES", ["incorrecto", "in
 
 Las lecturas ya traen su inglés, no hace falta tocar `data/en.js`.
 
-**Texto completo opcional:** una lectura puede apuntar a un archivo `.txt` con `transcript`. Si el archivo tiene texto (párrafos separados por una línea en blanco; las líneas con `#` se ignoran), la lectura muestra «Texto completo | Resumen» y abre en el texto completo. La de Steve Jobs usa `data/transcripts/steve-jobs.txt`, que está vacío: pegar ahí el discurso es decisión tuya, porque tiene derechos de autor y el repo es público.
+**Texto completo opcional:** una lectura puede apuntar a un archivo `.txt` con `transcript`. Si el archivo tiene texto (párrafos separados por una línea en blanco; las líneas con `#` se ignoran), la lectura muestra «Texto completo | Resumen» y abre en el texto completo. La de Steve Jobs usa `data/transcripts/steve-jobs.txt`.
+
+## Traducción al tocar cada palabra (glosarios)
+
+Un archivo en `data/glossary/` hace que cada palabra de un texto se pueda tocar (o pasar el cursor) para ver su traducción en ese contexto. Se usa con el id de la lectura o del tema: `steve-jobs.js` es para la lectura `r-steve-jobs` y `pronombres-objeto.js` para la historia del tema `pronombres-objeto`. Cada línea es `inglés = español`; las expresiones (`phrases`) tienen prioridad sobre las palabras sueltas. Agrega el archivo nuevo en `index.html`, antes de `data/readings.js` o `data/exercises.js`.
 
 ## Español / inglés
 

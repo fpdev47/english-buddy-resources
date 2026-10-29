@@ -7,7 +7,17 @@
     labels = traducción de opciones que están en español { "opción original": "English label" }.
   Si falta una traducción, se muestra el texto en español.
 */
-window.YEB_EN = {
+window.YEB_EN = (function () {
+  // Story items «right or wrong?»: question + labels for «Está bien» / «Debe ser «x»»
+  const SJ = (n, word, aLabel, oLabel, e, others) => {
+    const labels = { "Está bien": "It's correct" };
+    const add = (en) => { labels[`Debe ser «${en.match(/“(.+)”/)[1]}»`] = en; };
+    if (aLabel) { add(aLabel); add(oLabel); }
+    (others || []).forEach((w) => add(`It should be “${w}”`));
+    return { q: `(${n}) Is “${word}” correct?`, labels, e };
+  };
+
+  return {
   sections: {
     aprender: { short: "Learner podcasts", title: "Podcasts for English learners", text: "Made for learners: clear speech, vocabulary explained, and many have transcripts." },
     shadowing: { short: "Pronunciation & shadowing", title: "Pronunciation and shadowing", text: "Listen and repeat out loud right after the speaker to train rhythm, intonation and fluency.",
@@ -155,6 +165,72 @@ window.YEB_EN = {
           { e: "It's part of the subject. Trick: remove “Kevin and” → “I am in the same class”." },
           { e: "He receives the call: object. Trick: “called me”." },
           { e: "In short answers we use the object: “Not me!”." }
+        ] },
+        { title: "Complete using the context", instructions: "Read the whole sentence before you choose: the context tells you who or what we're talking about. Some have two gaps.", items: [
+          { e: "The speaker says “I'm not angry”: don't be afraid of me → “afraid of me”." },
+          { e: "The podcast is a thing: subject “It never ends”, object “turn it off”." },
+          { e: "“Headphones” is plural → “them”. After “to” we use the object → “me”." },
+          { e: "First she does the action (subject “she”), then we pick her up (object “her”)." },
+          { e: "“Talk to him” (object after “to”); “he makes me laugh” (subject)." },
+          { e: "The people having the barbecue are “we”; after “with” → “us”." },
+          { e: "Milk is a thing and here it's the subject: “It expires tomorrow”." },
+          { e: "Mosquitoes bite (plural subject “They”) the speaker (object “me”)." },
+          { e: "“Keys” is plural → “find them”. Tom is late → subject “he”." },
+          { e: "“My friend and I” = we → object “us”." },
+          { e: "Grandpa = he. “Speak to him” (object), “he will understand” (subject)." },
+          { e: "“My cousins” is plural → “see them”." }
+        ] },
+        { title: "Right or wrong?", instructions: "Read the sentence and decide if the pronoun is used correctly. Think about who or what it refers to.", items: [
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "Correct: “them” = my grandparents, after “with”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "A jacket is one thing: “I don't want it”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "After “help” we use the object: “help her”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "It's the subject: “Pedro and I play football”. Trick: “I play football”, not “me play”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "Correct: we receive the questions → object. Trick: “asks me”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "“Glasses” is always plural: “Have you seen them?”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "Correct: for pets with a name or an owner we use “him” or “her”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "After “invite” we use the object: “We invite them”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "After “between” we use the object: “between you and me”." },
+          { q: "Is the sentence correct?", labels: { "Correcta": "Correct", "Incorrecta": "Incorrect" }, e: "Correct: in short, informal answers we use the object: “Me!”." }
+        ] },
+        { title: "Write the pronoun", instructions: "Write the missing object pronoun (me, you, him, her, it, us, them).", items: [
+          { e: "“My parents” is plural → “call them”." },
+          { e: "Pizza is a thing → “try it”." },
+          { e: "Sara = she → after “for” we use “her”." },
+          { e: "The speaker says “I'm over here” → “see me”." },
+          { e: "“You and your brother” = you (plural) → “you”." },
+          { e: "“Jeans” is always plural → “fixing them”." },
+          { e: "My boyfriend = he → “for him”." },
+          { e: "“We never complain” → we are the ones who get the homework: “us”." }
+        ] },
+        { title: "Story: Biscuit, the boss of the house", instructions: "Read the story (tap or hover over any word to see its translation). Some marked pronouns are right and some are wrong: decide which. Tap a circle to jump to its question.", items: [
+          SJ(1, "I", "It should be “me”", "It should be “my”", "Wrong. After “stares at” we need the object: “stares at me”."),
+          SJ(2, "him", null, null, "Correct. “Him” = Biscuit, after the verb “follow”.", ["he", "it"]),
+          SJ(3, "it", null, null, "Correct. “It” = the food (one thing).", ["them", "him"]),
+          SJ(4, "them", "It should be “it”", "It should be “him”", "Wrong. “A test” is one thing: “I always fail it”."),
+          SJ(5, "he", "It should be “him”", "It should be “his”", "Wrong. Leo receives the action: “wakes him up”."),
+          SJ(6, "it", null, null, "Correct. “It” = the pillow (one thing).", ["them", "him"]),
+          SJ(7, "her", null, null, "Correct. “Her” = Nina, after the verb “adores”.", ["she", "hers"]),
+          SJ(8, "she", "It should be “her”", "It should be “hers”", "Wrong. After “loves” we need the object: “loves her”. “She” is only a subject."),
+          SJ(9, "us", null, null, "Correct. She asks the roommates (we): “asks us”.", ["we", "them"]),
+          SJ(10, "it", "It should be “them”", "It should be “they”", "Wrong. He's looking for the socks (plural): “find them”."),
+          SJ(11, "them", null, null, "Correct. “Them” = the socks; “to her” = to Mrs. Patel.", ["it", "they"]),
+          SJ(12, "hers", "It should be “him”", "It should be “her”", "Wrong. Mrs. Patel likes Biscuit (a male cat): “likes him”. “Hers” is a possessive."),
+          SJ(13, "him", "It should be “it”", "It should be “them”", "Wrong. He needs the laptop, not the cat: “I need it for work”."),
+          SJ(14, "me", null, null, "Correct. After “looks at” we use the object: “me”.", ["I", "my"]),
+          SJ(15, "we", "It should be “us”", "It should be “our”", "Wrong. After “lets” we use the object: “lets us sit there”.")
+        ] },
+        { title: "Vocabulary from the story", instructions: "What does each word mean in Biscuit's story?", items: [
+          { q: "Here, “ego” is:", labels: { "Lo importante que alguien se cree": "How important someone thinks they are", "Su apetito": "His appetite", "Su tamaño": "His size" }, e: "A huge ego = he thinks he's very important." },
+          { q: "“Stare at” means:", labels: { "Mirar fijamente": "To look at someone for a long time", "Gritarle a alguien": "To shout at someone", "Saltar sobre alguien": "To jump on someone" }, e: "Stare at = look at someone or something without looking away." },
+          { q: "“Sniff” means:", labels: { "Olfatear": "To smell with your nose", "Morder": "To bite", "Tocar": "To touch" }, e: "Sniff = smell something quickly with your nose." },
+          { q: "“With disgust” means:", labels: { "Con asco": "Feeling that something is gross", "Con hambre": "Hungrily", "Con alegría": "Happily" }, e: "Disgust = a strong feeling that something is gross. Disgusting = gross." },
+          { q: "“A light sleeper” is:", labels: { "Alguien que se despierta con cualquier ruido": "Someone who wakes up with any noise", "Alguien que duerme mucho": "Someone who sleeps a lot", "Alguien que duerme con la luz encendida": "Someone who sleeps with the light on" }, e: "Light sleeper = wakes up easily. The opposite: a heavy sleeper." },
+          { q: "“Grumble” means:", labels: { "Quejarse entre dientes": "To complain quietly", "Reírse": "To laugh", "Cantar": "To sing" }, e: "Grumble = complain in a low, unhappy voice." },
+          { q: "“Pretend” means:", labels: { "Fingir": "To act as if something is true", "Pretender, intentar": "To try, to intend", "Preferir": "To prefer" }, e: "False friend for Spanish speakers! Pretend = act as if something is true, not “try”." },
+          { q: "Here, “treats” are:", labels: { "Premios o golosinas para mascotas": "Special snacks for pets", "Tratos o acuerdos": "Deals or agreements", "Juguetes": "Toys" }, e: "Treats = special snacks. “Trick or treat!”" },
+          { q: "“Sneak onto” means:", labels: { "Meterse a escondidas": "To go somewhere secretly", "Caerse de": "To fall off", "Dormir en": "To sleep on" }, e: "Sneak = move secretly so nobody sees you." },
+          { q: "A “clothesline” is:", labels: { "Un tendedero (cuerda para la ropa)": "A rope where you hang clothes to dry", "Un armario": "A closet", "Una lavadora": "A washing machine" }, e: "Clothes + line (rope) = a rope to dry clothes." },
+          { q: "“Pay the rent” means:", labels: { "Pagar el alquiler": "To pay for the place where you live", "Pagar la comida": "To pay for food", "Pagar la luz": "To pay the electricity bill" }, e: "Rent = money you pay to live in a place." }
         ] }
       ]
     },
@@ -536,3 +612,4 @@ window.YEB_EN = {
     }
   }
 };
+})();

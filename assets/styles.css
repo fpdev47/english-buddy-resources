@@ -401,6 +401,8 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 }
 .has-story .q-num { display: none; }
 .q-text .mark { margin-right: 8px; vertical-align: 1px; }
+.story p { margin: 0 0 12px; }
+.story p:last-child { margin-bottom: 0; }
 .story .mark.jump { border: 0; padding: 0; cursor: pointer; width: 24px; height: 24px; }
 .story .mark.jump { position: relative; }
 .story .mark.jump::after { content: ""; position: absolute; inset: -10px; } /* bigger tap area */
@@ -517,10 +519,10 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 
 /* Tap-to-translate */
 .gloss-hint { max-width: 760px; margin: 0 0 10px; font-size: 14px; color: var(--muted); }
-.reading .w { cursor: pointer; border-radius: 4px; -webkit-tap-highlight-color: transparent; }
-.reading .w.on { background: var(--tag-bg); box-shadow: 0 2px 0 var(--brand); }
-.reading .w.cur { background: var(--lime); color: var(--teal-900); box-shadow: none; }
-@media (hover: hover) { .reading .w:hover { background: var(--bg-soft); } .reading .w.cur:hover { background: var(--lime); } }
+.glossable .w { cursor: pointer; border-radius: 4px; -webkit-tap-highlight-color: transparent; }
+.glossable .w.on { background: var(--tag-bg); box-shadow: 0 2px 0 var(--brand); }
+.glossable .w.cur { background: var(--lime); color: var(--teal-900); box-shadow: none; }
+@media (hover: hover) { .glossable .w:hover { background: var(--bg-soft); } .glossable .w.cur:hover { background: var(--lime); } }
 .vw.flash { background: var(--lime); color: var(--teal-900); box-shadow: 0 0 0 4px var(--lime); transition: box-shadow .3s; }
 .gloss {
   position: absolute; z-index: 85; width: max-content; max-width: min(300px, calc(100vw - 24px));
