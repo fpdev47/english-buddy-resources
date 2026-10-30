@@ -59,7 +59,8 @@
     if (!pass.value.trim()) return pass.focus();
     button.disabled = true;
     try {
-      if (await CLOUD.login(user.value, pass.value)) { location.reload(); return; }   // opens with this student's progress
+      // Opens with this student's progress, always on the home screen («What do you want to practice today?»)
+      if (await CLOUD.login(user.value, pass.value)) { location.replace(location.pathname + location.search); return; }
       showError("gateError", pass);
     } catch (err) {
       showError("gateOffline", pass);
