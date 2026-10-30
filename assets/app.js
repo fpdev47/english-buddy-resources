@@ -439,6 +439,39 @@
     return { total, done: vals.length, correct: vals.filter((v) => v.ok).length };
   }
 
+  // ——— Listening inside exercises: each English option, and the full corrected sentence ———
+  const SPANISHY = /[áéíóúñ¿¡«»]|sin artículo|\b(una?|el|la|los|las|del?|mis?|que|con|por|para|muy|es|está|pantalones|pantaletas|ropa|correcta|incorrecta)\b/i;
+  // Options that have an English label (data/en.js or item.en) are Spanish words: no speaker for them
+  const enLabels = (x, si, ii) => { const it = x.sections[si].items[ii]; const ov = ((EN.exercises[x.id] || {}).sections || [])[si]; return (it.en && it.en.labels) || (ov && ov.items && ov.items[ii] && ov.items[ii].labels) || {}; };
+  const englishOption = (o, labels) => !SPANISHY.test(o) && !(labels[o] && labels[o] !== o) && /[a-z]/i.test(o);
+  const sayText = (s) => s.replace(/\s+\/\s+/g, ", ");   // two gaps «she / her» → «she, her»
+  // The sentence with the right answer in it (null when there's no clean English sentence to read)
+  function fullSentence(item, labels) {
+    const strip = (q) => q.replace(/^\(\d+\)\s*/, "").replace(/\s*\([^)]*\)/g, "").trim();
+    const correct = item.type === "write" ? item.a[0] : item.a;
+    const english = (v) => !SPANISHY.test(v);
+    const q = strip(item.q);
+    if (/___/.test(q) && english(q.replace(/___/g, ""))) {
+      const parts = correct.split(" / ").map((p) => (/^—/.test(p) ? "" : p));   // «— (no article)» leaves the gap empty
+      let i = 0;
+      return q.replace(/___/g, () => (parts.length > 1 ? parts[i++] || "" : parts[0])).replace(/\s+(['’])/g, "$1").replace(/\s{2,}/g, " ").trim();
+    }
+    if (item.quote) {
+      // «Find the mistake»: the quote is the wrong sentence, so there's nothing correct to read
+      const bare = item.quote.replace(/\[\[|\]\]/g, "");
+      if ([item.a, ...(item.o || [])].every((o) => bare.includes(o))) return null;
+      const plain = (repl) => item.quote.replace(/\[\[(.+?)\]\]/g, (m, w) => (repl === undefined ? w : repl)).replace(/^…|…$/g, "").trim();
+      const fix = /«(.+?)»/.exec(correct);
+      if (fix) return plain(fix[1]);                                   // story: «It should be “me”»
+      if (correct === "Incorrecta") return null;                         // don't read a wrong sentence aloud
+      if (correct === "Correcta" || correct === "Está bien") return plain();
+      if (english(correct) && !labels[correct] && /^\[\[[\d$:/.,‑-]+(st|nd|rd|th)?\]\]|\[\[[A-Z][a-z]+ \d+(st|nd|rd|th)\]\]/.test(item.quote.match(/\[\[.+?\]\]/)?.[0] || "")) return plain(correct);
+      return plain();
+    }
+    if (/oraci[oó]n correcta|correct sentence/i.test(item.q) && english(correct)) return correct;   // «Choose the correct sentence»
+    return null;
+  }
+
   function questionHTML(x, si, ii) {
     const item = x.sections[si].items[ii];
     const tr = (isEN() && item.en) || itemT(x, si, ii);
@@ -481,14 +514,19 @@
           ${ans ? "" : `<button type="submit" class="check-btn">${esc(t("check"))}</button>`}
         </form>`;
     } else {
+      const labels = enLabels(x, si, ii);
       body = `<div class="opts">${options(item).map((o) => {
+        const sayable = englishOption(o, labels);
         let cls = "opt";
         if (ans) cls += o === item.a ? " right" : o === ans.v || o === ans.first ? " wrong" : " dim";
         else if (o === tried) cls += " wrong";
-        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans || o === tried ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
+        if (sayable) cls += " has-say";
+        const btn = `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans || o === tried ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
+        return sayable ? `<span class="opt-wrap">${btn}<button type="button" class="opt-say" data-say="${esc(sayText(o))}" aria-label="${esc(t("listenWord"))}: ${esc(o)}">${ICONS.speaker}</button></span>` : btn;
       }).join("")}</div>`;
     }
 
+    const sentence = ans ? fullSentence(item, enLabels(x, si, ii)) : null;
     const fb = ans ? `
       <div class="fb ${ans.ok ? "ok" : "bad"}" role="status">
         <strong>${ans.ok ? `${t("correct")}${ans.first ? ` <small>${esc(t("secondTry"))}</small>` : ""}` : `${t("answerIs")} ${esc(correct)}`}</strong>
@@ -507,7 +545,7 @@
         <span class="q-num">${ii + 1}</span>
         <div class="q-body">
           ${item.quote ? `<blockquote class="quote">${esc(item.find ? speechQuote(x, item.find) : tr.quote || item.quote).replace(/\[\[(.+?)\]\]/g, '<mark class="hl">$1</mark>')}</blockquote>` : ""}
-          <p class="q-text">${prompt}</p>
+          <p class="q-text">${prompt}${ans && sentence ? ` <button type="button" class="q-say" data-say="${esc(sayText(sentence))}" aria-label="${esc(t("listenSentence"))}" title="${esc(t("listenSentence"))}">${ICONS.speaker}</button>` : ""}</p>
           ${body}
           ${fb}
         </div>
@@ -1042,6 +1080,8 @@
   }
 
   $("#panel").addEventListener("click", (e) => {
+    const say = e.target.closest(".opt-say, .q-say");
+    if (say) { sayWord(say.dataset.say); return; }
     if (e.target.closest(".glossable .w, .glossable .vw")) { showGloss(e.target, true); return; }
     const find = e.target.closest("[data-find]");
     if (find) return findInText(find.dataset.find);
@@ -1120,6 +1160,16 @@
     if (!input.value.trim()) { input.focus(); return; }
     answer(form.dataset.key, input.value.trim());
   });
+
+  // Computer: resting the mouse on the little speaker reads the option
+  let sayHover;
+  $("#panel").addEventListener("mouseover", (e) => {
+    const b = e.target.closest(".opt-say");
+    if (!b || !matchMedia("(hover: hover)").matches) return;
+    clearTimeout(sayHover);
+    sayHover = setTimeout(() => sayWord(b.dataset.say), 250);
+  });
+  $("#panel").addEventListener("mouseout", (e) => { if (e.target.closest(".opt-say")) clearTimeout(sayHover); });
 
   $("#toast").addEventListener("click", (e) => { if (e.target.closest("[data-action=undo]")) undo(); });
 
