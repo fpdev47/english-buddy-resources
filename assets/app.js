@@ -144,8 +144,8 @@
   }, 5000);
 
   // Links: #shadowing (listening), #practicar/numeros (exercises) or #leer/r-miami (a reading)
-  function readHash() {
-    const [a, b] = decodeURIComponent(location.hash.slice(1)).split("/");
+  function readHash(hash = location.hash) {
+    const [a, b] = decodeURIComponent(hash.replace(/^#/, "")).split("/");
     if (!a || a === "inicio") {
       state.mode = "inicio";
     } else if (a === "practicar") {
@@ -164,6 +164,8 @@
   function writeHash() {
     const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
+    // Remember the last place they studied, to offer it on the home screen
+    if (h && state.mode !== "progreso" && state.last !== h) { state.last = h; save(); }
   }
   readHash();
 
@@ -1068,6 +1070,11 @@
       else if (a === "start-over") clearAnswers(false);
       else if (a === "reset-section") clearSection(+action.dataset.sec);
       else if (a === "goto") goTo(action.dataset.topic, action.dataset.key);
+      else if (a === "resume") {
+        readHash(state.last);
+        save(); writeHash(); render();
+        $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       else if (a === "home") {
         state.mode = action.dataset.mode;
         save(); writeHash(); render();
@@ -1292,11 +1299,26 @@
         <span class="home-txt"><strong>${esc(title)}</strong><span>${esc(text)}</span>${meta ? `<small>${esc(meta)}</small>` : ""}</span>
         <span class="home-go" aria-hidden="true">${svg("M9 6l6 6-6 6")}</span>
       </button>`;
-    return `
+    // «Pick up where you left off?» with the last topic they opened
+    let resume = "", resumeId = "";
+    if (state.last) {
+      const [m, id] = decodeURIComponent(state.last.slice(1)).split("/");
+      resumeId = id || m;
+      const x = m === "practicar" ? EXERCISES.find((e) => e.id === id) : m === "leer" ? READINGS.find((r) => r.id === id) : null;
+      const sec = !x && sections.find((s) => s.id === m);
+      const name = x ? (x.tier ? x.title : topicTitle(x)) : sec ? `${t("listen")} · ${secT(sec).short || sec.short}` : "";
+      const pr = x && progress(x);
+      if (name) resume = `
+        <div class="resume">
+          <div><strong>${esc(t("resumeQ"))}</strong><span>${esc(name)}${pr && pr.done ? ` · ${pr.done}/${pr.total}` : ""}</span></div>
+          <button type="button" class="resume-btn" data-action="resume">${esc(t("resumeBtn"))}</button>
+        </div>`;
+    }
+    return `${resume}
       <div class="home-grid">
-        ${card("practicar", TOPIC_ICONS.ejercicio, t("practice"), t("homePractice")(EXERCISES.length), ex && p.done ? t("homeContinue")(topicTitle(ex), p.done, p.total) : "")}
+        ${card("practicar", TOPIC_ICONS.ejercicio, t("practice"), t("homePractice")(EXERCISES.length), ex && p.done && ex.id !== resumeId ? t("homeContinue")(topicTitle(ex), p.done, p.total) : "")}
         ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
-        ${card("leer", TOPIC_ICONS.lectura, t("reading"), t("homeRead")(READINGS.length), rd && progress(rd).done ? t("homeContinue")(rd.title, progress(rd).done, progress(rd).total) : "")}
+        ${card("leer", TOPIC_ICONS.lectura, t("reading"), t("homeRead")(READINGS.length), rd && progress(rd).done && rd.id !== resumeId ? t("homeContinue")(rd.title, progress(rd).done, progress(rd).total) : "")}
         ${card("progreso", svg("M4 20V11M10 20V5M16 20v-6M3 20h18"), t("progressTab"), t("homeProgress"), student ? t("homeStreak")(n, fmtTime(totalMs())) : "")}
       </div>`;
   }

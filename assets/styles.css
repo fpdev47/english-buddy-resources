@@ -849,3 +849,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .home-card:active { transform: scale(.98); }
 .on-home .results { padding-top: 8px; }
 @media (max-width: 760px) { .home-grid { grid-template-columns: 1fr; gap: 10px; } .home-card { padding: 16px; gap: 14px; } .home-ico { width: 46px; height: 46px; } .home-txt strong { font-size: 18px; } }
+
+/* «Pick up where you left off?» on the home screen */
+.resume {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 14px;
+  padding: 14px 16px; border-radius: 16px; background: var(--nav-bg); color: #eef5f3;
+}
+.resume div { display: grid; gap: 2px; min-width: 0; }
+.resume strong { font-size: 15.5px; }
+.resume span { font-size: 14px; color: #c3d2cf; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resume-btn { flex: none; cursor: pointer; min-height: 40px; padding: 8px 18px; border-radius: 999px; border: 0; background: var(--lime); color: var(--teal-900); font: inherit; font-weight: 700; }
