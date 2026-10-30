@@ -20,6 +20,7 @@ assets/config.js    Conexión con Supabase (vacía = sin nube)
 setup/supabase.sql  Tabla y funciones para Supabase
 assets/app.js       Escuchar (temas, favoritos, video) y Practicar (ejercicios y puntaje)
 data/resources.js   Catálogo de canales y temas (con su video recomendado)
+data/shadowing.js   Biblioteca de ejercicios de shadowing (114 videos, con su tipo para filtrar)
 data/why-original.js
                     «Por qué está mal» cada opción en los temas originales
 data/groups.js      Grupos de temas de «Practicar» y ayudantes para escribir ejercicios bilingües
@@ -111,6 +112,16 @@ Un archivo en `data/glossary/` hace que cada palabra de un texto se pueda tocar 
 ## Español / inglés
 
 La página empieza en inglés. El botón ES | EN cambia el idioma de las instrucciones y lo recuerda en cada navegador. Los textos fijos están en `assets/i18n.js`; la traducción del contenido está en `data/en.js`. Cuando agregues un canal o un ejercicio, agrega también su versión en inglés en `data/en.js` (en el mismo orden). Si falta la traducción, ese texto se muestra en español.
+
+## Pantalla de inicio
+
+Cada vez que un estudiante entra al sitio (sin un enlace a un tema), ve «What do you want to practice today?» con cuatro tarjetas: Practicar (con «Continuar» en el último tema), Escuchar, Lectura y Progreso (con su racha). Al elegir una se abre la interfaz con sus categorías. El logo vuelve al inicio. El saludo usa el `nick` de `assets/accounts.js` si existe («¡Hola, Tito!») y recuerda «Hoy toca estudiar» hasta que el estudiante practica ese día.
+
+El botón ES/EN (inglés por defecto) y el de modo día/noche están en todas las páginas, también en la de inicio de sesión.
+
+## Ejercicios de shadowing
+
+En Escuchar → «Ejercicios de shadowing» están todos los videos de las listas de Shadowing for dummies! y Parrot Shadowing, con filtros por tipo (series y películas, animación, famosos y entrevistas, discursos). Para agregar uno, copia una línea en `data/shadowing.js`. Los canales que enseñan pronunciación están en «Pronunciación».
 
 ## Progreso del estudiante
 

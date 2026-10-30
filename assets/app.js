@@ -32,7 +32,8 @@
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const TOPIC_ICONS = {
     aprender: svg("M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"),
-    shadowing: svg("M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"),
+    pronunciacion: svg("M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"),
+    shadowing: svg("M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3"),
     vocabulario: svg("M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"),
     conversacion: svg("M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM8 9h8M8 13h5"),
     noticias: svg("M4 4h13v16H6a2 2 0 0 1-2-2zM17 8h3v10a2 2 0 0 1-2 2M8 8h5M8 12h5M8 16h3"),
@@ -139,13 +140,15 @@
     sessionMs += dt; today().ms += dt; unsavedMs += dt;
     if (unsavedMs >= 30000) { unsavedMs = 0; save(); }
     updateClock();
-    if (!wasStudied && studied(dayKey())) renderStreak();
+    if (!wasStudied && studied(dayKey())) { renderStreak(); renderHello(); }
   }, 5000);
 
   // Links: #shadowing (listening), #practicar/numeros (exercises) or #leer/r-miami (a reading)
   function readHash() {
     const [a, b] = decodeURIComponent(location.hash.slice(1)).split("/");
-    if (a === "practicar") {
+    if (!a || a === "inicio") {
+      state.mode = "inicio";
+    } else if (a === "practicar") {
       state.mode = "practicar";
       if (EXERCISES.some((x) => x.id === b)) state.exTopic = b;
     } else if (a === "progreso") {
@@ -159,7 +162,7 @@
     }
   }
   function writeHash() {
-    const h = state.mode === "progreso" ? "#progreso" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
   }
   readHash();
@@ -177,8 +180,11 @@
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
     $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : state.mode === "leer" ? t("topicsRead") : t("topicsListen");
     // The progress page has no topics row
-    const noTopics = state.mode === "progreso";
+    const noTopics = state.mode === "progreso" || state.mode === "inicio";
     $(".topics-label").style.display = $(".topics-wrap").style.display = noTopics ? "none" : "";
+    // Home: the four big cards replace the tabs
+    $("#modes").style.display = state.mode === "inicio" ? "none" : "";
+    document.documentElement.classList.toggle("on-home", state.mode === "inicio");
   }
   $("#modes").addEventListener("click", (e) => {
     const b = e.target.closest(".mode-btn");
@@ -189,7 +195,7 @@
 
   // ——— Topics row ———
   function renderTopics() {
-    if (state.mode === "progreso") return;
+    if (state.mode === "progreso" || state.mode === "inicio") return;
     let tiles;
     if (state.mode === "practicar") {
       // Only the current topic, plus a button that opens every topic grouped like the book
@@ -207,7 +213,8 @@
     } else {
       tiles = sections.map((s) => {
         const n = channels.filter((c) => c.section === s.id).length;
-        return { id: s.id, label: secT(s).short || s.short || s.title, sub: `${n} ${n === 1 ? t("channel") : t("channels")}`, icon: s.id, selected: state.topic === s.id };
+        const lib = s.library && window[s.library];
+        return { id: s.id, label: secT(s).short || s.short || s.title, sub: lib ? t("videosCount")(lib.length) : `${n} ${n === 1 ? t("channel") : t("channels")}`, icon: s.id, selected: state.topic === s.id };
       });
       if (state.favs.length) tiles.push({ id: "guardados", label: t("saved"), sub: `${state.favs.length} ${state.favs.length === 1 ? t("channel") : t("channels")}`, icon: "guardados", selected: state.topic === "guardados" });
     }
@@ -325,8 +332,44 @@
       </div>
       ${!isFavs && sec.video ? videoBlock(sec.video, secT(sec).video) : ""}
       ${!isFavs && sec.videos ? videoGallery(sec) : ""}
+      ${!isFavs && sec.library ? libraryHTML(sec) : ""}
       <div class="cards">${list.map(card).join("")}</div>`;
   }
+  // ——— Shadowing library: every video, filtered by type, 24 at a time ———
+  const LIB_CATS = ["all", "series", "animacion", "famosos", "discursos"];
+  let libCat = "all", libShown = 24;
+  function libraryHTML(sec) {
+    const all = window[sec.library] || [];
+    const list = libCat === "all" ? all : all.filter((v) => v.cat === libCat);
+    const chips = LIB_CATS.map((c) => {
+      const n = c === "all" ? all.length : all.filter((v) => v.cat === c).length;
+      return `<button type="button" class="lib-chip" data-action="lib-cat" data-cat="${c}" aria-pressed="${libCat === c}">${esc(t("libCats")[c])} <small>${n}</small></button>`;
+    }).join("");
+    const cards = list.slice(0, libShown).map((v) => `
+      <article class="vcard">
+        <div class="video">
+          <button type="button" data-yt="${esc(v.id)}" data-start="0" aria-label="${t("play")}: ${esc(v.title)}">
+            <img src="https://i.ytimg.com/vi/${esc(v.id)}/mqdefault.jpg" alt="" loading="lazy">
+            <span class="play">${ICONS.play}</span>
+          </button>
+        </div>
+        <div class="vc-body"><strong>${esc(v.title)}</strong><small>${esc(t("libCats")[v.cat])} · ${esc(v.channel)}</small></div>
+      </article>`).join("");
+    const lists = (sec.playlists || []).map((l) => `
+      <a class="plist" href="https://www.youtube.com/playlist?list=${esc(l.list)}" target="_blank" rel="noopener">
+        ${ICONS.yt}<span><strong>${esc(l.title)}</strong><small>${esc(l.channel)} · ${esc(t("videosCount")(l.count))}</small></span>
+      </a>`).join("");
+    return `
+      <section class="library" id="library">
+        <h3 class="vg-title">${esc(t("libTitle"))}</h3>
+        <p class="vg-text">${esc(t("libHelp"))}</p>
+        <div class="lib-filters" role="group" aria-label="${esc(t("libFilter"))}">${chips}</div>
+        <div class="vgrid">${cards}</div>
+        ${list.length > libShown ? `<button type="button" class="lib-more" data-action="lib-more">${esc(t("libMore")(Math.min(24, list.length - libShown), list.length - libShown))}</button>` : ""}
+        ${lists ? `<h3 class="vg-title">${esc(t("fullPlaylists"))}</h3><div class="plists">${lists}</div>` : ""}
+      </section>`;
+  }
+
   // More videos to play right here, plus links to full YouTube playlists
   function videoGallery(sec) {
     const vcard = (v) => `
@@ -627,7 +670,7 @@
     else {
       state.answers[x.id][key] = { v: value, ok, t: Date.now(), ...(prev && prev.pending ? { first: prev.v } : {}) };
       const d = today(); d.n++; if (ok) d.ok++;
-      if (d.n === 1) renderStreak();
+      if (d.n === 1) { renderStreak(); renderHello(); }
     }
     save();
     document.getElementById(`q-${key}`).outerHTML = questionHTML(x, si, ii);
@@ -992,7 +1035,7 @@
   function renderPanel() {
     stopSpeaking();
     hideGloss();
-    $("#panel").innerHTML = state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    $("#panel").innerHTML = state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
     syncStuck(); spySection();
   }
 
@@ -1025,6 +1068,16 @@
       else if (a === "start-over") clearAnswers(false);
       else if (a === "reset-section") clearSection(+action.dataset.sec);
       else if (a === "goto") goTo(action.dataset.topic, action.dataset.key);
+      else if (a === "home") {
+        state.mode = action.dataset.mode;
+        save(); writeHash(); render();
+        $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      else if (a === "lib-cat" || a === "lib-more") {
+        if (a === "lib-cat") { libCat = action.dataset.cat; libShown = 24; } else libShown += 24;
+        const lib = $("#library"), sec = sections.find((x) => x.id === state.topic);
+        if (lib && sec) lib.outerHTML = libraryHTML(sec);
+      }
       return;
     }
 
@@ -1226,10 +1279,34 @@
       </section>`;
   }
 
+  // ——— Home: «What do you want to practice today?» with the four sections ———
+  function renderHome() {
+    const ex = EXERCISES.find((x) => x.id === state.exTopic) || EXERCISES[0];
+    const p = ex ? progress(ex) : { done: 0, total: 0 };
+    const rd = READINGS.find((x) => x.id === state.readTopic) || READINGS[0];
+    const shadow = (window.YEB_SHADOWING || []).length;
+    const n = streak();
+    const card = (mode, icon, title, text, meta) => `
+      <button type="button" class="home-card" data-action="home" data-mode="${mode}">
+        <span class="home-ico" aria-hidden="true">${icon}</span>
+        <span class="home-txt"><strong>${esc(title)}</strong><span>${esc(text)}</span>${meta ? `<small>${esc(meta)}</small>` : ""}</span>
+        <span class="home-go" aria-hidden="true">${svg("M9 6l6 6-6 6")}</span>
+      </button>`;
+    return `
+      <div class="home-grid">
+        ${card("practicar", TOPIC_ICONS.ejercicio, t("practice"), t("homePractice")(EXERCISES.length), ex && p.done ? t("homeContinue")(topicTitle(ex), p.done, p.total) : "")}
+        ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
+        ${card("leer", TOPIC_ICONS.lectura, t("reading"), t("homeRead")(READINGS.length), rd && progress(rd).done ? t("homeContinue")(rd.title, progress(rd).done, progress(rd).total) : "")}
+        ${card("progreso", svg("M4 20V11M10 20V5M16 20v-6M3 20h18"), t("progressTab"), t("homeProgress"), student ? t("homeStreak")(n, fmtTime(totalMs())) : "")}
+      </div>`;
+  }
+
   // ——— Greeting + log out ———
   function renderHello() {
     if (!student) return;
-    $("#badge-text").textContent = t("hi")(student.name);
+    // Nickname from assets/accounts.js (e.g. Jesus → «Tito»), plus a nudge until they study today
+    const acc = (window.YEB_ACCOUNTS || []).find((a) => a.user === student.id);
+    $("#badge-text").textContent = `${t("hi")((acc && acc.nick) || student.name)} ${studied(dayKey()) ? t("greetDone") : t("greetToday")}`;
     const b = $("#logout"); b.hidden = false; b.textContent = t("logout");
     renderStreak();
   }

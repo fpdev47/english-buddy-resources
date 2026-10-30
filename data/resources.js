@@ -17,41 +17,21 @@ window.YEB_DATA = {
     },
     {
       id: "shadowing",
-      short: "Pronunciación y shadowing",
-      title: "Pronunciación y shadowing",
-      text: "Escucha y repite en voz alta justo después del hablante para entrenar ritmo, entonación y fluidez.",
+      short: "Ejercicios de shadowing",
+      title: "Ejercicios de shadowing",
+      text: "Videos para escuchar y repetir en voz alta justo después del hablante: mismo ritmo, mismas pausas, misma emoción. Filtra por tipo y elige uno.",
       video: { id: "37x7oLjYPgM", start: 11, title: "4.5 horas de práctica de speaking", channel: "English is EZ with Connor", tip: "Escucha cada frase, pausa y repítela imitando la entonación. Con 15 minutos al día es suficiente." },
-      videos: [
-        { title: { es: "Escenas de series y películas", en: "Scenes from series and movies" }, text: { es: "Escucha la frase, pausa y repítela igual: misma velocidad, mismas pausas, misma emoción.", en: "Listen to the line, pause and repeat it the same way: same speed, same pauses, same emotion." }, items: [
-        { id: "x1igjXewiAY", title: "Friends: a wedding-day surprise", channel: "Shadowing for dummies!", level: "B1" },
-        { id: "V9jBrDzSgA4", title: "Jennifer Aniston in Friends", channel: "Shadowing for dummies!", level: "B1" },
-        { id: "ttvBd0l_t8I", title: "Lisa Kudrow (Phoebe, Friends)", channel: "Parrot Shadowing", level: "B1" },
-        { id: "uYENa3tUjJA", title: "The Office: how NOT to talk at work", channel: "Shadowing for dummies!", level: "B1–B2" },
-        { id: "UCnFlpDT3qY", title: "Emily in Paris: starting a conversation", channel: "Shadowing for dummies!", level: "B1" },
-        { id: "bY9g5MBLQpU", title: "Suits: confidence in a job interview", channel: "Shadowing for dummies!", level: "B2" },
-        { id: "YX7Ud4EeLyA", title: "The Devil Wears Prada: business English", channel: "Shadowing for dummies!", level: "B2" },
-        { id: "BAGKax-ceTE", title: "Despicable Me: everyday English at home", channel: "Shadowing for dummies!", level: "A2–B1" },
-        { id: "bSAoLcD5oCs", title: "Ratatouille: natural movie dialogue", channel: "Shadowing for dummies!", level: "B1" },
-        { id: "P4purqwM-FM", title: "Kung Fu Panda: can you escape your destiny?", channel: "Shadowing for dummies!", level: "B1" },
-        { id: "WpcQHaBdPcQ", title: "Wednesday: the queen of one-liners", channel: "Parrot Shadowing", level: "C1" }
-        ] },
-        { title: { es: "Famosos y discursos", en: "Celebrities and speeches" }, text: { es: "Entrevistas y discursos reales. Empieza por los de nivel B1 y sube poco a poco.", en: "Real interviews and speeches. Start with the B1 ones and move up little by little." }, items: [
-        { id: "X-vONe3wf8A", title: "Barack Obama", channel: "Shadowing for dummies!", level: "B1–B2" },
-        { id: "kEWzJGUlfIo", title: "Martin Luther King: “I Have a Dream”", channel: "Shadowing for dummies!", level: "B2–C1" },
-        { id: "xrpQ_y7DEMM", title: "Steve Jobs: business vocabulary", channel: "Shadowing for dummies!", level: "B2" },
-        { id: "5TwQukCqhmw", title: "Meryl Streep", channel: "Parrot Shadowing", level: "B2" },
-        { id: "XeveltH38ns", title: "Morgan Freeman", channel: "Parrot Shadowing", level: "B2" },
-        { id: "Kvkva4yODxE", title: "Keanu Reeves", channel: "Parrot Shadowing", level: "B1–B2" },
-        { id: "0qdIzZcbRnM", title: "Taylor Swift at NYU", channel: "Parrot Shadowing", level: "B2" },
-        { id: "xAGGpPr2EZI", title: "Pedro Pascal", channel: "Shadowing for dummies!", level: "B1–B2" },
-        { id: "nHL2t3aLa78", title: "Sam Claflin (British accent)", channel: "Parrot Shadowing", level: "B2" },
-        { id: "SP4KQrELib4", title: "TED: Andrew Solomon", channel: "Parrot Shadowing", level: "C1" }
-        ] }
-      ],
+      library: "YEB_SHADOWING",
       playlists: [
         { list: "PLL8rrkKVLqeRdeFKmygYujTkwOefatZ6G", title: "English Shadowing – American accent", channel: "Shadowing for dummies!", count: 72 },
         { list: "PLVhmSjw4wVyYqOW5BTL6yuJi3NJH5LTvt", title: "American Accent English Shadowing Exercises", channel: "Parrot Shadowing", count: 44 }
       ]
+    },
+    {
+      id: "pronunciacion",
+      short: "Pronunciación",
+      title: "Pronunciación y acento",
+      text: "Canales de profesores que explican cómo suenan las palabras, la entonación y el acento americano o británico."
     },
     {
       id: "vocabulario",
@@ -191,31 +171,31 @@ window.YEB_DATA = {
       youtube: "https://www.youtube.com/@LukesEnglishPodcast", spotify: "https://open.spotify.com/show/4X48gpjrctXNJWtOnUgwq8" },
 
     // ——— Pronunciación y shadowing ———
-    { name: "Shadowing for dummies!", host: "Shadowing for dummies!", section: "shadowing", level: ["A2", "B2"], accent: "US", format: "video",
+    { name: "Shadowing for dummies!", host: "Shadowing for dummies!", section: "pronunciacion", level: ["A2", "B2"], accent: "US", format: "video",
       text: "Escenas de series, películas y entrevistas de famosos para repetir frase por frase. Cada video muestra el texto y hace pausas para que repitas.",
       youtube: "https://www.youtube.com/@Shadowingfordummies", spotify: "" },
-    { name: "Parrot Shadowing", host: "Parrot Shadowing", section: "shadowing", level: ["B1", "C1"], accent: "US", format: "video",
+    { name: "Parrot Shadowing", host: "Parrot Shadowing", section: "pronunciacion", level: ["B1", "C1"], accent: "US", format: "video",
       text: "Ejercicios de imitación con actores y discursos famosos: acento americano, entonación y ritmo.",
       youtube: "https://www.youtube.com/@ParrotShadowing", spotify: "" },
-    { name: "English is EZ with Connor", host: "Connor", section: "shadowing", level: ["A2", "B2"], accent: "US", format: "video",
+    { name: "English is EZ with Connor", host: "Connor", section: "pronunciacion", level: ["A2", "B2"], accent: "US", format: "video",
       text: "Sesiones largas de «escucha y repite» con frases útiles. Excelente para practicar shadowing todos los días.",
       youtube: "https://www.youtube.com/@EnglishisEZ", spotify: "" },
-    { name: "English with Jennifer", host: "Jennifer", section: "shadowing", level: ["A2", "B1"], accent: "US", format: "video",
+    { name: "English with Jennifer", host: "Jennifer", section: "pronunciacion", level: ["A2", "B1"], accent: "US", format: "video",
       text: "Pronunciación y gramática paso a paso, con pausas para que repitas. Muy clara para empezar.",
       youtube: "https://www.youtube.com/@EnglishWithJennifer", spotify: "" },
-    { name: "Rachel's English", host: "Rachel", section: "shadowing", level: ["B1", "C1"], accent: "US", format: "video",
+    { name: "Rachel's English", host: "Rachel", section: "pronunciacion", level: ["B1", "C1"], accent: "US", format: "video",
       text: "La referencia en pronunciación americana: reducciones, linking y ritmo, analizados palabra por palabra.",
       youtube: "https://www.youtube.com/@rachelsenglish", spotify: "https://open.spotify.com/show/383zrzICOQvMfRoFcZ6Jsm" },
-    { name: "Accent's Way English with Hadar", host: "Hadar Shemesh", section: "shadowing", level: ["B2", "C1"], accent: "US", format: "video",
+    { name: "Accent's Way English with Hadar", host: "Hadar Shemesh", section: "pronunciacion", level: ["B2", "C1"], accent: "US", format: "video",
       text: "Acento americano y confianza al hablar, explicado por una profesora que también aprendió inglés como segundo idioma.",
       youtube: "https://www.youtube.com/@hadar.shemesh", spotify: "" },
-    { name: "English Speaking Success", host: "Georgie", section: "shadowing", level: ["B1", "B2"], accent: "UK", format: "video",
+    { name: "English Speaking Success", host: "Georgie", section: "pronunciacion", level: ["B1", "B2"], accent: "UK", format: "video",
       text: "Lecciones de «speak with me» y pronunciación británica para hablar con más fluidez.",
       youtube: "https://www.youtube.com/@EnglishSpeakingSuccess", spotify: "" },
-    { name: "The English Coach", host: "Chris", section: "shadowing", level: ["B1", "B2"], accent: "US", format: "video",
+    { name: "The English Coach", host: "Chris", section: "pronunciacion", level: ["B1", "B2"], accent: "US", format: "video",
       text: "Práctica de conversación y frases para repetir en voz alta, con explicaciones claras y pausadas.",
       youtube: "https://www.youtube.com/@TheEnglishCoach", spotify: "" },
-    { name: "Learn English With TV Series", host: "LETS", section: "shadowing", level: ["B1", "C1"], accent: "US", format: "video",
+    { name: "Learn English With TV Series", host: "LETS", section: "pronunciacion", level: ["B1", "C1"], accent: "US", format: "video",
       text: "Escenas de series y películas analizadas frase por frase. Repite los diálogos para sonar más natural.",
       youtube: "https://www.youtube.com/@LearnEnglishWithTVSeries", spotify: "" },
 

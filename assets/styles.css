@@ -210,7 +210,7 @@ html:not(.unlocked) body > :not(.gate) { display: none; }
 }
 .lang-toggle button[aria-pressed="true"] { background: var(--solid); color: #fff; }
 .lang-toggle button:focus-visible { outline: 3px solid var(--green-600); outline-offset: 1px; }
-.gate-card .lang-toggle { justify-self: end; margin: -12px -8px 0 0; }
+.gate-tools { justify-self: end; display: flex; align-items: center; gap: 8px; margin: -12px -8px 0 0; }
 .theme-toggle {
   width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
   background: var(--bg-soft); border: 1px solid var(--line); color: var(--brand);
@@ -814,3 +814,38 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* «Redo» on a correct answer: quieter than «Try again» */
 .retry-one.again { border-color: var(--ok-line); color: var(--ok-fg); background: transparent; }
+
+/* ——— Shadowing library ——— */
+.lib-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
+.lib-chip {
+  cursor: pointer; min-height: 38px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 600;
+}
+.lib-chip small { color: var(--muted); font-weight: 700; margin-left: 2px; }
+.lib-chip[aria-pressed="true"] { background: var(--solid); border-color: var(--solid); color: #fff; }
+.lib-chip[aria-pressed="true"] small { color: var(--lime); }
+@media (hover: hover) { .lib-chip:not([aria-pressed="true"]):hover { border-color: var(--brand); } }
+.lib-more { display: block; margin: 16px auto 0; cursor: pointer; min-height: 44px; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--brand); font: inherit; font-weight: 700; }
+@media (max-width: 560px) { .lib-filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; } .lib-filters::-webkit-scrollbar { display: none; } .lib-chip { flex: none; } }
+
+
+/* ——— Home: four big cards ——— */
+.home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 8px; }
+.home-card {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; text-align: left; cursor: pointer;
+  padding: 20px; border-radius: 20px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.home-ico { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--tag-bg); color: var(--brand); }
+.home-ico svg { width: 26px; height: 26px; }
+.home-txt { display: grid; gap: 4px; }
+.home-txt strong { font-family: var(--font-head); font-size: 20px; }
+.home-txt span { color: var(--text); font-size: 14.5px; line-height: 1.45; }
+.home-txt small { color: var(--brand); font-weight: 700; font-size: 13px; }
+.home-go { color: var(--muted-2); }
+.home-go svg { width: 22px; height: 22px; }
+.home-card:focus-visible { outline: 3px solid var(--green-600); outline-offset: 2px; }
+@media (hover: hover) { .home-card:hover { border-color: var(--brand); transform: translateY(-2px); box-shadow: var(--shadow); } }
+.home-card:active { transform: scale(.98); }
+.on-home .results { padding-top: 8px; }
+@media (max-width: 760px) { .home-grid { grid-template-columns: 1fr; gap: 10px; } .home-card { padding: 16px; gap: 14px; } .home-ico { width: 46px; height: 46px; } .home-txt strong { font-size: 18px; } }

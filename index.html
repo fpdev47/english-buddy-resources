@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#ffffff">
-  <script src="assets/config.js?v=202610302800"></script>
+  <script src="assets/config.js?v=202610303100"></script>
   <script>
     // Applied before paint: the logged-in student and the student's day/night choice.
     try {
@@ -19,13 +19,19 @@
       if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/styles.css?v=202610302800">
+  <link rel="stylesheet" href="assets/styles.css?v=202610303100">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d3a3e'/><path d='M9 18v-2a7 7 0 0 1 14 0v2' stroke='%23c8e47c' stroke-width='2.4' fill='none' stroke-linecap='round'/><rect x='7' y='17' width='5' height='8' rx='2' fill='%235cf890'/><rect x='20' y='17' width='5' height='8' rx='2' fill='%235cf890'/></svg>">
 </head>
 <body>
   <div class="gate" id="gate">
     <form class="gate-card" id="gate-form">
-      <div class="lang-toggle" role="group" aria-label="Language of the instructions"><button type="button" data-lang="es" aria-pressed="false">ES</button><button type="button" data-lang="en" aria-pressed="true">EN</button></div>
+      <div class="gate-tools">
+        <div class="lang-toggle" role="group" aria-label="Language of the instructions"><button type="button" data-lang="es" aria-pressed="false">ES</button><button type="button" data-lang="en" aria-pressed="true">EN</button></div>
+        <button type="button" class="theme-toggle" aria-label="Switch to night mode">
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
       <span class="brand">
         <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Your English Buddy</span>
@@ -80,7 +86,7 @@
     <section class="intro">
       <div class="container">
         <div class="hello"><span class="badge"><span class="dot"></span><span id="badge-text" data-i18n="badge">Student area</span></span><button type="button" class="streak-chip" id="streak-chip" hidden></button><button type="button" class="logout-btn" id="logout" hidden data-i18n="logout">Log out</button></div>
-        <h1 data-i18n-html="title">What will you practice <span class="accent">today</span>?</h1>
+        <h1 data-i18n-html="title">What do you want to practice <span class="accent">today</span>?</h1>
         <p class="lead" data-i18n="lead">Listen to real English on YouTube and Spotify, or practice with exercises that are corrected instantly.</p>
         <div class="modes" id="modes" role="tablist" aria-label="What do you want to do" data-i18n-aria="modesLabel">
           <button type="button" class="mode-btn" role="tab" data-mode="practicar" aria-selected="true"><svg class="mode-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="practice">Practice</span></button>
@@ -115,24 +121,25 @@
     </div>
   </footer>
 
-  <script src="assets/i18n.js?v=202610302800"></script>
-  <script src="assets/theme.js?v=202610302800"></script>
-  <script src="assets/accounts.js?v=202610302800"></script>
-  <script src="assets/cloud.js?v=202610302800"></script>
-  <script src="assets/gate.js?v=202610302800"></script>
-  <script src="data/resources.js?v=202610302800"></script>
-  <script src="data/glossary/steve-jobs.js?v=202610302800"></script>
-  <script src="data/readings.js?v=202610302800"></script>
-  <script src="data/glossary/r-lords-prayer.js?v=202610302800"></script>
-  <script src="data/readings-classics.js?v=202610302800"></script>
-  <script src="data/glossary/pronombres-objeto.js?v=202610302800"></script>
-  <script src="data/groups.js?v=202610302800"></script>
-  <script src="data/exercises.js?v=202610302800"></script>
-  <script src="data/exercises-unit1.js?v=202610302800"></script>
-  <script src="data/exercises-unit2.js?v=202610302800"></script>
-  <script src="data/exercises-extra.js?v=202610302800"></script>
-  <script src="data/why-original.js?v=202610302800"></script>
-  <script src="data/en.js?v=202610302800"></script>
-  <script src="assets/app.js?v=202610302800"></script>
+  <script src="assets/i18n.js?v=202610303100"></script>
+  <script src="assets/theme.js?v=202610303100"></script>
+  <script src="assets/accounts.js?v=202610303100"></script>
+  <script src="assets/cloud.js?v=202610303100"></script>
+  <script src="assets/gate.js?v=202610303100"></script>
+  <script src="data/resources.js?v=202610303100"></script>
+  <script src="data/shadowing.js?v=202610303100"></script>
+  <script src="data/glossary/steve-jobs.js?v=202610303100"></script>
+  <script src="data/readings.js?v=202610303100"></script>
+  <script src="data/glossary/r-lords-prayer.js?v=202610303100"></script>
+  <script src="data/readings-classics.js?v=202610303100"></script>
+  <script src="data/glossary/pronombres-objeto.js?v=202610303100"></script>
+  <script src="data/groups.js?v=202610303100"></script>
+  <script src="data/exercises.js?v=202610303100"></script>
+  <script src="data/exercises-unit1.js?v=202610303100"></script>
+  <script src="data/exercises-unit2.js?v=202610303100"></script>
+  <script src="data/exercises-extra.js?v=202610303100"></script>
+  <script src="data/why-original.js?v=202610303100"></script>
+  <script src="data/en.js?v=202610303100"></script>
+  <script src="assets/app.js?v=202610303100"></script>
 </body>
 </html>

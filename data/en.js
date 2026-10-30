@@ -20,8 +20,9 @@ window.YEB_EN = (function () {
   return {
   sections: {
     aprender: { short: "Learner podcasts", title: "Podcasts for English learners", text: "Made for learners: clear speech, vocabulary explained, and many have transcripts." },
-    shadowing: { short: "Pronunciation & shadowing", title: "Pronunciation and shadowing", text: "Listen and repeat out loud right after the speaker to train rhythm, intonation and fluency.",
+    shadowing: { short: "Shadowing exercises", title: "Shadowing exercises", text: "Videos to listen to and repeat out loud right after the speaker: same rhythm, same pauses, same emotion. Filter by type and pick one.",
       video: { title: "4.5 hours of speaking practice", tip: "Listen to each sentence, pause, and repeat it copying the intonation. 15 minutes a day is enough." } },
+    pronunciacion: { short: "Pronunciation", title: "Pronunciation and accent", text: "Channels by teachers who explain how words sound, intonation, and the American or British accent." },
     vocabulario: { short: "Vocabulary & grammar", title: "Vocabulary and grammar", text: "Short video lessons with native teachers: phrasal verbs, expressions, common mistakes and grammar explained in English." },
     conversacion: { short: "Everyday conversation", title: "Everyday conversation", text: "English for every day: street interviews, chats between friends and real situations." },
     entretenimiento: { short: "Celebrities & talk shows", title: "Celebrities, talk shows and entertainment", text: "Podcasts and shows by actors and comedians. Natural conversations, with humor and at real speed: great from B2 up." },

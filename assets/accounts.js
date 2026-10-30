@@ -5,7 +5,8 @@
   Para agregar a alguien:
     1. Elige una contraseña y calcula su hash (en minúsculas):
          printf '%s' 'nombre-palabra-palabra-1234' | shasum -a 256
-    2. Agrega una línea abajo con su usuario, el nombre que verá («¡Hola, …!») y el hash.
+    2. Agrega una línea abajo con su usuario, su nombre y el hash. Opcional: nick = cómo lo saluda
+       la página («¡Hola, Tito!»); si no hay nick, se usa el nombre.
   Nunca escribas la contraseña aquí: este archivo es público, solo debe tener el hash.
 
   Sin Supabase, el progreso queda guardado en el navegador del estudiante (su teléfono o su
@@ -17,6 +18,6 @@ window.YEB_TEACHER_WHATSAPP = "584242345232";
 
 window.YEB_ACCOUNTS = [
   { user: "mary", name: "Mary", hash: "bc5a20262d815b420ba89cf9ec66dcd796ae639d5569e0f77ac151c05ad74f29" },
-  { user: "jesus", name: "Jesus", hash: "8a1a7788798a073c4cc9d9939f50ec2d9f802c9972e473d315d0ad5fc3c14d07" },
+  { user: "jesus", name: "Jesus", nick: "Tito", hash: "8a1a7788798a073c4cc9d9939f50ec2d9f802c9972e473d315d0ad5fc3c14d07" },
   { user: "fabio", name: "Fabio", hash: "d29c18776f9b104b63409a0b617a4f4cbcb9fe8c512bd78d4abeb3bee5d1562b" }
 ];
