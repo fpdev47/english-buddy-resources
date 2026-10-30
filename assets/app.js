@@ -64,6 +64,12 @@
   if (!Array.isArray(state.favs)) state.favs = [];
   // One-time move to the new default reading (Steve Jobs), for students who already had the old default saved
   if (state.readDefaultV !== 2) { state.readTopic = READINGS[0] && READINGS[0].id; state.readDefaultV = 2; }
+  // Teacher-requested reset (assets/accounts.js → reset: "id"): clears this student's progress once, on any device
+  const ACC = student && (window.YEB_ACCOUNTS || []).find((a) => a.user === student.id);
+  if (ACC && ACC.reset && state.resetDone !== ACC.reset) {
+    Object.assign(state, { answers: {}, daily: {}, last: null, resetDone: ACC.reset });
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {}
+  }
   const writeLocal = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
 
   // ——— Cloud sync (only with Supabase configured) ———
@@ -1364,7 +1370,14 @@
           <button type="button" class="resume-btn" data-action="resume">${esc(t("resumeBtn"))}</button>
         </div>`;
     }
-    return `${resume}
+    const acc = account();
+    const drive = acc && acc.drive ? `
+      <a class="home-drive" href="${esc(acc.drive)}" target="_blank" rel="noopener">
+        <span class="home-ico" aria-hidden="true">${svg("M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z")}</span>
+        <span class="home-txt"><strong>${esc(t("driveShort"))}</strong><span>${esc(t("driveText"))}</span></span>
+        <span class="home-go" aria-hidden="true">${svg("M7 17 17 7M8 7h9v9")}</span>
+      </a>` : "";
+    return `${resume}${drive}
       <div class="home-grid">
         ${card("practicar", TOPIC_ICONS.ejercicio, t("practice"), t("homePractice")(EXERCISES.length), ex && p.done && ex.id !== resumeId ? t("homeContinue")(topicTitle(ex), p.done, p.total) : "")}
         ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
@@ -1373,13 +1386,19 @@
       </div>`;
   }
 
+  const account = () => student && (window.YEB_ACCOUNTS || []).find((a) => a.user === student.id);
+
   // ——— Greeting + log out ———
   function renderHello() {
     if (!student) return;
     // Nickname from assets/accounts.js (e.g. Jesus → «Tito»), plus a nudge until they study today
-    const acc = (window.YEB_ACCOUNTS || []).find((a) => a.user === student.id);
+    const acc = account();
     $("#badge-text").textContent = `${t("hi")((acc && acc.nick) || student.name)} ${studied(dayKey()) ? t("greetDone") : t("greetToday")}`;
     const b = $("#logout"); b.hidden = false; b.textContent = t("logout");
+    // The student's Google Drive folder (class notes and calendar), at the top of every page
+    const drive = $("#drive-link"), url = acc && acc.drive;
+    drive.hidden = !url;
+    if (url) { drive.href = url; drive.title = t("driveLong"); drive.setAttribute("aria-label", t("driveLong")); }
     renderStreak();
   }
   $("#streak-chip").addEventListener("click", () => { state.mode = "progreso"; save(); writeHash(); render(); $("#results").scrollIntoView({ behavior: "smooth", block: "start" }); });
