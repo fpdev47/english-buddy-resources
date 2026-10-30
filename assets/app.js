@@ -1004,7 +1004,8 @@
     const x = currentTopic();
     const u = new SpeechSynthesisUtterance(shownText(x).join(" "));
     u.lang = "en-US"; u.rate = 0.92;
-    const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-US") || speechSynthesis.getVoices().find((v) => /^en/.test(v.lang));
+    if (!enVoice) pickVoice();
+    const voice = enVoice;
     if (voice) u.voice = voice;
     u.onend = u.onerror = stopSpeaking;
     btn.classList.add("on"); btn.innerHTML = `<span aria-hidden="true">■</span><span>${esc(t("stopStory"))}</span>`;
@@ -1059,14 +1060,33 @@
     m.scrollIntoView({ behavior: "smooth", block: "center" });
     m.classList.add("flash"); setTimeout(() => m.classList.remove("flash"), 1400);
   }
+  // Pick a natural English voice (some systems list novelty voices like «Bad News» or «Bells» first)
+  let enVoice = null;
+  function pickVoice() {
+    if (!("speechSynthesis" in window)) return;
+    const vs = speechSynthesis.getVoices().filter((v) => /^en[-_]US/i.test(v.lang) || /^en[-_]/i.test(v.lang));
+    const good = /samantha|google us english|aria|jenny|guy|ava|allison|alex|zira|david|natural|enhanced|premium/i;
+    const novelty = /bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|kathy|ralph/i;
+    enVoice = vs.find((v) => /^en[-_]US/i.test(v.lang) && good.test(v.name) && !novelty.test(v.name))
+      || vs.find((v) => /^en[-_]US/i.test(v.lang) && !novelty.test(v.name))
+      || vs.find((v) => !novelty.test(v.name)) || null;
+  }
+  if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.addEventListener("voiceschanged", pickVoice); }
+  let currentUtterance = null;   // keep a reference: Chrome can drop an utterance that nothing holds on to
   function sayWord(word) {
     if (!("speechSynthesis" in window)) return;
-    stopSpeaking();
     const u = new SpeechSynthesisUtterance(word);
     u.lang = "en-US"; u.rate = 0.85;
-    const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-US");
-    if (voice) u.voice = voice;
-    speechSynthesis.speak(u);
+    if (!enVoice) pickVoice();
+    if (enVoice) u.voice = enVoice;
+    u.onend = u.onerror = () => { if (currentUtterance === u) currentUtterance = null; };
+    currentUtterance = u;
+    const go = () => { speechSynthesis.resume(); speechSynthesis.speak(u); };
+    // cancel() and speak() back to back loses the new sentence in Chrome: only cancel when something is playing
+    if (speechSynthesis.speaking || speechSynthesis.pending) {
+      stopSpeaking();
+      setTimeout(go, 80);
+    } else go();
   }
   gloss.addEventListener("click", (e) => { const b = e.target.closest("[data-say]"); if (b) sayWord(b.dataset.say); });
   document.addEventListener("click", (e) => {
