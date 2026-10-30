@@ -206,25 +206,30 @@
   function pronounWhy(item) {
     const a = low(item.a);
     if (item.a.includes(" / ")) return null;                 // two gaps: the explanation already covers it
+    const answerIsSubject = !!SUBJ[a] || a === "i";          // he, she, we, they, I
+    const answerIsThing = a === "it";
     const w = {};
     item.o.forEach((o) => {
       const x = low(o);
-      if (SUBJ[x] || (x === "i")) {
-        if (OBJ_OF[a] || a === "you" || a === "it") w[o] = [`Es sujeto (va antes del verbo). Aquí la persona recibe la acción (después del verbo o de una preposición): ${item.a}.`, `It's a subject (before the verb). Here the person receives the action (after the verb or a preposition): ${item.a}.`];
-      } else if (OBJ_OF[x] && (SUBJ[a] || a === "i")) {
-        w[o] = [`Es objeto. Aquí hace falta el sujeto, quien hace la acción: ${item.a}.`, `It's an object. Here we need the subject, who does the action: ${item.a}.`];
-      } else if (POSS.includes(x)) {
-        w[o] = [`Es posesivo y necesita un sustantivo después (${x} car, ${x} house).`, `It's possessive and needs a noun after it (${x} car, ${x} house).`];
+      const isSubj = !!SUBJ[x] || x === "i";
+      if (POSS.includes(x)) {
+        w[o] = ["Es posesivo: necesita un sustantivo después (" + x + " car, " + x + " house).", "It's possessive: it needs a noun after it (" + x + " car, " + x + " house)."];
       } else if (POSS_PRON.includes(x)) {
-        w[o] = [`Significa «el/la de…» (es mío, es suyo). No recibe la acción del verbo.`, `It means “the one that belongs to…” (it's mine). It can't receive the action.`];
+        w[o] = ["Significa «el/la de…» (mine = el mío): reemplaza a una cosa que alguien tiene, no a la persona.", "It means “the one that belongs to…” (mine = my one): it replaces a thing someone has, not the person."];
       } else if (/self|selves$/.test(x)) {
-        w[o] = [`Es reflexivo: solo se usa cuando quien hace la acción también la recibe (I see myself).`, `It's reflexive: only when the doer also receives the action (I see myself).`];
-      } else if (x === "them" && a === "it") {
-        w[o] = ["«them» es para varias cosas o personas. Aquí es una sola cosa: it.", "“them” is for several things or people. Here it's one thing: it."];
+        w[o] = ["Es reflexivo: solo se usa cuando quien hace la acción también la recibe (I see myself).", "It's reflexive: only when the doer also receives the action (I see myself)."];
+      } else if ((x === "he" || x === "she" || x === "him" || x === "her") && answerIsThing) {
+        w[o] = ["Es para una persona (o una mascota). Aquí se habla de una cosa.", "It's for a person (or a pet). Here we're talking about a thing."];
       } else if (x === "it" && a === "them") {
-        w[o] = ["«it» es para una sola cosa. Aquí son varias: them.", "“it” is for one thing. Here there are several: them."];
-      } else if ((x === "him" || x === "her") && (a === "it" || a === "them")) {
-        w[o] = [`Es para personas (o una mascota). Para cosas: ${item.a}.`, `It's for people (or a pet). For things: ${item.a}.`];
+        w[o] = ["«it» es para una sola cosa. Aquí son varias.", "“it” is for one thing. Here there are several."];
+      } else if ((x === "them" || x === "they") && answerIsThing) {
+        w[o] = ["Es plural. Aquí es una sola cosa.", "It's plural. Here it's just one thing."];
+      } else if ((x === "him" || x === "her") && a === "them") {
+        w[o] = ["Es una sola persona. Aquí son varias.", "It's one person. Here there are several."];
+      } else if (isSubj && !answerIsSubject && !answerIsThing) {
+        w[o] = ["Es sujeto (va antes del verbo). Aquí el pronombre va después del verbo o de una preposición y recibe la acción.", "It's a subject (before the verb). Here the pronoun comes after the verb or a preposition and receives the action."];
+      } else if (OBJ_OF[x] && answerIsSubject) {
+        w[o] = ["Es objeto (recibe la acción). Aquí hace falta el sujeto: quien hace la acción.", "It's an object (it receives the action). Here we need the subject: who does the action."];
       }
     });
     return Object.keys(w).length ? w : null;

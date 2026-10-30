@@ -1195,7 +1195,7 @@
     const week = days(7).map((d) => {
       const k = dayKey(d);
       return `<li class="wk${studied(k) ? " on" : ""}${k === dayKey() ? " today" : ""}" title="${esc(d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }))}">
-        <i>${studied(k) ? ICONS.check : ""}</i><small><span class="d-long">${esc(cap(d.toLocaleDateString(locale, { weekday: "long" })))}</span><span class="d-short">${esc(cap(d.toLocaleDateString(locale, { weekday: "short" }).replace(".", "")))}</span> <b>${d.getDate()}</b></small><em>${minutesOf(k) ? `${minutesOf(k)} min` : "–"}</em></li>`;
+        <i>${studied(k) ? ICONS.check : ""}</i><small><span class="d-long">${esc(cap(d.toLocaleDateString(locale, { weekday: "long" })))}</span><span class="d-short">${esc(cap(d.toLocaleDateString(locale, { weekday: "short" }).replace(".", "")))}</span> <b>${d.getDate()}</b></small><em>${minutesOf(k) ? `${minutesOf(k)} min` : studied(k) ? "<1 min" : "–"}</em></li>`;
     }).join("");
     const stat = (label, value, id) => `<div><dt>${esc(label)}</dt><dd${id ? ` id="${id}"` : ""}>${esc(value)}</dd></div>`;
     const seg = (cls, count) => (count ? `<i class="${cls}" style="width:${pct(count, answered)}%"></i>` : "");

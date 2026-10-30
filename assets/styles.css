@@ -811,6 +811,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 }
 @media (max-width: 380px) { .modes .mode-btn { font-size: 12px; } }
+@media (max-width: 420px) { .modes .mode-ico { display: none; } .modes .mode-btn { white-space: nowrap; } }
 
 /* «Redo» on a correct answer: quieter than «Try again» */
 .retry-one.again { border-color: var(--ok-line); color: var(--ok-fg); background: transparent; }

@@ -174,7 +174,7 @@ window.YEB_EN = (function () {
           { e: "After “with” we use the object. Trick: “come with me”." },
           { e: "He does the action of “loves”: subject “He”." },
           { e: "It's part of the subject. Trick: remove “Kevin and” → “I am in the same class”." },
-          { e: "He receives the call: object. Trick: “called me”." },
+          { e: "The speaker receives the call: object. Trick: “called me”." },
           { e: "In short answers we use the object: “Not me!”." }
         ] },
         { title: "Complete using the context", instructions: "Read the whole sentence before you choose: the context tells you who or what we're talking about. Some have two gaps.", items: [
