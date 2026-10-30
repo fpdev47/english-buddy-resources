@@ -451,6 +451,24 @@
   const enLabels = (x, si, ii) => { const it = x.sections[si].items[ii]; const ov = ((EN.exercises[x.id] || {}).sections || [])[si]; return (it.en && it.en.labels) || (ov && ov.items && ov.items[ii] && ov.items[ii].labels) || {}; };
   const englishOption = (o, labels) => !SPANISHY.test(o) && !(labels[o] && labels[o] !== o) && /[a-z]/i.test(o);
   const sayText = (s) => s.replace(/\s+\/\s+/g, ", ");   // two gaps «she / her» → «she, her»
+  // Every English word of a sentence can be tapped (or hovered) to hear it. Spanish hints in (…) are left alone.
+  function sayWords(text) {
+    return text.split(/(\([^)]*\))/).map((seg, i) => {
+      if (i % 2 || SPANISHY.test(seg)) return esc(seg);
+      return esc(seg).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g, (w) => `<span class="sw" data-say="${w}">${w}</span>`);
+    }).join("");
+  }
+  // Quote with [[highlight]]: words inside and outside the highlight can be heard
+  function quoteHTML(quote) {
+    const english = !SPANISHY.test(quote.replace(/\[\[|\]\]/g, ""));
+    return quote.split(/(\[\[.+?\]\])/).map((seg) => {
+      const m = /^\[\[(.+)\]\]$/.exec(seg);
+      const inner = m ? m[1] : seg;
+      const html = english ? sayWords(inner) : esc(inner);
+      return m ? `<mark class="hl">${html}</mark>` : html;
+    }).join("");
+  }
+
   // The sentence with the right answer in it (null when there's no clean English sentence to read)
   function fullSentence(item, labels) {
     const strip = (q) => q.replace(/^\(\d+\)\s*/, "").replace(/\s*\([^)]*\)/g, "").trim();
@@ -506,7 +524,9 @@
     // Several gaps (___ … ___) take the parts of an answer like "she / her" in order
     const parts = correct.split(" / ");
     let gap = 0;
-    const prompt = esc(tr.q || item.q).replace(/^\((\d+)\)\s*/, '<span class="mark">$1</span>').replace(/___/g, () => {
+    const qText = tr.q || item.q;
+    // English prompts: every word is tappable; Spanish prompts stay plain
+    const prompt = (SPANISHY.test(qText.replace(/\([^)]*\)/g, "")) ? esc(qText) : sayWords(qText)).replace(/^\((\d+)\)\s*/, '<span class="mark">$1</span>').replace(/___/g, () => {
       const fill = parts.length > 1 ? parts[gap] || "" : correct;
       gap++;
       return ans ? `<span class="blank filled">${esc(fill)}</span>` : `<span class="blank">______</span>`;
@@ -526,9 +546,9 @@
         let cls = "opt";
         if (ans) cls += o === item.a ? " right" : o === ans.v || o === ans.first ? " wrong" : " dim";
         else if (o === tried) cls += " wrong";
-        if (sayable) cls += " has-say";
-        const btn = `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans || o === tried ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
-        return sayable ? `<span class="opt-wrap">${btn}<button type="button" class="opt-say" data-say="${esc(sayText(o))}" aria-label="${esc(t("listenWord"))}: ${esc(o)}">${ICONS.speaker}</button></span>` : btn;
+        // Once answered, the English options become «listen» buttons (no risk of answering by mistake)
+        if (ans && sayable) return `<button type="button" class="${cls} done" data-say="${esc(sayText(o))}" aria-label="${esc(t("listenWord"))}: ${esc(label(tr, o))}">${esc(label(tr, o))}${ICONS.speaker}</button>`;
+        return `<button type="button" class="${cls}" data-key="${key}" data-v="${esc(o)}" ${ans || o === tried ? "disabled" : ""}>${esc(label(tr, o))}</button>`;
       }).join("")}</div>`;
     }
 
@@ -550,7 +570,7 @@
       <article class="q${ans ? (ans.ok ? " is-ok" : " is-bad") : tried !== null ? " is-try" : ""}" id="q-${key}">
         <span class="q-num">${ii + 1}</span>
         <div class="q-body">
-          ${item.quote ? `<blockquote class="quote">${esc(item.find ? speechQuote(x, item.find) : tr.quote || item.quote).replace(/\[\[(.+?)\]\]/g, '<mark class="hl">$1</mark>')}</blockquote>` : ""}
+          ${item.quote ? `<blockquote class="quote">${quoteHTML(item.find ? speechQuote(x, item.find) : tr.quote || item.quote)}</blockquote>` : ""}
           <p class="q-text">${prompt}${ans && sentence ? ` <button type="button" class="q-say" data-say="${esc(sayText(sentence))}" aria-label="${esc(t("listenSentence"))}" title="${esc(t("listenSentence"))}">${ICONS.speaker}</button>` : ""}</p>
           ${body}
           ${fb}
@@ -1086,8 +1106,12 @@
   }
 
   $("#panel").addEventListener("click", (e) => {
-    const say = e.target.closest(".opt-say, .q-say");
-    if (say) { sayWord(say.dataset.say); return; }
+    const say = e.target.closest(".q-say, .sw, .opt.done");
+    if (say) {
+      sayWord(say.dataset.say);
+      if (say.classList.contains("sw")) { say.classList.add("on"); setTimeout(() => say.classList.remove("on"), 700); }
+      return;
+    }
     if (e.target.closest(".glossable .w, .glossable .vw")) { showGloss(e.target, true); return; }
     const find = e.target.closest("[data-find]");
     if (find) return findInText(find.dataset.find);
@@ -1170,12 +1194,12 @@
   // Computer: resting the mouse on the little speaker reads the option
   let sayHover;
   $("#panel").addEventListener("mouseover", (e) => {
-    const b = e.target.closest(".opt-say");
+    const b = e.target.closest(".sw");
     if (!b || !matchMedia("(hover: hover)").matches) return;
     clearTimeout(sayHover);
-    sayHover = setTimeout(() => sayWord(b.dataset.say), 250);
+    sayHover = setTimeout(() => sayWord(b.dataset.say), 450);
   });
-  $("#panel").addEventListener("mouseout", (e) => { if (e.target.closest(".opt-say")) clearTimeout(sayHover); });
+  $("#panel").addEventListener("mouseout", (e) => { if (e.target.closest(".sw")) clearTimeout(sayHover); });
 
   $("#toast").addEventListener("click", (e) => { if (e.target.closest("[data-action=undo]")) undo(); });
 

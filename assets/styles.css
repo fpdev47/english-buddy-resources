@@ -862,41 +862,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .resume-btn { flex: none; cursor: pointer; min-height: 40px; padding: 8px 18px; border-radius: 999px; border: 0; background: var(--lime); color: var(--teal-900); font: inherit; font-weight: 700; }
 
 /* ——— Listen inside exercises ——— */
-.opt-wrap { position: relative; display: inline-flex; }
-.opt.has-say { padding-right: 46px; }
-.opt-say, .q-say {
-  display: inline-grid; place-items: center; cursor: pointer; border: 0; padding: 0; background: transparent; color: var(--muted);
-}
-.opt-say { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 10px; }
-.opt-say svg, .q-say svg { width: 18px; height: 18px; }
-.q-say { width: 34px; height: 34px; margin-left: 4px; vertical-align: -9px; border-radius: 50%; background: var(--tag-bg); color: var(--brand); }
-.opt-say:focus-visible, .q-say:focus-visible { outline: 3px solid var(--green-600); outline-offset: 1px; }
-@media (hover: hover) { .opt-say:hover { color: var(--brand); background: var(--surface); } .q-say:hover { background: var(--lime); color: var(--teal-900); } }
-@media (max-width: 560px) { .opt-wrap { width: 100%; } }
+.q-say { display: inline-grid; place-items: center; cursor: pointer; border: 0; padding: 0; width: 34px; height: 34px; margin-left: 4px; vertical-align: -9px; border-radius: 50%; background: var(--tag-bg); color: var(--brand); }
+.q-say svg { width: 18px; height: 18px; }
+.q-say:focus-visible { outline: 3px solid var(--green-600); outline-offset: 1px; }
+@media (hover: hover) { .q-say:hover { background: var(--lime); color: var(--teal-900); } }
+/* Answered: options become «listen» buttons */
+.opt.done { cursor: pointer; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; }
+.opt.done svg { width: 16px; height: 16px; flex: none; opacity: .55; }
+.opt.done:active { transform: scale(.98); }
+@media (hover: hover) { .opt.done:hover svg { opacity: 1; } .opt.done.dim:hover { opacity: .8; } }
 
-/* ——— The student's Google Drive folder ——— */
-.drive-btn {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 6px 12px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--bg-soft); color: var(--brand); font-weight: 700; font-size: 13.5px; text-decoration: none; white-space: nowrap;
-}
-.drive-btn[hidden] { display: none; }
-.drive-btn svg { width: 18px; height: 18px; flex: none; }
-@media (hover: hover) { .drive-btn:hover { border-color: var(--brand); } }
-@media (max-width: 560px) { .drive-btn { width: 38px; height: 38px; padding: 0; justify-content: center; } .drive-btn span { display: none; } }
-.home-drive {
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; margin: 0 0 14px;
-  padding: 16px 20px; border-radius: 20px; text-decoration: none; color: var(--ink);
-  background: var(--tag-bg); border: 1px solid rgba(200, 228, 124, .6);
-}
-.home-drive .home-ico { background: var(--surface); }
-@media (hover: hover) { .home-drive:hover { border-color: var(--brand); } }
-@media (max-width: 760px) { .home-drive { padding: 14px 16px; gap: 14px; } }
-
-/* Narrow phones: everything in the header fits on one line */
-@media (max-width: 420px) {
-  .site-header .brand { font-size: 15px; gap: 6px; }
-  .nav-actions { gap: 6px; }
-  .theme-toggle { width: 38px; height: 38px; }
-  .site-header .lang-toggle button { min-width: 30px; padding: 5px 7px; }
-  .drive-btn { width: 36px; height: 36px; }
-}
+/* Words you can hear in the question */
+.sw { cursor: pointer; border-radius: 4px; transition: background .15s, color .15s; }
+.sw.on { background: var(--lime); color: var(--teal-900); }
+@media (hover: hover) { .sw:hover { background: var(--tag-bg); color: var(--brand); } }
