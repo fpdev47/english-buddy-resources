@@ -17,7 +17,7 @@
 window.YEB_TEACHER_WHATSAPP = "584242345232";
 
 window.YEB_ACCOUNTS = [
-  { user: "mary", name: "Mary", hash: "bc5a20262d815b420ba89cf9ec66dcd796ae639d5569e0f77ac151c05ad74f29" },
+  { user: "mary", name: "Mary", hash: "ec09d4e897128bd6e737410c63c8281d612713cea24a1d1da373d1ffb478b6a2" },
   { user: "jesus", name: "Jesus", nick: "Tito", hash: "8a1a7788798a073c4cc9d9939f50ec2d9f802c9972e473d315d0ad5fc3c14d07" },
   { user: "fabio", name: "Fabio", hash: "d29c18776f9b104b63409a0b617a4f4cbcb9fe8c512bd78d4abeb3bee5d1562b" }
 ];
