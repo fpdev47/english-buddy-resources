@@ -983,3 +983,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .bd-pages .bd-chip { display: none; }
   .bd-page { height: calc(100dvh - 120px); min-height: 380px; }
 }
+
+/* Board page: compact top (only the tabs) and the board as wide and tall as the window */
+.on-board .intro { padding: 10px 0; }
+.on-board .intro .hello, .on-board .intro h1, .on-board .intro .lead { display: none; }
+.on-board .modes { margin-top: 0; }
+.on-board .intro .container, .on-board .results .container { width: calc(100% - 24px); }
+.on-board .results { padding: 0 0 12px; }
+.on-board .bd-page { height: auto; min-height: 0; }
+.bd-mq { position: absolute; border: 1.5px solid #1c7ed6; background: rgba(28, 126, 214, .08); border-radius: 2px; }

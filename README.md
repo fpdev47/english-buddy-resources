@@ -193,6 +193,11 @@ Herramientas: seleccionar/mover (V), lápiz (P), texto S/M/L (T), post-its de 4 
 cuadros con esquinas redondeadas sin relleno, con relleno suave o sólido (R), líneas y flechas (L),
 imágenes (pegar una captura con Ctrl/⌘+V, arrastrar un archivo o el botón). 5 colores.
 Un toque sobre un texto o post-it ya seleccionado (o doble clic) permite escribir en él.
+Mientras escribes, selecciona unas palabras y elige un color o S/M/L: solo esas palabras cambian.
+Sin palabras seleccionadas (o con la caja seleccionada), el color y el tamaño cambian toda la caja.
+Selección múltiple como en el escritorio: arrastrar un rectángulo sobre la página vacía, Shift/⌘-clic
+para sumar o quitar, ⌘A para todo; luego mover, duplicar, cambiar color o borrar todo junto.
+En la pestaña Board solo quedan las pestañas arriba y la pizarra ocupa el resto de la ventana.
 Deshacer/rehacer, duplicar (⌘D), copiar/pegar elementos, borrar (Supr), flechas para mover.
 Varias páginas; **PDF** descarga todas las páginas (A4 horizontal), generado en el navegador sin librerías.
 

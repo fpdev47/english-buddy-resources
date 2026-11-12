@@ -199,6 +199,8 @@
     // Home: the four big cards replace the tabs
     $("#modes").style.display = state.mode === "inicio" ? "none" : "";
     document.documentElement.classList.toggle("on-home", state.mode === "inicio");
+    // The board takes the whole page: only the tabs stay on top, to jump to other sections
+    document.documentElement.classList.toggle("on-board", state.mode === "pizarra");
   }
   $("#modes").addEventListener("click", (e) => {
     const b = e.target.closest(".mode-btn");

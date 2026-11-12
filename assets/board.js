@@ -53,7 +53,9 @@
   const W = 1400, H = 990;   // one page (A4 landscape proportions)
   const COLORS = ["#1f2937", "#e03131", "#1c7ed6", "#2f9e44", "#f08c00"];
   const NOTES = ["#fff3a3", "#ffd6e0", "#d3f9d8", "#d0ebff"];
-  const SIZES = { s: 22, m: 32, l: 48 };
+  const SIZES = { s: 22, m: 32, l: 48 }, NOTE_SIZES = { s: 18, m: 24, l: 34 };
+  const NOTE_INK = "#1f2937";
+  const sizeOf = (it, k) => (it.t === "note" ? NOTE_SIZES : SIZES)[k] || (it.t === "note" ? NOTE_SIZES : SIZES).m;
   const WIDTHS = { thin: 4, thick: 9 };
   const BODY = '"Plus Jakarta Sans", system-ui, sans-serif', HEAD = '"Poppins", system-ui, sans-serif';
   const KEY = "yeb-board", WIN_KEY = "yeb-board-win";
@@ -99,13 +101,13 @@
     endEdit(true);
     to.push(snap());
     doc.pages[doc.page].items = JSON.parse(from.pop());
-    if (sel && !find(sel)) sel = null;
+    selSet = new Set([...selSet].filter((id) => find(id)));
     save(); draw();
   }
 
   // ——— Tool state ———
   let tool = "select", color = COLORS[0], fill = "none", size = "m", noteBg = NOTES[0], arrow = false, width = "thin";
-  let sel = null, editing = null, editBefore = null, focused = false, clip = null;
+  let selSet = new Set(), editing = null, editBefore = null, focused = false, clip = null;
 
   // ——— DOM ———
   const root = document.createElement("div");
@@ -160,11 +162,19 @@
     ["rect", "M7 4h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"],
     ["line", "M5 19 19 5"]
   ];
-  function current() { return sel ? find(sel) : null; }
+  // Selection: one or several items (Shift/⌘-click, or drag a rectangle over the empty page)
+  const selItems = () => items().filter((i) => selSet.has(i.id));
+  const selectOnly = (id) => { selSet = new Set(id ? [id] : []); };
+  function current() { return selSet.size === 1 ? find([...selSet][0]) || null : null; }
+  const translate = (it, o, dx, dy) => {
+    if (it.t === "line") { it.x1 = Math.round(o.x1 + dx); it.y1 = Math.round(o.y1 + dy); it.x2 = Math.round(o.x2 + dx); it.y2 = Math.round(o.y2 + dy); }
+    else if (it.t === "pen") it.pts = o.pts.map((q) => [Math.round((q[0] + dx) * 10) / 10, Math.round((q[1] + dy) * 10) / 10]);
+    else { it.x = Math.round(o.x + dx); it.y = Math.round(o.y + dy); }
+  };
   // Which options to show: the selected item's, or the active tool's
   function kind() {
     const it = current();
-    return it ? it.t : tool;
+    return it ? it.t : selSet.size > 1 ? "multi" : tool;
   }
   function renderBar() {
     const it = current(), k = kind();
@@ -172,13 +182,13 @@
     const chip = (act, val, label, on) => `<button type="button" class="bd-chip${on ? " on" : ""}" data-act="${act}" data-v="${val}">${esc(label)}</button>`;
     let opts = "";
     const cur = (prop, fallback) => (it && it[prop] !== undefined ? it[prop] : fallback);
-    if (k !== "note" && k !== "img") {
-      const c = cur("color", color);
+    if (k !== "img") {
+      const c = cur("color", k === "note" ? NOTE_INK : color);
       opts += `<span class="bd-sep"></span>` + COLORS.map((x) => `<button type="button" class="bd-c${x === c ? " on" : ""}" data-act="color" data-v="${x}" style="--c:${x}" aria-label="${x}"></button>`).join("");
     }
     if (k === "note") opts += `<span class="bd-sep"></span>` + NOTES.map((x) => `<button type="button" class="bd-c sq${x === cur("bg", noteBg) ? " on" : ""}" data-act="bg" data-v="${x}" style="--c:${x}" aria-label="${x}"></button>`).join("");
     if (k === "rect") { const f = cur("fill", fill); opts += `<span class="bd-sep"></span>${chip("fill", "none", tx("outline"), f === "none")}${chip("fill", "tint", tx("tint"), f === "tint")}${chip("fill", "solid", tx("solid"), f === "solid")}`; }
-    if (k === "text") { const s = cur("size", size); opts += `<span class="bd-sep"></span>${chip("size", "s", "S", s === "s")}${chip("size", "m", "M", s === "m")}${chip("size", "l", "L", s === "l")}`; }
+    if (k === "text" || k === "note") { const s = cur("size", k === "note" ? "m" : size); opts += `<span class="bd-sep"></span>${chip("size", "s", "S", s === "s")}${chip("size", "m", "M", s === "m")}${chip("size", "l", "L", s === "l")}`; }
     if (k === "pen" || k === "line") { const w = cur("w", width); opts += `<span class="bd-sep"></span>${chip("width", "thin", tx("thin"), w === "thin")}${chip("width", "thick", tx("thick"), w === "thick")}`; }
     if (k === "line") opts += chip("arrow", "1", tx("arrow"), cur("arrow", arrow));
     bar.innerHTML = `
@@ -187,8 +197,8 @@
       <div class="bd-acts">
         ${b("undo", tx("undo"), ico("M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"), false, undo.length ? "" : " disabled")}
         ${b("redo", tx("redo"), ico("M15 14l5-5-5-5M20 9H9a5 5 0 0 0 0 10h3"), false, redo.length ? "" : " disabled")}
-        ${b("dup", tx("dup"), ico("M8 8h12v12H8zM4 16V4h12"), false, it ? "" : " disabled")}
-        ${b("del", tx("del"), ico("M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"), false, it ? "" : " disabled")}
+        ${b("dup", tx("dup"), ico("M8 8h12v12H8zM4 16V4h12"), false, selSet.size ? "" : " disabled")}
+        ${b("del", tx("del"), ico("M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"), false, selSet.size ? "" : " disabled")}
         <button type="button" class="bd-pdf" data-act="pdf" title="${esc(tx("pdfLong"))}">${ico("M12 4v11M7 10l5 5 5-5M5 20h14")}<span>${tx("pdf")}</span></button>
       </div>`;
     stage.dataset.tool = tool;
@@ -220,7 +230,25 @@
   }
 
   // ——— Drawing ———
-  const fontFor = (it) => it.size === "l" ? `700 ${SIZES.l}px ${HEAD}` : `500 ${SIZES[it.size] || SIZES.m}px ${BODY}`;
+  const fontFor = (it) => it.size === "l" ? `700 ${sizeOf(it, "l")}px ${HEAD}` : `500 ${sizeOf(it, it.size || "m")}px ${BODY}`;
+  const plainHTML = (text) => esc(text || "").replace(/\n/g, "<br>");
+  // Rich text inside texts and post-its: only line breaks and spans with a color and/or a size survive
+  function clean(html, strip = {}) {
+    const box = document.createElement("div");
+    box.innerHTML = html || "";
+    const walk = (node) => [...node.childNodes].map((n) => {
+      if (n.nodeType === 3) return esc(n.nodeValue);
+      if (n.nodeName === "BR") return "<br>";
+      if (n.nodeType !== 1) return "";
+      const inner = walk(n);
+      if (n.nodeName === "DIV" || n.nodeName === "P") return `<div>${inner || "<br>"}</div>`;
+      const c = strip.color ? "" : n.style.color || n.getAttribute("color") || "";
+      const f = strip.size ? "" : n.style.fontSize || "";
+      const css = (/^(#[0-9a-f]{3,8}|rgba?\([\d,.\s]+\))$/i.test(c) ? `color:${c};` : "") + (/^\d+(\.\d+)?px$/.test(f) ? `font-size:${f};` : "");
+      return css ? `<span style="${css}">${inner}</span>` : inner;
+    }).join("");
+    return walk(box);
+  }
   const fillFor = (it) => it.fill === "solid" ? it.color : it.fill === "tint" ? it.color + "2e" : "transparent";
   function arrowHead(it) {
     const a = Math.atan2(it.y2 - it.y1, it.x2 - it.x1), lw = WIDTHS[it.w] || 4, len = 16 + lw * 2.2;
@@ -249,11 +277,13 @@
   function update(el, it) {
     const box = (h = true) => { el.style.left = it.x + "px"; el.style.top = it.y + "px"; el.style.width = it.w + "px"; if (h) el.style.height = it.h + "px"; };
     if (it.t === "text") {
-      box(false); el.style.font = fontFor(it); el.style.color = it.color;
-      if (editing !== it.id) el.textContent = it.text || "";
+      box(false); el.style.font = fontFor(it); el.style.lineHeight = "1.3"; el.style.color = it.color;
+      if (editing !== it.id) el.innerHTML = it.html !== undefined ? it.html : plainHTML(it.text);
     } else if (it.t === "note") {
       box(); el.style.background = it.bg;
-      if (editing !== it.id) el.firstChild.textContent = it.text || "";
+      const t = el.firstChild;
+      t.style.font = fontFor(it); t.style.lineHeight = "1.3"; t.style.color = it.color || NOTE_INK;
+      if (editing !== it.id) t.innerHTML = it.html !== undefined ? it.html : plainHTML(it.text);
     } else if (it.t === "rect") {
       box(); el.style.borderColor = it.color; el.style.background = fillFor(it);
     } else if (it.t === "img") {
@@ -286,22 +316,26 @@
       const x = Math.min(...xs), y = Math.min(...ys);
       return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y };
     }
-    if (it.t === "text") { const el = els.get(it.id); return { x: it.x, y: it.y, w: it.w, h: el ? el.offsetHeight : SIZES.m * 1.3 }; }
+    if (it.t === "text") { const el = els.get(it.id); return { x: it.x, y: it.y, w: it.w, h: el ? el.offsetHeight : sizeOf(it, it.size || "m") * 1.3 }; }
     return { x: it.x, y: it.y, w: it.w, h: it.h };
   }
   function drawSel() {
     ov.innerHTML = "";
-    els.forEach((el, id) => el.classList.toggle("sel", id === sel));
+    els.forEach((el, id) => el.classList.toggle("sel", selSet.has(id)));
+    const pad = 6 / scale, hs = 16 / scale;
+    const outline = (b) => `<span class="bd-box" style="left:${b.x - pad}px;top:${b.y - pad}px;width:${b.w + pad * 2}px;height:${b.h + pad * 2}px;border-width:${1.5 / scale}px"></span>`;
+    const marquee = drag && drag.type === "marquee" && drag.rect;
+    const mq = marquee ? `<span class="bd-mq" style="left:${marquee.x}px;top:${marquee.y}px;width:${marquee.w}px;height:${marquee.h}px;border-width:${1.5 / scale}px"></span>` : "";
     const it = current();
-    if (!it) return;
-    const hs = 16 / scale, pad = 6 / scale, b = bbox(it);
+    if (!it) { ov.innerHTML = selItems().map((x) => outline(bbox(x))).join("") + mq; return; }
+    const b = bbox(it);
     const handle = (name, x, y) => `<span class="bd-h" data-h="${name}" style="left:${x - hs / 2}px;top:${y - hs / 2}px;width:${hs}px;height:${hs}px;border-width:${2 / scale}px"></span>`;
     let html = "";
-    if (it.t !== "line") html += `<span class="bd-box" style="left:${b.x - pad}px;top:${b.y - pad}px;width:${b.w + pad * 2}px;height:${b.h + pad * 2}px;border-width:${1.5 / scale}px"></span>`;
+    if (it.t !== "line") html += outline(b);
     if (it.t === "line") html += handle("p1", it.x1, it.y1) + handle("p2", it.x2, it.y2);
     else if (it.t === "text") html += handle("e", b.x + b.w + pad, b.y + b.h / 2);
     else if (it.t !== "pen") html += handle("se", b.x + b.w + pad, b.y + b.h + pad);
-    ov.innerHTML = html;
+    ov.innerHTML = html + mq;
   }
   function fit() {
     const r = stage.getBoundingClientRect();
@@ -320,7 +354,7 @@
     const it = find(id), el = els.get(id);
     if (!it || !el || (it.t !== "text" && it.t !== "note")) return;
     endEdit();
-    editing = id; sel = id; editBefore = before || snap();
+    editing = id; selectOnly(id); editBefore = before || snap();
     const target = it.t === "note" ? el.firstChild : el;
     target.contentEditable = "true";
     target.focus();
@@ -336,8 +370,9 @@
       const target = it.t === "note" ? el.firstChild : el;
       target.contentEditable = "false";
       it.text = target.innerText.replace(/\n+$/, "");
+      it.html = it.text.trim() ? clean(target.innerHTML) : "";
       // An empty text box disappears; an empty post-it stays (it is still a sticky note)
-      if (it.t === "text" && !it.text.trim()) { doc.pages[doc.page].items = items().filter((x) => x.id !== id); if (sel === id) sel = null; }
+      if (it.t === "text" && !it.text.trim()) { doc.pages[doc.page].items = items().filter((x) => x.id !== id); selSet.delete(id); }
     }
     if (editBefore !== null && editBefore !== snap()) checkpoint(editBefore);
     editBefore = null;
@@ -352,6 +387,40 @@
     document.execCommand("insertText", false, e.clipboardData.getData("text/plain"));
   });
   layer.addEventListener("input", () => { if (editing) drawSel(); });
+
+  // Words selected while typing can get their own color and size
+  let lastRange = null;
+  const editTarget = () => { const it = editing && find(editing), el = it && els.get(it.id); return it && el ? (it.t === "note" ? el.firstChild : el) : null; };
+  document.addEventListener("selectionchange", () => {
+    const t = editTarget(), s = getSelection();
+    if (t && s.rangeCount && t.contains(s.anchorNode)) lastRange = s.getRangeAt(0).cloneRange();
+  });
+  function applyInline(prop, value) {
+    const t = editTarget(), it = editing && find(editing);
+    if (!t || !lastRange || lastRange.collapsed || !t.contains(lastRange.commonAncestorContainer)) return false;
+    t.focus();
+    const s = getSelection(); s.removeAllRanges(); s.addRange(lastRange);
+    document.execCommand("styleWithCSS", false, false);
+    document.execCommand(prop === "color" ? "foreColor" : "fontSize", false, prop === "color" ? value : "7");
+    const made = [];
+    t.querySelectorAll(prop === "color" ? "font[color]" : 'font[size="7"]').forEach((f) => {
+      const sp = document.createElement("span");
+      if (prop === "color") sp.style.color = f.getAttribute("color"); else sp.style.fontSize = sizeOf(it, value) + "px";
+      sp.append(...f.childNodes);
+      f.replaceWith(sp);
+      // The new choice wins over older ones inside the selection
+      sp.querySelectorAll("span,font").forEach((d) => { if (prop === "color") { d.style.color = ""; d.removeAttribute("color"); } else d.style.fontSize = ""; });
+      made.push(sp);
+    });
+    if (made.length) {
+      const r = document.createRange(); r.setStartBefore(made[0]); r.setEndAfter(made[made.length - 1]);
+      s.removeAllRanges(); s.addRange(r); lastRange = r.cloneRange();
+    }
+    drawSel();
+    return true;
+  }
+  // Toolbar buttons don't take the caret away from the text being typed
+  bar.addEventListener("mousedown", (e) => { if (editing && e.target.closest("button")) e.preventDefault(); });
 
   // ——— Pointer work on the page ———
   const pt = (e) => { const r = sheet.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; };
@@ -369,22 +438,31 @@
     // Whatever had the keyboard (an exercise box, the title) lets go, so shortcuts reach the board
     const ae = document.activeElement;
     if (ae && ae !== document.body && ae.blur) ae.blur();
-    stage.setPointerCapture(e.pointerId);
+    try { stage.setPointerCapture(e.pointerId); } catch (x) {}
     const before = snap();
     if (tool === "select") {
+      const add = e.shiftKey || e.metaKey || e.ctrlKey;
       if (handle && current()) { drag = { type: "handle", h: handle.dataset.h, start: p, orig: clone(current()), before }; return; }
       if (hitId) {
-        const wasSel = sel === hitId;
-        sel = hitId; drawSel(); renderBar();
-        drag = { type: "move", start: p, orig: clone(find(hitId)), before, wasSel, sx: e.clientX, sy: e.clientY, moved: false };
+        const wasOnly = selSet.size === 1 && selSet.has(hitId);
+        if (add) {
+          // Shift/⌘-click adds or removes one item, like on a desktop
+          if (selSet.has(hitId)) { selSet.delete(hitId); drawSel(); renderBar(); return; }
+          selSet.add(hitId);
+        } else if (!selSet.has(hitId)) selectOnly(hitId);
+        drawSel(); renderBar();
+        drag = { type: "move", start: p, orig: selItems().map(clone), before, wasOnly, sx: e.clientX, sy: e.clientY, moved: false };
         return;
       }
-      sel = null; drawSel(); renderBar();
+      // Empty page: drag a rectangle to select several items
+      drag = { type: "marquee", start: p, base: add ? new Set(selSet) : new Set(), rect: null };
+      if (!add) selectOnly(null);
+      drawSel(); renderBar();
       return;
     }
     if (tool === "pen") {
       const it = { id: uid(), t: "pen", pts: [[p.x, p.y]], color, w: width };
-      items().push(it); sel = null;
+      items().push(it); selectOnly(null);
       drag = { type: "pen", it, before };
       draw();
       return;
@@ -402,14 +480,14 @@
     }
     if (tool === "rect") {
       const it = { id: uid(), t: "rect", x: p.x, y: p.y, w: 0, h: 0, color, fill };
-      items().push(it); sel = it.id;
+      items().push(it); selectOnly(it.id);
       drag = { type: "rect", it, start: p, before };
       draw();
       return;
     }
     if (tool === "line") {
       const it = { id: uid(), t: "line", x1: p.x, y1: p.y, x2: p.x, y2: p.y, color, w: width, arrow };
-      items().push(it); sel = it.id;
+      items().push(it); selectOnly(it.id);
       drag = { type: "line", it, before };
       draw();
     }
@@ -440,16 +518,26 @@
       update(els.get(it.id), it); drawSel();
       return;
     }
-    const it = current();
-    if (!it) return;
-    const dx = p.x - d.start.x, dy = p.y - d.start.y, o = d.orig;
+    const dx = p.x - d.start.x, dy = p.y - d.start.y;
+    if (d.type === "marquee") {
+      const r = { x: Math.min(p.x, d.start.x), y: Math.min(p.y, d.start.y), w: Math.abs(dx), h: Math.abs(dy) };
+      d.rect = r;
+      // Everything the rectangle touches is selected
+      selSet = new Set(d.base);
+      items().forEach((x) => { const b = bbox(x); if (b.x <= r.x + r.w && b.x + b.w >= r.x && b.y <= r.y + r.h && b.y + b.h >= r.y) selSet.add(x.id); });
+      drawSel();
+      return;
+    }
     if (d.type === "move") {
       if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 4) return;
       d.moved = true;
-      if (it.t === "line") { it.x1 = Math.round(o.x1 + dx); it.y1 = Math.round(o.y1 + dy); it.x2 = Math.round(o.x2 + dx); it.y2 = Math.round(o.y2 + dy); }
-      else if (it.t === "pen") it.pts = o.pts.map((q) => [q[0] + dx, q[1] + dy]);
-      else { it.x = Math.round(o.x + dx); it.y = Math.round(o.y + dy); }
-    } else if (d.type === "handle") {
+      d.orig.forEach((o) => { const it = find(o.id); if (it) { translate(it, o, dx, dy); update(els.get(it.id), it); } });
+      drawSel();
+      return;
+    }
+    const it = current(), o = d.orig;
+    if (!it) return;
+    if (d.type === "handle") {
       if (d.h === "p1") { it.x1 = Math.round(o.x1 + dx); it.y1 = Math.round(o.y1 + dy); }
       else if (d.h === "p2") { it.x2 = Math.round(o.x2 + dx); it.y2 = Math.round(o.y2 + dy); }
       else if (d.h === "e") it.w = Math.max(80, Math.round(o.w + dx));
@@ -468,10 +556,11 @@
     if (d.type === "rect" && (d.it.w < 12 || d.it.h < 12)) Object.assign(d.it, { w: 260, h: 160 }, place(d.start.x - 130, d.start.y - 80, 260, 160));
     if (d.type === "line" && Math.hypot(d.it.x2 - d.it.x1, d.it.y2 - d.it.y1) < 10) { d.it.x2 = d.it.x1 + 220; }
     if (d.type === "rect" || d.type === "line") setTool("select");
+    if (d.type === "marquee") { drawSel(); renderBar(); return; }
     // A second tap on a text or post-it that was already selected starts typing
     if (d.type === "move" && !d.moved) {
       const it = current();
-      if (d.wasSel && it && (it.t === "text" || it.t === "note")) { startEdit(it.id); return; }
+      if (d.wasOnly && it && (it.t === "text" || it.t === "note")) { startEdit(it.id); return; }
       return;
     }
     if (d.before !== snap()) { checkpoint(d.before); save(); }
@@ -485,47 +574,67 @@
   });
 
   // ——— Toolbar and footer actions ———
-  function setTool(t) { tool = t; if (t !== "select") sel = null; drawSel(); renderBar(); }
+  function setTool(t) { tool = t; if (t !== "select") selectOnly(null); drawSel(); renderBar(); }
+  // Applies an option (color, fill…) to every selected item that has it
   function changeSelected(prop, value) {
-    const it = current();
-    if (!it || it[prop] === undefined && !(prop === "arrow" && it.t === "line")) return false;
-    checkpoint(); it[prop] = value; save(); draw();
+    const list = selItems().filter((it) => it[prop] !== undefined || (prop === "arrow" && it.t === "line") || (it.t === "note" && (prop === "color" || prop === "size")));
+    if (!list.length) return false;
+    checkpoint();
+    list.forEach((it) => {
+      it[prop] = value;
+      // Changing the whole box also resets words that had their own color/size
+      if ((prop === "color" || prop === "size") && it.html) it.html = clean(it.html, { [prop]: true });
+    });
+    save(); draw();
+    return true;
+  }
+  // No words selected while typing: the option applies to the whole box, and typing goes on
+  function wholeWhileEditing(prop, value) {
+    const t = editTarget(), it = editing && find(editing);
+    if (!t) return false;
+    it[prop] = value;
+    t.innerHTML = clean(t.innerHTML, { [prop]: true });
+    update(els.get(it.id), it);
+    t.focus();
+    const r = document.createRange(); r.selectNodeContents(t); r.collapse(false);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    drawSel(); renderBar();
     return true;
   }
   function removeSelected() {
-    if (!sel) return;
+    if (!selSet.size) return;
     checkpoint();
-    doc.pages[doc.page].items = items().filter((i) => i.id !== sel);
-    sel = null; save(); draw();
+    doc.pages[doc.page].items = items().filter((i) => !selSet.has(i.id));
+    selectOnly(null); save(); draw();
   }
-  function duplicate(src, offset = 30) {
-    const it = clone(src); it.id = uid();
-    if (it.t === "line") { it.x1 += offset; it.y1 += offset; it.x2 += offset; it.y2 += offset; }
-    else if (it.t === "pen") it.pts = it.pts.map((q) => [q[0] + offset, q[1] + offset]);
-    else { it.x += offset; it.y += offset; }
-    checkpoint(); items().push(it); sel = it.id; save(); draw();
+  function duplicate(list, offset = 30) {
+    if (!list.length) return;
+    checkpoint();
+    const copies = list.map((src) => { const it = clone(src); it.id = uid(); translate(it, src, offset, offset); return it; });
+    items().push(...copies);
+    selSet = new Set(copies.map((c) => c.id)); save(); draw();
   }
   function goPage(n) {
     endEdit(true);
     doc.page = Math.min(Math.max(0, n), doc.pages.length - 1);
-    sel = null; undo = []; redo = []; save(); draw();
+    selectOnly(null); undo = []; redo = []; save(); draw();
   }
   root.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
     if (!b || b.disabled) return;
     const a = b.dataset.act, v = b.dataset.v;
     if (a === "tool") { endEdit(); setTool(v); }
-    else if (a === "color") { color = v; changeSelected("color", v) || renderBar(); }
+    else if (a === "color") { color = v; if (editing && applyInline("color", v)) return; wholeWhileEditing("color", v) || changeSelected("color", v) || renderBar(); }
     else if (a === "bg") { noteBg = v; changeSelected("bg", v) || renderBar(); }
     else if (a === "fill") { fill = v; changeSelected("fill", v) || renderBar(); }
-    else if (a === "size") { size = v; changeSelected("size", v) || renderBar(); }
+    else if (a === "size") { size = v; if (editing && applyInline("size", v)) return; wholeWhileEditing("size", v) || changeSelected("size", v) || renderBar(); }
     else if (a === "width") { width = v; changeSelected("w", v) || renderBar(); }
     else if (a === "arrow") { const it = current(); arrow = !(it && it.t === "line" ? it.arrow : arrow); changeSelected("arrow", arrow) || renderBar(); }
     else if (a === "image") fileIn.click();
     else if (a === "undo") restore(undo, redo);
     else if (a === "redo") restore(redo, undo);
     else if (a === "del") removeSelected();
-    else if (a === "dup") { const it = current(); if (it) duplicate(it); }
+    else if (a === "dup") duplicate(selItems());
     else if (a === "pdf") exportPdf();
     else if (a === "prev") goPage(doc.page - 1);
     else if (a === "next") goPage(doc.page + 1);
@@ -536,7 +645,7 @@
     }
     else if (a === "newboard") {
       if (!confirm(tx("newQ"))) return;
-      endEdit(true); doc = newDoc(); sel = null; undo = []; redo = []; save(true); draw();
+      endEdit(true); doc = newDoc(); selectOnly(null); undo = []; redo = []; save(true); draw();
     }
   });
   titleIn.addEventListener("input", () => { doc.title = titleIn.value; save(); });
@@ -571,6 +680,7 @@
     endEdit(true);
     const before = snap();
     let off = 0;
+    selectOnly(null);
     for (const f of files) {
       let r;
       try { r = await shrink(f); } catch (e) { continue; }
@@ -579,7 +689,7 @@
       const k = Math.min(1, 760 / r.w, 560 / r.h), w = Math.round(r.w * k), h = Math.round(r.h * k);
       const pos = place((at ? at.x : W / 2) - w / 2 + off, (at ? at.y : H / 2) - h / 2 + off, w, h);
       const it = { id: uid(), t: "img", src: id, x: pos.x, y: pos.y, w, h };
-      items().push(it); sel = it.id; off += 30;
+      items().push(it); selSet.add(it.id); off += 30;
     }
     setTool("select");
     checkpoint(before); save(); draw();
@@ -607,19 +717,18 @@
     const mod = e.metaKey || e.ctrlKey, k = e.key.toLowerCase();
     if (mod && k === "z") { e.preventDefault(); e.shiftKey ? restore(redo, undo) : restore(undo, redo); }
     else if (mod && k === "y") { e.preventDefault(); restore(redo, undo); }
-    else if (mod && k === "d") { e.preventDefault(); const it = current(); if (it) duplicate(it); }
+    else if (mod && k === "d") { e.preventDefault(); duplicate(selItems()); }
+    else if (mod && k === "a") { e.preventDefault(); setTool("select"); selSet = new Set(items().map((i) => i.id)); drawSel(); renderBar(); }
     else if (mod) return;
-    else if ((e.key === "Delete" || e.key === "Backspace") && sel) { e.preventDefault(); removeSelected(); }
-    else if (e.key === "Escape") { sel = null; setTool("select"); }
-    else if (e.key === "Enter" && sel) { const it = current(); if (it.t === "text" || it.t === "note") { e.preventDefault(); startEdit(it.id); } }
-    else if (e.key.startsWith("Arrow") && sel) {
+    else if ((e.key === "Delete" || e.key === "Backspace") && selSet.size) { e.preventDefault(); removeSelected(); }
+    else if (e.key === "Escape") { selectOnly(null); setTool("select"); }
+    else if (e.key === "Enter" && current()) { const it = current(); if (it.t === "text" || it.t === "note") { e.preventDefault(); startEdit(it.id); } }
+    else if (e.key.startsWith("Arrow") && selSet.size) {
       e.preventDefault();
-      const it = current(), step = e.shiftKey ? 10 : 2;
+      const step = e.shiftKey ? 10 : 2;
       const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0, dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
       checkpoint();
-      if (it.t === "line") { it.x1 += dx; it.x2 += dx; it.y1 += dy; it.y2 += dy; }
-      else if (it.t === "pen") it.pts = it.pts.map((q) => [q[0] + dx, q[1] + dy]);
-      else { it.x += dx; it.y += dy; }
+      selItems().forEach((it) => translate(it, clone(it), dx, dy));
       save(); draw();
     }
     else {
@@ -628,12 +737,12 @@
     }
   });
   document.addEventListener("copy", (e) => {
-    if (!active() || editing || !sel) return;
-    const it = current();
-    clip = { item: clone(it), text: it.text || "" };
+    if (!active() || editing || !selSet.size) return;
+    const list = selItems().map(clone);
+    clip = { items: list, text: list.map((i) => i.text || "").filter(Boolean).join("\n") };
     e.preventDefault();
     e.clipboardData.setData("text/plain", clip.text);
-    e.clipboardData.setData("application/x-yeb-board", JSON.stringify(it));
+    e.clipboardData.setData("application/x-yeb-board", JSON.stringify(list));
   });
   document.addEventListener("paste", (e) => {
     if (!active() || editing) return;
@@ -643,34 +752,62 @@
     const text = e.clipboardData.getData("text/plain");
     let mine = null;
     try { mine = JSON.parse(e.clipboardData.getData("application/x-yeb-board") || "null"); } catch (x) {}
-    if (!mine && clip && text === clip.text) mine = clip.item;
-    if (mine) { duplicate(mine, 40); return; }
+    if (!mine && clip && text === clip.text) mine = clip.items;
+    if (mine) { duplicate([].concat(mine), 40); return; }
     if (!text.trim()) return;
     const before = snap();
     const it = { id: uid(), t: "text", x: 80, y: 80, w: 600, text: text.trim(), color, size: "s" };
-    items().push(it); sel = it.id; checkpoint(before); save(); draw();
+    items().push(it); selectOnly(it.id); checkpoint(before); save(); draw();
   });
 
   // ——— PDF (made in the browser: one image per page) ———
-  function wrapLines(ctx, text, maxW) {
-    const out = [];
-    String(text || "").split("\n").forEach((para) => {
-      let line = "";
-      para.split(/(\s+)/).forEach((word) => {
-        if (!word) return;
-        const tryLine = line + word;
-        if (ctx.measureText(tryLine).width <= maxW || !line.trim()) {
-          if (ctx.measureText(tryLine).width > maxW && !/^\s+$/.test(word)) {
-            // A single word longer than the box breaks by letters
-            let part = line;
-            for (const ch of word) { if (ctx.measureText(part + ch).width > maxW && part) { out.push(part); part = ch; } else part += ch; }
-            line = part;
-          } else line = tryLine;
-        } else { out.push(line.replace(/\s+$/, "")); line = /^\s+$/.test(word) ? "" : word; }
-      });
-      out.push(line.replace(/\s+$/, ""));
+  // Rich text → tokens {s, px, color} and line breaks, like the browser shows them
+  function tokensOf(it, basePx, baseColor) {
+    const out = [], box = document.createElement("div");
+    box.innerHTML = it.html !== undefined ? it.html : plainHTML(it.text);
+    const lastBr = () => !out.length || out[out.length - 1].br;
+    const walk = (node, st) => node.childNodes.forEach((n) => {
+      if (n.nodeType === 3) { if (n.nodeValue) out.push({ s: n.nodeValue, ...st }); return; }
+      if (n.nodeName === "BR") { out.push({ br: true }); return; }
+      if (n.nodeType !== 1) return;
+      const block = n.nodeName === "DIV" || n.nodeName === "P";
+      if (block && !lastBr()) out.push({ br: true });
+      walk(n, { px: n.style.fontSize ? parseFloat(n.style.fontSize) : st.px, color: n.style.color || st.color });
+      if (block && !lastBr()) out.push({ br: true });
     });
+    walk(box, { px: basePx, color: baseColor });
+    while (out.length && out[out.length - 1].br) out.pop();
     return out;
+  }
+  function drawRich(ctx, it, x, y, maxW) {
+    const basePx = sizeOf(it, it.size || "m"), weight = it.size === "l" ? 700 : 500, fam = it.size === "l" ? HEAD : BODY;
+    const font = (px) => `${weight} ${px}px ${fam}`;
+    const lines = [{ runs: [], w: 0, px: 0 }];
+    const nl = () => lines.push({ runs: [], w: 0, px: 0 });
+    const add = (str, tk) => {
+      ctx.font = font(tk.px);
+      const L = lines[lines.length - 1], w = ctx.measureText(str).width, space = /^\s+$/.test(str);
+      if (space && !L.runs.length && lines.length > 1) return;
+      if (!space && L.w + w > maxW && L.runs.length) { nl(); return add(str, tk); }
+      if (!space && w > maxW) {   // a word longer than the box breaks by letters
+        let part = "";
+        for (const ch of str) { if (ctx.measureText(part + ch).width > maxW && part) { add(part, tk); nl(); part = ch; } else part += ch; }
+        if (part) add(part, tk);
+        return;
+      }
+      L.runs.push({ s: str, x: L.w, px: tk.px, color: tk.color }); L.w += w; L.px = Math.max(L.px, tk.px);
+    };
+    tokensOf(it, basePx, it.t === "note" ? it.color || NOTE_INK : it.color).forEach((tk) => {
+      if (tk.br) { nl(); return; }
+      tk.s.split(/(\s+)/).forEach((p) => p && add(p, tk));
+    });
+    ctx.textBaseline = "alphabetic";
+    let top = y;
+    lines.forEach((L) => {
+      const px = L.px || basePx, lh = px * 1.3, base = top + (lh - px) / 2 + px * 0.84;
+      L.runs.forEach((r) => { ctx.font = font(r.px); ctx.fillStyle = r.color; ctx.fillText(r.s, x + r.x, base); });
+      top += lh;
+    });
   }
   function roundRect(ctx, x, y, w, h, r) {
     r = Math.max(0, Math.min(r, w / 2, h / 2));
@@ -710,12 +847,9 @@
         roundRect(ctx, it.x, it.y, it.w, it.h, 6); ctx.fillStyle = it.bg; ctx.fill();
         ctx.shadowColor = "transparent";
         ctx.clip();
-        ctx.font = `500 24px ${BODY}`; ctx.fillStyle = "#1f2937"; ctx.textBaseline = "middle";
-        wrapLines(ctx, it.text, it.w - 36).forEach((ln, i) => ctx.fillText(ln, it.x + 18, it.y + 16 + 24 * 1.3 * (i + 0.5)));
+        drawRich(ctx, it, it.x + 18, it.y + 16, it.w - 36);
       } else if (it.t === "text") {
-        const px = SIZES[it.size] || SIZES.m;
-        ctx.font = fontFor(it); ctx.fillStyle = it.color; ctx.textBaseline = "middle";
-        wrapLines(ctx, it.text, it.w - 12).forEach((ln, i) => ctx.fillText(ln, it.x + 6, it.y + 4 + px * 1.3 * (i + 0.5)));
+        drawRich(ctx, it, it.x + 6, it.y + 4, it.w - 12);
       }
       ctx.restore();
     }
@@ -843,10 +977,20 @@
     if (on) hideWin();
     else if (root.parentNode && root.parentNode !== winBody) root.remove();
   };
+  // On its own page the board reaches the bottom of the window
+  let pageHost = null;
+  function fitHost() {
+    if (!pageHost || !pageHost.isConnected) return;
+    const top = pageHost.getBoundingClientRect().top + window.scrollY;
+    pageHost.style.height = Math.max(380, window.innerHeight - top - 12) + "px";
+  }
+  addEventListener("resize", fitHost);
   API.mountPage = (host) => {
     if (!host) return;
+    pageHost = host;
     host.appendChild(root);
-    requestAnimationFrame(fit);
+    fitHost();
+    requestAnimationFrame(() => { fitHost(); fit(); });
   };
 
   document.addEventListener("yeb:lang", renderLabels);
