@@ -992,3 +992,5 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .on-board .results { padding: 0 0 12px; }
 .on-board .bd-page { height: auto; min-height: 0; }
 .bd-mq { position: absolute; border: 1.5px solid #1c7ed6; background: rgba(28, 126, 214, .08); border-radius: 2px; }
+.bd-stage.wide { overflow-y: auto; scrollbar-gutter: stable; }
+.bd-spacer { width: 1px; pointer-events: none; }

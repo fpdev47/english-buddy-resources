@@ -107,6 +107,7 @@
 
   // ——— Tool state ———
   let tool = "select", color = COLORS[0], fill = "none", size = "m", noteBg = NOTES[0], arrow = false, width = "thin";
+  let pageHost = null;
   let selSet = new Set(), editing = null, editBefore = null, focused = false, clip = null;
 
   // ——— DOM ———
@@ -337,14 +338,22 @@
     else if (it.t !== "pen") html += handle("se", b.x + b.w + pad, b.y + b.h + pad);
     ov.innerHTML = html + mq;
   }
+  // In the floating window the whole page fits; on the Board tab (wide screens) the page uses the
+  // full width and the board scrolls down, so the editor is as large as possible
+  const spacer = document.createElement("div");
+  spacer.className = "bd-spacer";
+  stage.appendChild(spacer);
   function fit() {
     const r = stage.getBoundingClientRect();
     if (!r.width || !r.height) return;
-    const m = 12;
-    scale = Math.max(0.05, Math.min((r.width - m * 2) / W, (r.height - m * 2) / H));
+    const m = 12, wide = !!(pageHost && root.parentNode === pageHost && r.width >= 700);
+    stage.classList.toggle("wide", wide);
+    const cw = wide ? stage.clientWidth : r.width;
+    scale = wide ? Math.max(0.05, (cw - m * 2) / W) : Math.max(0.05, Math.min((r.width - m * 2) / W, (r.height - m * 2) / H));
     sheet.style.transform = `scale(${scale})`;
-    sheet.style.left = Math.round((r.width - W * scale) / 2) + "px";
-    sheet.style.top = Math.round((r.height - H * scale) / 2) + "px";
+    sheet.style.left = Math.round((cw - W * scale) / 2) + "px";
+    sheet.style.top = (wide ? m : Math.round((r.height - H * scale) / 2)) + "px";
+    spacer.style.height = wide ? Math.round(H * scale + m * 2) + "px" : "0";
     drawSel();
   }
   new ResizeObserver(fit).observe(stage);
@@ -428,6 +437,8 @@
   const place = (x, y, w, h) => ({ x: Math.round(Math.min(Math.max(x, 0), W - w)), y: Math.round(Math.min(Math.max(y, 0), H - h)) });
   stage.addEventListener("pointerdown", (e) => {
     if (e.button > 0) return;
+    // The scrollbar of the wide board keeps working
+    if (e.target === stage && e.clientX - stage.getBoundingClientRect().left > stage.clientWidth) return;
     const p = pt(e);
     const target = e.target.closest(".bd-it"), handle = e.target.closest(".bd-h");
     const hitId = target && target.dataset.id;
@@ -978,7 +989,6 @@
     else if (root.parentNode && root.parentNode !== winBody) root.remove();
   };
   // On its own page the board reaches the bottom of the window
-  let pageHost = null;
   function fitHost() {
     if (!pageHost || !pageHost.isConnected) return;
     const top = pageHost.getBoundingClientRect().top + window.scrollY;
