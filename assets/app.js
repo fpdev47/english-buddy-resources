@@ -15,6 +15,8 @@
 
   const EN = window.YEB_EN || { sections: {}, channels: {}, exercises: {} };
   const t = window.YEB_I18N ? window.YEB_I18N.t : (k) => k;
+  // Teacher-only board (assets/board.js); students get a stub that does nothing
+  const BOARD = window.YEB_BOARD || { enabled: false, mountPage() {}, pageMode() {} };
   const isEN = () => window.YEB_I18N && window.YEB_I18N.lang === "en";
 
   // Translated content (falls back to the original Spanish when a translation is missing)
@@ -159,6 +161,8 @@
       if (EXERCISES.some((x) => x.id === b)) state.exTopic = b;
     } else if (a === "progreso") {
       state.mode = "progreso";
+    } else if (a === "pizarra" && BOARD.enabled) {
+      state.mode = "pizarra";
     } else if (a === "leer") {
       state.mode = "leer";
       if (READINGS.some((x) => x.id === b)) state.readTopic = b;
@@ -168,10 +172,10 @@
     }
   }
   function writeHash() {
-    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "pizarra" ? "#pizarra" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
     // Remember the last place they studied, to offer it on the home screen
-    if (h && state.mode !== "progreso" && state.last !== h) { state.last = h; save(); }
+    if (h && state.mode !== "progreso" && state.mode !== "pizarra" && state.last !== h) { state.last = h; save(); }
   }
   readHash();
 
@@ -188,7 +192,9 @@
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
     $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : state.mode === "leer" ? t("topicsRead") : t("topicsListen");
     // The progress page has no topics row
-    const noTopics = state.mode === "progreso" || state.mode === "inicio";
+    const noTopics = state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra";
+    // The teacher's board: a full page here, or the floating window everywhere else
+    BOARD.pageMode(state.mode === "pizarra");
     $(".topics-label").style.display = $(".topics-wrap").style.display = noTopics ? "none" : "";
     // Home: the four big cards replace the tabs
     $("#modes").style.display = state.mode === "inicio" ? "none" : "";
@@ -203,7 +209,7 @@
 
   // ——— Topics row ———
   function renderTopics() {
-    if (state.mode === "progreso" || state.mode === "inicio") return;
+    if (state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra") return;
     let tiles;
     if (state.mode === "practicar") {
       // Only the current topic, plus a button that opens every topic grouped like the book
@@ -1121,7 +1127,8 @@
   function renderPanel() {
     stopSpeaking();
     hideGloss();
-    $("#panel").innerHTML = state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    $("#panel").innerHTML = state.mode === "pizarra" ? `<div class="bd-page" id="bd-host"></div>` : state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    if (state.mode === "pizarra") BOARD.mountPage($("#bd-host"));
     syncStuck(); spySection();
   }
 
@@ -1427,6 +1434,7 @@
         ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
         ${card("leer", TOPIC_ICONS.lectura, t("reading"), t("homeRead")(READINGS.length), rd && progress(rd).done && rd.id !== resumeId ? t("homeContinue")(rd.title, progress(rd).done, progress(rd).total) : "")}
         ${card("progreso", svg("M4 20V11M10 20V5M16 20v-6M3 20h18"), t("progressTab"), t("homeProgress"), student ? t("homeStreak")(n, fmtTime(totalMs())) : "")}
+        ${BOARD.enabled ? card("pizarra", svg("M3 5h18v11H3zM8 21l4-5 4 5M12 2v3"), t("boardTab"), t("homeBoard"), "") : ""}
       </div>`;
   }
 
@@ -1447,6 +1455,9 @@
   }
   $("#streak-chip").addEventListener("click", () => { state.mode = "progreso"; save(); writeHash(); render(); $("#results").scrollIntoView({ behavior: "smooth", block: "start" }); });
   $("#logout").addEventListener("click", async () => { await push(); CLOUD.logout(); });
+
+  // «Open as a full page» in the floating board
+  BOARD.openPage = () => { state.mode = "pizarra"; save(); writeHash(); render(); $("#modes").scrollIntoView({ behavior: "smooth", block: "start" }); };
 
   function render() {
     renderHello(); renderModes(); renderTopics(); renderPanel();

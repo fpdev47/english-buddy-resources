@@ -179,3 +179,22 @@ Luego abre http://localhost:5173.
 
 Publicado con GitHub Pages desde la rama `main`: cada cambio que subas se publica solo en uno o dos minutos.
 
+
+## Pizarra del profesor (solo cuentas con `teacher: true`)
+
+`assets/board.js`. Con la cuenta del profesor aparece:
+
+- la pestaña **Board / Pizarra** (`#pizarra`), a página completa, y una tarjeta en la pantalla de inicio;
+- un **botón redondo abajo a la derecha** que abre la misma pizarra en una ventana flotante encima de
+  cualquier ejercicio. La ventana se mueve arrastrando la barra, cambia de tamaño por las esquinas,
+  se agranda o achica con ⤢ y se esconde con −. «Abrir a página completa» lleva a la pestaña.
+
+Herramientas: seleccionar/mover (V), lápiz (P), texto S/M/L (T), post-its de 4 colores (N),
+cuadros con esquinas redondeadas sin relleno, con relleno suave o sólido (R), líneas y flechas (L),
+imágenes (pegar una captura con Ctrl/⌘+V, arrastrar un archivo o el botón). 5 colores.
+Un toque sobre un texto o post-it ya seleccionado (o doble clic) permite escribir en él.
+Deshacer/rehacer, duplicar (⌘D), copiar/pegar elementos, borrar (Supr), flechas para mover.
+Varias páginas; **PDF** descarga todas las páginas (A4 horizontal), generado en el navegador sin librerías.
+
+Se guarda en el navegador del profesor (`yeb-board`). Las imágenes se reducen a 1600 px; si el
+almacenamiento se llena, la pizarra lo avisa: descargar el PDF y empezar una pizarra nueva.
