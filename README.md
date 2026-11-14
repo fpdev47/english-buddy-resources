@@ -214,3 +214,10 @@ De dónde salen los datos:
 - **Con Supabase** (`assets/config.js` + `setup/supabase.sql`, que ya incluye las cuentas con sus hashes
   y la función `yeb_teacher_overview`): el progreso de todos, desde cualquier dispositivo.
 - **Sin Supabase**: solo lo guardado en el navegador donde se abre el panel (estudiantes que entraron ahí).
+
+## Clases de cada estudiante («My classes» / Students → Classes)
+
+- Los estudiantes con datos en `data/classes.js` ven la pestaña **My classes**: próxima clase (con botón «Join on Zoom» si hay enlace), días y horario, paquete usado/restante, lista de clases, temario y cómo cuentan las clases.
+- El profesor las edita en **Students → Classes**: enlace de Zoom, días, horario, tamaño del paquete, temario, estado/tema/nota de cada clase, «New package» (genera las fechas solas) y sesión opcional de dudas.
+- Estados: **done** (dada) · **missed** (faltó sin avisar, cuenta) · **moved** (avisó, se reprograma y no cuenta) · **scheduled** · **skipped**. Una clase programada cuya fecha ya pasó aparece como «To confirm». El número de clase se calcula solo.
+- Sin Supabase, los cambios se guardan en el navegador del profesor: usa **Export** para descargar `data/classes.js` y súbelo al repo para que los estudiantes los vean. Con Supabase conectado (sección 7 de `setup/supabase.sql`) se sincronizan solos.

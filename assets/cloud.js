@@ -88,6 +88,10 @@
     // Teacher dashboard: every student's progress (only works with a teacher account's password)
     teacherOverview() { return rpc("yeb_teacher_overview", { p_key: student.key }); },
 
+    // Classes (calendar, package, Zoom link): a student gets their own, the teacher gets everyone's
+    getClasses() { return rpc("yeb_get_classes", { p_key: student.key }); },
+    saveClasses(user, data) { return rpc("yeb_save_classes", { p_key: student.key, p_user: user, p_data: data }); },
+
     // The student's progress stays saved on this browser for the next time they log in
     logout() {
       try { localStorage.removeItem(SESSION); } catch (e) {}

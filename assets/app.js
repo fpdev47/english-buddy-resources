@@ -34,6 +34,9 @@
   const student = CLOUD && CLOUD.student;
   const syncing = !!(student && CLOUD.enabled);
   const STORE = student ? `yeb-state:${student.id}` : "yeb-state";
+  // Classes: calendar, package, syllabus and Zoom link (assets/classes.js + data/classes.js)
+  const CLASSES = window.YEB_CLASSES_UI || { has: () => false, studentHTML: () => "", mountTeacher() {}, refresh() {}, tab: () => "", editorTitle: () => "" };
+  const HAS_CLASSES = !TEACHER && !!(student && CLASSES.has(student.id));
 
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const TOPIC_ICONS = {
@@ -169,6 +172,8 @@
       state.mode = "pizarra";
     } else if (a === "alumnos" && TEACHER) {
       state.mode = "alumnos";
+    } else if (a === "clases" && HAS_CLASSES) {
+      state.mode = "clases";
     } else if (a === "leer") {
       state.mode = "leer";
       if (READINGS.some((x) => x.id === b)) state.readTopic = b;
@@ -178,10 +183,10 @@
     }
   }
   function writeHash() {
-    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "pizarra" ? "#pizarra" : state.mode === "alumnos" ? "#alumnos" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "pizarra" ? "#pizarra" : state.mode === "alumnos" ? "#alumnos" : state.mode === "clases" ? "#clases" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
     // Remember the last place they studied, to offer it on the home screen
-    if (h && state.mode !== "progreso" && state.mode !== "pizarra" && state.mode !== "alumnos" && state.last !== h) { state.last = h; save(); }
+    if (h && state.mode !== "progreso" && state.mode !== "pizarra" && state.mode !== "alumnos" && state.mode !== "clases" && state.last !== h) { state.last = h; save(); }
   }
   readHash();
 
@@ -198,7 +203,7 @@
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
     $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : state.mode === "leer" ? t("topicsRead") : t("topicsListen");
     // The progress page has no topics row
-    const noTopics = state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra" || state.mode === "alumnos";
+    const noTopics = state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra" || state.mode === "alumnos" || state.mode === "clases";
     // The teacher's board: a full page here, or the floating window everywhere else
     BOARD.pageMode(state.mode === "pizarra");
     $(".topics-label").style.display = $(".topics-wrap").style.display = noTopics ? "none" : "";
@@ -217,7 +222,7 @@
 
   // ——— Topics row ———
   function renderTopics() {
-    if (state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra" || state.mode === "alumnos") return;
+    if (state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra" || state.mode === "alumnos" || state.mode === "clases") return;
     let tiles;
     if (state.mode === "practicar") {
       // Only the current topic, plus a button that opens every topic grouped like the book
@@ -1135,8 +1140,9 @@
   function renderPanel() {
     stopSpeaking();
     hideGloss();
-    $("#panel").innerHTML = state.mode === "alumnos" ? renderTeacher() : state.mode === "pizarra" ? `<div class="bd-page" id="bd-host"></div>` : state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    $("#panel").innerHTML = state.mode === "clases" ? `<div class="cl">${CLASSES.studentHTML(student.id)}</div>` : state.mode === "alumnos" ? renderTeacher() : state.mode === "pizarra" ? `<div class="bd-page" id="bd-host"></div>` : state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
     if (state.mode === "pizarra") BOARD.mountPage($("#bd-host"));
+    if (state.mode === "alumnos" && $("#cl-host")) CLASSES.mountTeacher($("#cl-host"));
     syncStuck(); spySection();
   }
 
@@ -1180,6 +1186,7 @@
         save(); writeHash(); render();
         $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
       }
+      else if (a === "teach-view") { teachView = action.dataset.v; renderPanel(); }
       else if (a === "teach-open") { teachOpen = teachOpen === action.dataset.user ? null : action.dataset.user; renderPanel(); }
       else if (a === "teach-refresh") { teachData = null; renderPanel(); }
       else if (a === "home") {
@@ -1408,7 +1415,7 @@
   // saved in this browser (students who logged in on this computer).
   const TEACH_TXT = {
     en: {
-      tab: "Students", title: "Students' progress", intro: "Streak, study time, answers and where each student needs help. Tap a student to see the details.",
+      tab: "Students", tabProgress: "Progress", title: "Students", intro: "Streak, study time, answers and where each student needs help. Tap a student to see the details.",
       homeText: "Streaks, study time, mistakes and weak points of each student.",
       cloud: (when) => `Live from the cloud · updated ${when}`, refresh: "Refresh", loading: "Loading your students' progress…",
       local: "Only this browser", localHelp: "The cloud isn't connected yet, so each student's progress stays on their own phone or computer. Here you only see students who logged in on this browser. Connect Supabase (setup/supabase.sql and assets/config.js) to see everyone from anywhere.",
@@ -1420,7 +1427,7 @@
       byTopic: "Progress by topic", rightOf: (a, b) => `${a} of ${b} right`, answeredOf: (a, b) => `${a} of ${b} answered`
     },
     es: {
-      tab: "Estudiantes", title: "Progreso de los estudiantes", intro: "Racha, tiempo de estudio, respuestas y en qué necesita ayuda cada estudiante. Toca un estudiante para ver el detalle.",
+      tab: "Estudiantes", tabProgress: "Progreso", title: "Estudiantes", intro: "Racha, tiempo de estudio, respuestas y en qué necesita ayuda cada estudiante. Toca un estudiante para ver el detalle.",
       homeText: "Rachas, tiempo de estudio, errores y puntos débiles de cada estudiante.",
       cloud: (when) => `En vivo desde la nube · actualizado ${when}`, refresh: "Actualizar", loading: "Cargando el progreso de tus estudiantes…",
       local: "Solo este navegador", localHelp: "La nube todavía no está conectada, así que el progreso de cada estudiante queda en su propio teléfono o computadora. Aquí solo ves a quienes entraron en este navegador. Conecta Supabase (setup/supabase.sql y assets/config.js) para ver a todos desde cualquier lugar.",
@@ -1486,8 +1493,14 @@
     const weekMs = week.reduce((n, d) => n + ((daily[dayKey(d)] || {}).ms || 0), 0);
     return { answered, ok, first, last, topics, weak, mistakes, rows, week, weekMs, daily, streak: streak(daily), best: bestStreak(daily), total: totalMs(daily) };
   }
+  let teachView = "progress";
   function renderTeacher() {
-    if (!teachData) { loadTeacher(); if (!teachData) return `<div class="panel-head"><h2>${esc(tt("title"))}</h2><p>${esc(tt("loading"))}</p></div>`; }
+    const sub = `<div class="tb-sub">${[["progress", tt("tabProgress")], ["classes", CLASSES.editorTitle()]].map(([k, l]) => `<button type="button" role="tab" class="lib-chip" data-action="teach-view" data-v="${k}" aria-pressed="${teachView === k}">${esc(l)}</button>`).join("")}</div>`;
+    if (teachView === "classes") return `<div class="panel-head"><h2>${esc(tt("title"))}</h2></div>${sub}<div id="cl-host"></div>`;
+    return renderTeacherProgress(sub);
+  }
+  function renderTeacherProgress(sub) {
+    if (!teachData) { loadTeacher(); if (!teachData) return `<div class="panel-head"><h2>${esc(tt("title"))}</h2><p>${esc(tt("loading"))}</p></div>${sub}`; }
     const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
     const locale = isEN() ? "en-US" : "es-ES";
     const ago = (ms) => {
@@ -1547,6 +1560,7 @@
         <div><h2>${esc(tt("title"))}</h2><p>${esc(tt("intro"))}</p></div>
         <button type="button" class="tb-refresh" data-action="teach-refresh">${svg("M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5")}<span>${esc(tt("refresh"))}</span></button>
       </div>
+      ${sub}
       ${src}
       <div class="tb-grid">${cards}</div>`;
   }
@@ -1592,6 +1606,7 @@
         ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
         ${card("leer", TOPIC_ICONS.lectura, t("reading"), t("homeRead")(READINGS.length), rd && progress(rd).done && rd.id !== resumeId ? t("homeContinue")(rd.title, progress(rd).done, progress(rd).total) : "")}
         ${card("progreso", svg("M4 20V11M10 20V5M16 20v-6M3 20h18"), t("progressTab"), t("homeProgress"), student ? t("homeStreak")(n, fmtTime(totalMs())) : "")}
+        ${HAS_CLASSES ? card("clases", svg("M4 5h16v15H4zM4 10h16M9 3v4M15 3v4"), CLASSES.tab(), t("homeClasses"), "") : ""}
         ${TEACHER ? card("alumnos", svg("M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"), tt("tab"), tt("homeText"), "") : ""}
         ${BOARD.enabled ? card("pizarra", svg("M3 5h18v11H3zM8 21l4-5 4 5M12 2v3"), t("boardTab"), t("homeBoard"), "") : ""}
       </div>`;
@@ -1623,11 +1638,22 @@
     $("#modes").insertBefore(b, $('#modes [data-mode="pizarra"]'));
     $("#modes").classList.add("many");
   }
+  // Student with classes: «My classes» tab after «My progress»
+  if (HAS_CLASSES) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "mode-btn"; b.setAttribute("role", "tab"); b.dataset.mode = "clases"; b.setAttribute("aria-selected", "false");
+    b.innerHTML = `<svg class="mode-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4zM4 10h16M9 3v4M15 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="cl-tab"></span>`;
+    $("#modes").appendChild(b);
+    $("#modes").classList.add("many");
+  }
+  // Classes saved in the cloud (with Supabase) are newer than the published file
+  CLASSES.refresh(() => { if (state.mode === "clases" || state.mode === "alumnos" || state.mode === "inicio") renderPanel(); });
   // «Open as a full page» in the floating board
   BOARD.openPage = () => { state.mode = "pizarra"; save(); writeHash(); render(); $("#modes").scrollIntoView({ behavior: "smooth", block: "start" }); };
 
   function render() {
     const tb = document.querySelector(".tb-tab"); if (tb) tb.textContent = tt("tab");
+    const ct = document.querySelector(".cl-tab"); if (ct) ct.textContent = CLASSES.tab();
     renderHello(); renderModes(); renderTopics(); renderPanel();
   }
   // Switching ES / EN re-renders in place; answers and scores are kept
