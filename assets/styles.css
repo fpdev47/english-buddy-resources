@@ -994,3 +994,60 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .bd-mq { position: absolute; border: 1.5px solid #1c7ed6; background: rgba(28, 126, 214, .08); border-radius: 2px; }
 .bd-stage.wide { overflow-y: auto; scrollbar-gutter: stable; }
 .bd-spacer { width: 1px; pointer-events: none; }
+
+/* ——— Teacher dashboard (tab «Students») ——— */
+.tb-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.tb-refresh { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 14px var(--font-body); cursor: pointer; }
+.tb-refresh svg { width: 17px; height: 17px; }
+.tb-src { margin: 0 0 14px; font-size: 13.5px; color: var(--muted); }
+.tb-src.ok::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--green-600); vertical-align: 1px; }
+.tb-note { margin: 0 0 16px; padding: 14px 16px; border-radius: 14px; background: var(--harder-bg); color: var(--harder-fg); font-size: 14px; }
+.tb-note p { margin: 4px 0 0; line-height: 1.5; }
+.tb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; align-items: start; }
+.tb-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.tb-card.open { grid-column: 1 / -1; }
+.tb-card.empty { box-shadow: none; opacity: .8; }
+.tb-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px 18px 10px; border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.tb-head:disabled { cursor: default; padding-bottom: 16px; }
+.tb-avatar { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--solid); color: var(--lime); font: 700 18px var(--font-head); }
+.tb-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tb-who strong { font: 700 17px var(--font-head); }
+.tb-who small { color: var(--muted); font-size: 13px; }
+.tb-flame { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: var(--bg-soft); color: var(--muted); font-size: 14px; }
+.tb-flame svg { width: 16px; height: 16px; }
+.tb-flame.on { color: #e8590c; background: rgba(240, 140, 0, .14); }
+.tb-chev svg { width: 20px; height: 20px; color: var(--muted); transition: transform .2s; display: block; }
+.tb-card.open .tb-chev svg { transform: rotate(180deg); }
+.tb-body { padding: 0 18px 16px; }
+.tb-week { list-style: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 4px 0 14px; padding: 0; }
+.tb-week li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tb-week i { width: 100%; height: 8px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--line); }
+.tb-week li.on i { background: var(--green-600); border-color: var(--green-600); }
+.tb-week small { font-size: 12px; color: var(--muted); text-transform: capitalize; }
+.tb-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 12px; margin: 0; }
+.tb-stats div { min-width: 0; }
+.tb-stats dt { font-size: 12px; color: var(--muted); }
+.tb-stats dd { margin: 2px 0 0; font: 700 17px var(--font-head); color: var(--ink); }
+.tb-detail { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 16px 18px 18px; border-top: 1px solid var(--line); background: var(--bg-soft); }
+.tb-detail h4 { margin: 0 0 10px; font: 700 15px var(--font-head); color: var(--ink); }
+.tb-detail .weak, .tb-mistakes, .tb-topics { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tb-mistakes li { padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.tb-mistakes p { margin: 4px 0 6px; color: var(--ink); font-size: 14.5px; }
+.tb-mistakes small, .tb-topics small { color: var(--muted); font-size: 12.5px; }
+.tb-mistakes .m-ans { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+.tb-topics li { display: grid; gap: 6px; }
+.tb-topics li > span:first-child { display: flex; flex-direction: column; }
+.tb-detail .weak li { display: grid; gap: 6px; grid-template-columns: 1fr; padding: 0; border: 0; background: none; }
+@media (max-width: 860px) { .tb-detail { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  .tb-grid { grid-template-columns: 1fr; }
+  .tb-refresh span { display: none; }
+  .tb-refresh { padding: 0 11px; }
+  .tb-stats dd { font-size: 15.5px; }
+}
+.tb-detail .meter { background: var(--line); }
+/* Teacher has six tabs: on phones they go in two rows of three */
+@media (max-width: 760px) {
+  .modes.many { flex-wrap: wrap; border-radius: 22px; }
+  .modes.many .mode-btn { flex: 1 1 30%; }
+}

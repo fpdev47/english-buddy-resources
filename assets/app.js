@@ -17,6 +17,10 @@
   const t = window.YEB_I18N ? window.YEB_I18N.t : (k) => k;
   // Teacher-only board (assets/board.js); students get a stub that does nothing
   const BOARD = window.YEB_BOARD || { enabled: false, mountPage() {}, pageMode() {} };
+  // Teacher account (assets/accounts.js → teacher: true): students dashboard and board
+  const TEACHER = (() => {
+    try { const s = JSON.parse(localStorage.getItem("yeb-student") || "null"); const a = s && (window.YEB_ACCOUNTS || []).find((x) => x.user === s.id); return !!(a && a.teacher); } catch (e) { return false; }
+  })();
   const isEN = () => window.YEB_I18N && window.YEB_I18N.lang === "en";
 
   // Translated content (falls back to the original Spanish when a translation is missing)
@@ -119,24 +123,24 @@
   if (!state.daily || typeof state.daily !== "object") state.daily = {};
   const today = () => (state.daily[dayKey()] = state.daily[dayKey()] || { ms: 0, n: 0, ok: 0 });
   // A day counts when the student answered something or studied at least a minute
-  const studied = (k) => { const d = state.daily[k]; return !!d && (d.n > 0 || d.ms >= 60000); };
-  function streak() {
+  const studied = (k, daily = state.daily) => { const d = daily[k]; return !!d && (d.n > 0 || d.ms >= 60000); };
+  function streak(daily = state.daily) {
     const d = new Date();
-    if (!studied(dayKey(d))) d.setDate(d.getDate() - 1);   // today isn't over: yesterday keeps the streak alive
+    if (!studied(dayKey(d), daily)) d.setDate(d.getDate() - 1);   // today isn't over: yesterday keeps the streak alive
     let n = 0;
-    while (studied(dayKey(d))) { n++; d.setDate(d.getDate() - 1); }
+    while (studied(dayKey(d), daily)) { n++; d.setDate(d.getDate() - 1); }
     return n;
   }
-  function bestStreak() {
+  function bestStreak(daily = state.daily) {
     let best = 0, run = 0, prev = null;
-    Object.keys(state.daily).filter(studied).sort().forEach((k) => {
+    Object.keys(daily || {}).filter((k) => studied(k, daily)).sort().forEach((k) => {
       const d = new Date(`${k}T12:00`);
       run = prev && Math.round((d - prev) / 864e5) === 1 ? run + 1 : 1;
       best = Math.max(best, run); prev = d;
     });
     return best;
   }
-  const totalMs = () => Object.values(state.daily).reduce((n, d) => n + (d.ms || 0), 0);
+  const totalMs = (daily = state.daily) => Object.values(daily || {}).reduce((n, d) => n + (d.ms || 0), 0);
   // Only active time counts: the tab is visible and the student touched, typed or scrolled in the last 2 minutes
   let sessionMs = 0, lastInput = Date.now(), lastTick = Date.now(), unsavedMs = 0;
   ["pointerdown", "keydown", "scroll", "touchstart"].forEach((ev) => addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
@@ -163,6 +167,8 @@
       state.mode = "progreso";
     } else if (a === "pizarra" && BOARD.enabled) {
       state.mode = "pizarra";
+    } else if (a === "alumnos" && TEACHER) {
+      state.mode = "alumnos";
     } else if (a === "leer") {
       state.mode = "leer";
       if (READINGS.some((x) => x.id === b)) state.readTopic = b;
@@ -172,10 +178,10 @@
     }
   }
   function writeHash() {
-    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "pizarra" ? "#pizarra" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
+    const h = state.mode === "inicio" ? "" : state.mode === "progreso" ? "#progreso" : state.mode === "pizarra" ? "#pizarra" : state.mode === "alumnos" ? "#alumnos" : state.mode === "practicar" ? `#practicar/${state.exTopic}` : state.mode === "leer" ? `#leer/${state.readTopic}` : state.topic === "guardados" ? "" : `#${state.topic}`;
     history.replaceState(null, "", h || location.pathname);
     // Remember the last place they studied, to offer it on the home screen
-    if (h && state.mode !== "progreso" && state.mode !== "pizarra" && state.last !== h) { state.last = h; save(); }
+    if (h && state.mode !== "progreso" && state.mode !== "pizarra" && state.mode !== "alumnos" && state.last !== h) { state.last = h; save(); }
   }
   readHash();
 
@@ -192,7 +198,7 @@
     document.querySelectorAll(".mode-btn").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
     $("#topics-title").textContent = state.mode === "practicar" ? t("topicsPractice") : state.mode === "leer" ? t("topicsRead") : t("topicsListen");
     // The progress page has no topics row
-    const noTopics = state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra";
+    const noTopics = state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra" || state.mode === "alumnos";
     // The teacher's board: a full page here, or the floating window everywhere else
     BOARD.pageMode(state.mode === "pizarra");
     $(".topics-label").style.display = $(".topics-wrap").style.display = noTopics ? "none" : "";
@@ -211,7 +217,7 @@
 
   // ——— Topics row ———
   function renderTopics() {
-    if (state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra") return;
+    if (state.mode === "progreso" || state.mode === "inicio" || state.mode === "pizarra" || state.mode === "alumnos") return;
     let tiles;
     if (state.mode === "practicar") {
       // Only the current topic, plus a button that opens every topic grouped like the book
@@ -433,23 +439,23 @@
   }
 
   // A final answer ({ v, ok, first? }). A first wrong try waiting for the second one is { v, pending: true }.
-  function rawAnswer(x, si, ii) {
-    const ans = (state.answers[x.id] || {})[`${si}-${ii}`];
+  function rawAnswer(x, si, ii, answers = state.answers) {
+    const ans = ((answers || {})[x.id] || {})[`${si}-${ii}`];
     const item = x.sections[si] && x.sections[si].items[ii];
     if (!ans || !item) return null;
     if (item.type !== "write" && ![item.a, ...item.o].includes(ans.v)) return null;
     return ans;
   }
-  function savedAnswer(x, si, ii) {
-    const ans = rawAnswer(x, si, ii);
+  function savedAnswer(x, si, ii, answers) {
+    const ans = rawAnswer(x, si, ii, answers);
     return ans && !ans.pending ? ans : null;
   }
   // Second try before showing the answer (not when there are only two options: it would be a free answer)
   const allowsRetry = (item) => item.type === "write" || item.o.length >= 2;
 
-  function progress(x) {
+  function progress(x, answers) {
     const total = x.sections.reduce((n, s) => n + s.items.length, 0);
-    const vals = x.sections.flatMap((s, si) => s.items.map((_, ii) => savedAnswer(x, si, ii))).filter(Boolean);
+    const vals = x.sections.flatMap((s, si) => s.items.map((_, ii) => savedAnswer(x, si, ii, answers))).filter(Boolean);
     return { total, done: vals.length, correct: vals.filter((v) => v.ok).length };
   }
 
@@ -1129,7 +1135,7 @@
   function renderPanel() {
     stopSpeaking();
     hideGloss();
-    $("#panel").innerHTML = state.mode === "pizarra" ? `<div class="bd-page" id="bd-host"></div>` : state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
+    $("#panel").innerHTML = state.mode === "alumnos" ? renderTeacher() : state.mode === "pizarra" ? `<div class="bd-page" id="bd-host"></div>` : state.mode === "inicio" ? renderHome() : state.mode === "progreso" ? renderProgress() : state.mode === "practicar" ? renderPractice() : state.mode === "leer" ? renderRead() : renderListen();
     if (state.mode === "pizarra") BOARD.mountPage($("#bd-host"));
     syncStuck(); spySection();
   }
@@ -1174,6 +1180,8 @@
         save(); writeHash(); render();
         $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
       }
+      else if (a === "teach-open") { teachOpen = teachOpen === action.dataset.user ? null : action.dataset.user; renderPanel(); }
+      else if (a === "teach-refresh") { teachData = null; renderPanel(); }
       else if (a === "home") {
         state.mode = action.dataset.mode;
         save(); writeHash(); render();
@@ -1395,6 +1403,154 @@
       </section>`;
   }
 
+  // ——— Teacher dashboard: every student's progress ———
+  // With Supabase it reads every student's saved progress from the cloud; without it, only what is
+  // saved in this browser (students who logged in on this computer).
+  const TEACH_TXT = {
+    en: {
+      tab: "Students", title: "Students' progress", intro: "Streak, study time, answers and where each student needs help. Tap a student to see the details.",
+      homeText: "Streaks, study time, mistakes and weak points of each student.",
+      cloud: (when) => `Live from the cloud · updated ${when}`, refresh: "Refresh", loading: "Loading your students' progress…",
+      local: "Only this browser", localHelp: "The cloud isn't connected yet, so each student's progress stays on their own phone or computer. Here you only see students who logged in on this browser. Connect Supabase (setup/supabase.sql and assets/config.js) to see everyone from anywhere.",
+      cloudError: "Couldn't reach the cloud. Showing what this browser has.", noData: "No progress yet", never: "Hasn't studied yet",
+      lastSeen: "Last activity", today: "today", yesterday: "yesterday", daysAgo: (n) => `${n} days ago`,
+      streak: "Streak", days: (n) => `${n} ${n === 1 ? "day" : "days"}`, week: "This week", weekTime: "Time this week", total: "Total time",
+      answers: "Answers", correct: "Correct", topics: "Topics", weak: "Needs practice", weakNone: "No weak sections yet (it needs at least 3 answers in a section).",
+      mistakes: "Recent mistakes", mistakesNone: "No mistakes yet.", their: "Answered", right: "Right answer", firstTry: "First tried",
+      byTopic: "Progress by topic", rightOf: (a, b) => `${a} of ${b} right`, answeredOf: (a, b) => `${a} of ${b} answered`
+    },
+    es: {
+      tab: "Estudiantes", title: "Progreso de los estudiantes", intro: "Racha, tiempo de estudio, respuestas y en qué necesita ayuda cada estudiante. Toca un estudiante para ver el detalle.",
+      homeText: "Rachas, tiempo de estudio, errores y puntos débiles de cada estudiante.",
+      cloud: (when) => `En vivo desde la nube · actualizado ${when}`, refresh: "Actualizar", loading: "Cargando el progreso de tus estudiantes…",
+      local: "Solo este navegador", localHelp: "La nube todavía no está conectada, así que el progreso de cada estudiante queda en su propio teléfono o computadora. Aquí solo ves a quienes entraron en este navegador. Conecta Supabase (setup/supabase.sql y assets/config.js) para ver a todos desde cualquier lugar.",
+      cloudError: "No se pudo conectar con la nube. Se muestra lo que hay en este navegador.", noData: "Sin progreso todavía", never: "Todavía no ha estudiado",
+      lastSeen: "Última actividad", today: "hoy", yesterday: "ayer", daysAgo: (n) => `hace ${n} días`,
+      streak: "Racha", days: (n) => `${n} ${n === 1 ? "día" : "días"}`, week: "Esta semana", weekTime: "Tiempo esta semana", total: "Tiempo total",
+      answers: "Respuestas", correct: "Correctas", topics: "Temas", weak: "Necesita practicar", weakNone: "Todavía no hay secciones débiles (hacen falta al menos 3 respuestas en una sección).",
+      mistakes: "Errores recientes", mistakesNone: "Todavía no hay errores.", their: "Respondió", right: "Respuesta correcta", firstTry: "Primero intentó",
+      byTopic: "Avance por tema", rightOf: (a, b) => `${a} de ${b} correctas`, answeredOf: (a, b) => `${a} de ${b} respondidas`
+    }
+  };
+  const tt = (k) => TEACH_TXT[isEN() ? "en" : "es"][k];
+  let teachData = null, teachLoading = false, teachOpen = null;
+  function localStudents() {
+    return (window.YEB_ACCOUNTS || []).filter((a) => !a.teacher).map((a) => {
+      let p = null;
+      try { p = JSON.parse(localStorage.getItem(`yeb-state:${a.user}`) || "null"); } catch (e) {}
+      return { user: a.user, name: a.nick ? `${a.name} (${a.nick})` : a.name, progress: p };
+    });
+  }
+  async function loadTeacher(force) {
+    if (teachLoading || (teachData && !force)) return;
+    if (!(CLOUD && CLOUD.enabled && student && student.key)) { teachData = { source: "local", rows: localStudents(), at: new Date() }; return; }
+    teachLoading = true;
+    try {
+      const rows = (await CLOUD.teacherOverview()) || [];
+      const byUser = Object.fromEntries(rows.map((r) => [r.user, r]));
+      teachData = { source: "cloud", at: new Date(), rows: localStudents().map((l) => {
+        const r = byUser[l.user];
+        return { ...l, progress: r && r.progress && Object.keys(r.progress).length ? r.progress : null, updated: r && r.updated_at };
+      }) };
+    } catch (e) {
+      teachData = { source: "local", error: true, rows: localStudents(), at: new Date() };
+    }
+    teachLoading = false;
+    if (state.mode === "alumnos") renderPanel();
+  }
+  function studentStats(st) {
+    const answers = (st && st.answers) || {}, daily = (st && st.daily) || {};
+    let answered = 0, ok = 0, first = 0, last = 0, topics = 0;
+    const weak = [], mistakes = [], rows = [];
+    allTopics().forEach(({ x }) => {
+      const p = progress(x, answers);
+      if (p.done) { topics++; rows.push({ x, p }); }
+      x.sections.forEach((sec, si) => {
+        let sDone = 0, sOk = 0;
+        sec.items.forEach((item, ii) => {
+          const a = savedAnswer(x, si, ii, answers);
+          if (!a) return;
+          answered++; sDone++;
+          if (a.ok) { ok++; sOk++; if (!a.first) first++; }
+          if (a.t) last = Math.max(last, a.t);
+          if (!a.ok || a.first) mistakes.push({ x, si, ii, item, a });
+        });
+        if (sDone >= 3 && sOk / sDone < 0.8) weak.push({ x, si, sDone, sOk });
+      });
+    });
+    // Last day with study time also counts as activity
+    Object.keys(daily).filter((k) => studied(k, daily)).forEach((k) => { last = Math.max(last, Date.parse(`${k}T12:00`)); });
+    weak.sort((a, b) => a.sOk / a.sDone - b.sOk / b.sDone || b.sDone - a.sDone);
+    mistakes.sort((a, b) => (b.a.t || 0) - (a.a.t || 0));
+    const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d; });
+    const weekMs = week.reduce((n, d) => n + ((daily[dayKey(d)] || {}).ms || 0), 0);
+    return { answered, ok, first, last, topics, weak, mistakes, rows, week, weekMs, daily, streak: streak(daily), best: bestStreak(daily), total: totalMs(daily) };
+  }
+  function renderTeacher() {
+    if (!teachData) { loadTeacher(); if (!teachData) return `<div class="panel-head"><h2>${esc(tt("title"))}</h2><p>${esc(tt("loading"))}</p></div>`; }
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+    const locale = isEN() ? "en-US" : "es-ES";
+    const ago = (ms) => {
+      if (!ms) return tt("never");
+      const days = Math.round((new Date(dayKey()) - new Date(dayKey(new Date(ms)))) / 864e5);
+      return days <= 0 ? tt("today") : days === 1 ? tt("yesterday") : tt("daysAgo")(days);
+    };
+    const src = teachData.source === "cloud"
+      ? `<p class="tb-src ok">${esc(tt("cloud")(teachData.at.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })))}</p>`
+      : `<div class="tb-note"><strong>${esc(teachData.error ? tt("cloudError") : tt("local"))}</strong><p>${esc(tt("localHelp"))}</p></div>`;
+    const cards = teachData.rows.map((r) => {
+      const has = !!(r.progress && (Object.keys(r.progress.answers || {}).length || Object.keys(r.progress.daily || {}).length));
+      const S = studentStats(r.progress);
+      const open = teachOpen === r.user;
+      const dots = S.week.map((d) => { const k = dayKey(d), m = Math.round(((S.daily[k] || {}).ms || 0) / 60000); return `<li class="${studied(k, S.daily) ? "on" : ""}" title="${esc(d.toLocaleDateString(locale, { weekday: "long", day: "numeric" }))}${m ? ` · ${m} min` : ""}"><i></i><small>${esc(d.toLocaleDateString(locale, { weekday: "short" }).replace(".", ""))}</small></li>`; }).join("");
+      const stat = (label, value) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`;
+      const mistakes = S.mistakes.slice(0, 6).map(({ x, si, ii, item, a }) => {
+        const tr = (isEN() && item.en) || itemT(x, si, ii);
+        const shown = (v) => (item.type === "write" ? v : label(tr, v));
+        const right = item.type === "write" ? item.a[0] : label(tr, item.a);
+        return `<li><small>${esc(topicName(x))} · ${esc(secTitle(x, si))}</small><p lang="en">${esc((tr.q || item.q).replace(/^\(\d+\)\s*/, ""))}</p>
+          <div class="m-ans">${a.ok ? `<span class="m-second">${esc(tt("firstTry"))}: <s>${esc(shown(a.first))}</s> → ${esc(shown(a.v))}</span>`
+            : `<span class="m-bad">${esc(tt("their"))}: <s>${esc(shown(a.v))}</s></span><span class="m-ok">${esc(tt("right"))}: ${esc(right)}</span>`}</div></li>`;
+      }).join("");
+      const detail = !open || !has ? "" : `
+        <div class="tb-detail">
+          <section><h4>${esc(tt("weak"))}</h4>${S.weak.length ? `<ul class="weak">${S.weak.slice(0, 5).map(({ x, si, sDone, sOk }) => `
+            <li><div><strong>${esc(secTitle(x, si))}</strong><small>${esc(topicName(x))} · ${esc(tt("rightOf")(sOk, sDone))}</small></div><span class="meter" aria-hidden="true"><i style="width:${pct(sOk, sDone)}%"></i></span></li>`).join("")}</ul>` : `<p class="pg-help">${esc(tt("weakNone"))}</p>`}</section>
+          <section><h4>${esc(tt("mistakes"))}</h4>${mistakes ? `<ul class="mistakes tb-mistakes">${mistakes}</ul>` : `<p class="pg-help">${esc(tt("mistakesNone"))}</p>`}</section>
+          <section><h4>${esc(tt("byTopic"))}</h4><ul class="tb-topics">${S.rows.sort((a, b) => b.p.done / b.p.total - a.p.done / a.p.total).map(({ x, p }) => `
+            <li><span><strong>${esc(topicName(x))}</strong><small>${esc(tt("answeredOf")(p.done, p.total))} · ${esc(tt("rightOf")(p.correct, p.done))}</small></span><span class="meter" aria-hidden="true"><i style="width:${pct(p.done, p.total)}%"></i></span></li>`).join("")}</ul></section>
+        </div>`;
+      return `
+        <article class="tb-card${open ? " open" : ""}${has ? "" : " empty"}">
+          <button type="button" class="tb-head" data-action="teach-open" data-user="${esc(r.user)}"${has ? "" : " disabled"} aria-expanded="${open}">
+            <span class="tb-avatar" aria-hidden="true">${esc(r.name.charAt(0))}</span>
+            <span class="tb-who"><strong>${esc(r.name)}</strong><small>${has ? `${esc(tt("lastSeen"))}: ${esc(ago(S.last))}` : esc(tt("noData"))}</small></span>
+            ${has ? `<span class="tb-flame${S.streak ? " on" : ""}" title="${esc(tt("streak"))}">${ICONS.flame}<b>${S.streak}</b></span><span class="tb-chev" aria-hidden="true">${svg("M6 9l6 6 6-6")}</span>` : ""}
+          </button>
+          ${has ? `
+          <div class="tb-body">
+            <ol class="tb-week" aria-label="${esc(tt("week"))}">${dots}</ol>
+            <dl class="tb-stats">
+              ${stat(tt("streak"), tt("days")(S.streak))}
+              ${stat(tt("weekTime"), fmtTime(S.weekMs))}
+              ${stat(tt("total"), fmtTime(S.total))}
+              ${stat(tt("answers"), String(S.answered))}
+              ${stat(tt("correct"), S.answered ? `${pct(S.ok, S.answered)} %` : "–")}
+              ${stat(tt("topics"), String(S.topics))}
+            </dl>
+          </div>` : ""}
+          ${detail}
+        </article>`;
+    }).join("");
+    return `
+      <div class="panel-head tb-top">
+        <div><h2>${esc(tt("title"))}</h2><p>${esc(tt("intro"))}</p></div>
+        <button type="button" class="tb-refresh" data-action="teach-refresh">${svg("M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5")}<span>${esc(tt("refresh"))}</span></button>
+      </div>
+      ${src}
+      <div class="tb-grid">${cards}</div>`;
+  }
+
   // ——— Home: «What do you want to practice today?» with the four sections ———
   function renderHome() {
     const ex = EXERCISES.find((x) => x.id === state.exTopic) || EXERCISES[0];
@@ -1436,6 +1592,7 @@
         ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
         ${card("leer", TOPIC_ICONS.lectura, t("reading"), t("homeRead")(READINGS.length), rd && progress(rd).done && rd.id !== resumeId ? t("homeContinue")(rd.title, progress(rd).done, progress(rd).total) : "")}
         ${card("progreso", svg("M4 20V11M10 20V5M16 20v-6M3 20h18"), t("progressTab"), t("homeProgress"), student ? t("homeStreak")(n, fmtTime(totalMs())) : "")}
+        ${TEACHER ? card("alumnos", svg("M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"), tt("tab"), tt("homeText"), "") : ""}
         ${BOARD.enabled ? card("pizarra", svg("M3 5h18v11H3zM8 21l4-5 4 5M12 2v3"), t("boardTab"), t("homeBoard"), "") : ""}
       </div>`;
   }
@@ -1458,10 +1615,19 @@
   $("#streak-chip").addEventListener("click", () => { state.mode = "progreso"; save(); writeHash(); render(); $("#results").scrollIntoView({ behavior: "smooth", block: "start" }); });
   $("#logout").addEventListener("click", async () => { await push(); CLOUD.logout(); });
 
+  // Teacher: «Students» tab, before «Board»
+  if (TEACHER) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "mode-btn"; b.setAttribute("role", "tab"); b.dataset.mode = "alumnos"; b.setAttribute("aria-selected", "false");
+    b.innerHTML = `<svg class="mode-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tb-tab"></span>`;
+    $("#modes").insertBefore(b, $('#modes [data-mode="pizarra"]'));
+    $("#modes").classList.add("many");
+  }
   // «Open as a full page» in the floating board
   BOARD.openPage = () => { state.mode = "pizarra"; save(); writeHash(); render(); $("#modes").scrollIntoView({ behavior: "smooth", block: "start" }); };
 
   function render() {
+    const tb = document.querySelector(".tb-tab"); if (tb) tb.textContent = tt("tab");
     renderHello(); renderModes(); renderTopics(); renderPanel();
   }
   // Switching ES / EN re-renders in place; answers and scores are kept

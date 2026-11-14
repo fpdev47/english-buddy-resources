@@ -203,3 +203,14 @@ Varias páginas; **PDF** descarga todas las páginas (A4 horizontal), generado e
 
 Se guarda en el navegador del profesor (`yeb-board`). Las imágenes se reducen a 1600 px; si el
 almacenamiento se llena, la pizarra lo avisa: descargar el PDF y empezar una pizarra nueva.
+
+## Panel del profesor: «Students / Estudiantes» (solo `teacher: true`)
+
+Pestaña `#alumnos` y tarjeta en el inicio. Por estudiante: última actividad, racha, los últimos 7 días,
+tiempo de la semana y total, respuestas, % de correctas y temas empezados. Al tocar un estudiante:
+secciones donde necesita practicar, errores recientes (qué respondió y la respuesta correcta) y avance por tema.
+
+De dónde salen los datos:
+- **Con Supabase** (`assets/config.js` + `setup/supabase.sql`, que ya incluye las cuentas con sus hashes
+  y la función `yeb_teacher_overview`): el progreso de todos, desde cualquier dispositivo.
+- **Sin Supabase**: solo lo guardado en el navegador donde se abre el panel (estudiantes que entraron ahí).

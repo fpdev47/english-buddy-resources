@@ -85,6 +85,9 @@
     // Saves progress; returns the server time of the save (null = password no longer valid)
     push(progress, keepalive) { return rpc("yeb_save", { p_key: student.key, p_progress: progress }, keepalive); },
 
+    // Teacher dashboard: every student's progress (only works with a teacher account's password)
+    teacherOverview() { return rpc("yeb_teacher_overview", { p_key: student.key }); },
+
     // The student's progress stays saved on this browser for the next time they log in
     logout() {
       try { localStorage.removeItem(SESSION); } catch (e) {}

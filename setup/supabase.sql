@@ -55,3 +55,32 @@ grant execute on function public.yeb_login(text), public.yeb_save(text, jsonb) t
 --        (select count(*) from jsonb_each(progress->'answers') t, jsonb_each(t.value) a where (a.value->>'ok')::boolean) as correctas,
 --        (select count(*) from jsonb_each(progress->'answers') t, jsonb_each(t.value) a) as respondidas
 --   from public.students order by name;
+
+
+-- 5) Panel del profesor (pestaña «Students» de la cuenta con teacher: true en assets/accounts.js).
+--    Cada fila sabe a qué usuario del sitio pertenece y si es el profesor.
+alter table public.students add column if not exists username text unique;
+alter table public.students add column if not exists is_teacher boolean not null default false;
+
+-- Devuelve el progreso de todos los estudiantes, solo si la clave es la de un profesor.
+create or replace function public.yeb_teacher_overview(p_key text) returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(json_build_object(
+           'user', s.username,
+           'name', split_part(s.name, ' ', 1),
+           'progress', s.progress,
+           'updated_at', s.updated_at) order by s.name), '[]'::json)
+  from public.students s
+  where not s.is_teacher
+    and exists (select 1 from public.students t where t.key_hash = public.yeb_hash(p_key) and t.is_teacher)
+$$;
+revoke all on function public.yeb_teacher_overview(text) from public;
+grant execute on function public.yeb_teacher_overview(text) to anon, authenticated;
+
+-- 6) Las cuentas de assets/accounts.js (mismos hashes: no hace falta escribir ninguna contraseña aquí).
+--    Si cambias una contraseña en accounts.js, vuelve a ejecutar esta parte con el hash nuevo.
+insert into public.students (username, name, key_hash, is_teacher) values
+  ('mary', 'Mary', 'ec09d4e897128bd6e737410c63c8281d612713cea24a1d1da373d1ffb478b6a2', false),
+  ('jesus', 'Jesus', '8a1a7788798a073c4cc9d9939f50ec2d9f802c9972e473d315d0ad5fc3c14d07', false),
+  ('fabio', 'Fabio', 'd29c18776f9b104b63409a0b617a4f4cbcb9fe8c512bd78d4abeb3bee5d1562b', true)
+on conflict (username) do update set name = excluded.name, key_hash = excluded.key_hash, is_teacher = excluded.is_teacher;
