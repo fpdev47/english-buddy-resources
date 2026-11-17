@@ -554,7 +554,10 @@
   function sayWords(text) {
     return text.split(/(\([^)]*\))/).map((seg, i) => {
       if (i % 2 || SPANISHY.test(seg)) return esc(seg);
-      return esc(seg).replace(/[A-Za-z]+(?:['’][A-Za-z]+)*/g, (w) => `<span class="sw" data-say="${w}">${w}</span>`);
+      // With a glossary for this topic (data/glossary/<id>.js), each word also shows its translation
+      const G = state.mode === "practicar" ? glossary(currentTopic() || {}) : null;
+      // Split before escaping, so «don't» and «father's» stay one word (esc turns ' into &#39;)
+      return seg.split(/([A-Za-z]+(?:['’][A-Za-z]+)*)/).map((w, j) => (j % 2 ? `<span class="sw${G && glossWord(G, normWord(w)) ? " w" : ""}" data-say="${esc(w)}">${esc(w)}</span>` : esc(w))).join("");
     }).join("");
   }
   // Quote with [[highlight]]: words inside and outside the highlight can be heard
@@ -767,7 +770,8 @@
             <button type="button" class="sec-reset" data-action="reset-section" data-sec="${si}" ${sectionTouched(x, si) ? "" : "disabled"} title="${esc(t("resetSection"))}" aria-label="${esc(t("resetSection"))}: ${esc(secTitle(x, si))}">↻ <span>${esc(t("resetShort"))}</span></button></h3>
           <p class="ex-instr">${esc(exSecT(x, si).instructions || pickLang(s.instructions) || t(KIND_TEXT[s.kind][1]))}</p>
           ${s.story ? `${glossary(x) ? `<p class="gloss-hint">${esc(t("glossHint"))}</p>` : ""}<div class="story glossable" lang="en">${storyHTML(x, si)}</div>` : ""}
-          <div class="qs">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
+          ${!s.story && si === 0 && glossary(x) ? `<p class="gloss-hint">${esc(t("glossHint"))}</p>` : ""}
+          <div class="qs${glossary(x) ? " glossable" : ""}">${s.items.map((_, ii) => questionHTML(x, si, ii)).join("")}</div>
         </section>`).join("")}`;
   }
 
@@ -1231,6 +1235,7 @@
     if (say) {
       sayWord(say.dataset.say);
       if (say.classList.contains("sw")) { say.classList.add("on"); setTimeout(() => say.classList.remove("on"), 700); }
+      if (say.matches(".glossable .w")) showGloss(say, true);
       return;
     }
     if (e.target.closest(".glossable .w, .glossable .vw")) { showGloss(e.target, true); return; }
@@ -1320,7 +1325,7 @@
   let sayHover;
   $("#panel").addEventListener("mouseover", (e) => {
     const b = e.target.closest(".sw");
-    if (!b || !matchMedia("(hover: hover)").matches) return;
+    if (!b || !matchMedia("(hover: hover)").matches || b.matches(".glossable .w")) return;
     clearTimeout(sayHover);
     sayHover = setTimeout(() => sayWord(b.dataset.say), 450);
   });

@@ -16,7 +16,7 @@
 */
 window.YEB_EX_GROUPS = [
   { id: "inicio", title: { es: "Primeros pasos", en: "First steps" }, sub: { es: "A1 · Libro 1, unidad 1", en: "A1 · Book 1, unit 1" },
-    topics: ["to-be", "posesivos", "this-that", "articulos", "paises", "trabajos-datos", "numeros", "pronombres-objeto"] },
+    topics: ["to-be", "posesivos", "posesivo-s", "this-that", "articulos", "paises", "trabajos-datos", "numeros", "pronombres-objeto"] },
   { id: "rutinas", title: { es: "Rutinas y gustos", en: "Routines and likes" }, sub: { es: "A1–A2 · Unidad 1", en: "A1–A2 · Unit 1" },
     topics: ["presente-simple", "preguntas-do-be", "adverbios-frecuencia", "gustos", "presente-continuo"] },
   { id: "mundo", title: { es: "Mi mundo", en: "My world" }, sub: { es: "A2 · Unidad 2", en: "A2 · Unit 2" },

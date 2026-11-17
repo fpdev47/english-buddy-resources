@@ -43,7 +43,7 @@ bed = cama
 best = mejor
 big = grande
 blake = Blake (nombre de la calle)
-born = nacido (was born = nació)
+born = nacido (was born: nació)
 buddy = amigo, compa (informal)
 buys = compra
 calls = llama
@@ -54,7 +54,7 @@ candies = caramelos, gomitas
 chill = relajado, tranquilo (informal)
 day = día
 denver = Denver (ciudad de Colorado)
-doesn't = no (he doesn't = él no)
+doesn't = no (he doesn't: él no)
 every = cada, todos los
 first = primero
 flight = vuelo
@@ -87,7 +87,7 @@ marijuana = marihuana
 munchies = hambre después de fumar marihuana (the munchies)
 number = número
 of = de
-on = el (en fechas: on April 21st = el 21 de abril)
+on = el (en fechas: on April 21st: el 21 de abril)
 or = o
 orders = pide (comida)
 pays = paga
@@ -120,7 +120,7 @@ united = unidos
 up = (wakes up) se despierta
 very = muy
 wakes = (wakes up) se despierta
-was = fue, era (was born = nació)
+was = fue, era (was born: nació)
 weed = marihuana (informal)
 weekend = fin de semana
 where = donde
