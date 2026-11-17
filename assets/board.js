@@ -51,8 +51,8 @@
 
   // ——— Constants ———
   const W = 1400, H = 990;   // one page (A4 landscape proportions)
-  const COLORS = ["#1f2937", "#e03131", "#1c7ed6", "#2f9e44", "#f08c00"];
-  const NOTES = ["#fff3a3", "#ffd6e0", "#d3f9d8", "#d0ebff"];
+  const COLORS = ["#1f2937", "#e03131", "#1c7ed6", "#2f9e44", "#f08c00", "#fcc419"];
+  const NOTES = ["#ffe066", "#fff3a3", "#ffd6e0", "#d3f9d8", "#d0ebff"];
   const SIZES = { s: 22, m: 32, l: 48 }, NOTE_SIZES = { s: 18, m: 24, l: 34 };
   const NOTE_INK = "#1f2937";
   const sizeOf = (it, k) => (it.t === "note" ? NOTE_SIZES : SIZES)[k] || (it.t === "note" ? NOTE_SIZES : SIZES).m;

@@ -212,6 +212,10 @@
     document.documentElement.classList.toggle("on-home", state.mode === "inicio");
     // The board takes the whole page: only the tabs stay on top, to jump to other sections
     document.documentElement.classList.toggle("on-board", state.mode === "pizarra");
+    // On the board the tabs move up into the header bar, so the board gets the whole screen
+    const modesEl = $("#modes"), navEl = $(".site-header .nav"), introBox = $(".intro .container");
+    if (state.mode === "pizarra" && navEl && modesEl.parentNode !== navEl) navEl.insertBefore(modesEl, navEl.querySelector(".nav-actions"));
+    else if (state.mode !== "pizarra" && introBox && modesEl.parentNode !== introBox) introBox.appendChild(modesEl);
   }
   $("#modes").addEventListener("click", (e) => {
     const b = e.target.closest(".mode-btn");
@@ -288,22 +292,97 @@
       });
     }
     const groups = [...GROUPS, OTHER_GROUP].map((g) => ({ g, list: EXERCISES.filter((x) => topicGroup(x.id) === g) })).filter((o) => o.list.length);
-    sheet.innerHTML = `
-      <div class="sheet-head"><h2>${esc(t("allTopics"))}</h2><button type="button" class="sheet-close" data-close aria-label="${esc(t("close"))}">✕</button></div>
-      <div class="sheet-body">${groups.map(({ g, list }) => `
+    const ST = isEN()
+      ? { ph: "Search a topic or a word (e.g. pronouns, past, «would»)", sug: "Suggested topics", none: (q) => `No topics match «${q}». Try another word.`, inEx: "In the exercises:", count: (n) => `${n} ${n === 1 ? "topic" : "topics"}` }
+      : { ph: "Busca un tema o una palabra (ej. pronombres, pasado, «would»)", sug: "Temas sugeridos", none: (q) => `Ningún tema coincide con «${q}». Prueba otra palabra.`, inEx: "En los ejercicios:", count: (n) => `${n} ${n === 1 ? "tema" : "temas"}` };
+    const topicBtn = (x, extra = "", label = esc(topicTitle(x))) => {
+      const p = progress(x), pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+      return `<button type="button" class="sheet-topic" data-pick="${x.id}" ${state.exTopic === x.id ? 'aria-current="true"' : ""}>
+        <span class="st-main"><strong>${label}</strong><small>${esc(x.level)} · ${p.done ? `${p.correct}/${p.total} ✓` : `${p.total} ${t("exercises")}`}</small>${extra}</span>
+        <span class="st-bar" aria-hidden="true"><span style="width:${pct}%"></span></span>
+      </button>`;
+    };
+    const allHTML = groups.map(({ g, list }) => `
         <section class="sheet-group">
           <h3>${esc(pickLang(g.title))}${g.sub ? ` <small>${esc(pickLang(g.sub))}</small>` : ""}</h3>
-          ${list.map((x) => {
-            const p = progress(x), pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
-            return `<button type="button" class="sheet-topic" data-pick="${x.id}" ${state.exTopic === x.id ? 'aria-current="true"' : ""}>
-              <span class="st-main"><strong>${esc(topicTitle(x))}</strong><small>${esc(x.level)} · ${p.done ? `${p.correct}/${p.total} ✓` : `${p.total} ${t("exercises")}`}</small></span>
-              <span class="st-bar" aria-hidden="true"><span style="width:${pct}%"></span></span>
-            </button>`;
-          }).join("")}
-        </section>`).join("")}</div>`;
+          <div class="sheet-grid">${list.map((x) => topicBtn(x)).join("")}</div>
+        </section>`).join("");
+    sheet.innerHTML = `
+      <div class="sheet-head"><h2>${esc(t("allTopics"))}</h2><button type="button" class="sheet-close" data-close aria-label="${esc(t("close"))}">✕</button></div>
+      <div class="sheet-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" id="topic-q" placeholder="${esc(ST.ph)}" aria-label="${esc(ST.ph)}" autocomplete="off" spellcheck="false" enterkeyhint="search">
+      </div>
+      <div class="sheet-body" id="topic-body">${allHTML}</div>`;
+    // ——— Search: every word typed has to appear in the topic (title, group, level, or its exercises) ———
+    const norm = (v) => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[«»"“”¿?¡!.,;:()]/g, " ");
+    const strings = (o, out = []) => { if (typeof o === "string") out.push(o); else if (Array.isArray(o)) o.forEach((v) => strings(v, out)); else if (o && typeof o === "object") Object.values(o).forEach((v) => strings(v, out)); return out; };
+    const index = EXERCISES.map((x) => {
+      const g = topicGroup(x.id), tr = exT(x) || {};
+      const titles = [x.title, tr.title, (EN.exercises[x.id] || {}).title].filter(Boolean);
+      const meta = norm([...titles, x.text, tr.text, x.level, g && strings(g.title).join(" "), ...(x.sections || []).map((sct) => sct.title)].join(" "));
+      const body = [...strings(x.sections), ...strings(tr.sections)].filter((v) => v.length > 1);
+      return { x, title: norm(titles.join(" ")), meta, body, bodyN: body.map(norm) };
+    });
+    const mark = (text, toks) => {
+      // Highlight the matching words without breaking accents
+      let out = esc(text);
+      const n = norm(text);
+      const spans = [];
+      toks.forEach((tk) => { let i = n.indexOf(tk); while (i >= 0) { spans.push([i, i + tk.length]); i = n.indexOf(tk, i + tk.length); } });
+      if (!spans.length || n.length !== text.length) return out;
+      spans.sort((a, b) => a[0] - b[0]);
+      let res = "", last = 0;
+      spans.forEach(([a, b]) => { if (a < last) return; res += esc(text.slice(last, a)) + "<mark>" + esc(text.slice(a, b)) + "</mark>"; last = b; });
+      return res + esc(text.slice(last));
+    };
+    const snippet = (str, tk) => {
+      const i = norm(str).indexOf(tk), from = Math.max(0, i - 28), to = Math.min(str.length, i + tk.length + 40);
+      return (from ? "…" : "") + str.slice(from, to).replace(/\s+/g, " ").trim() + (to < str.length ? "…" : "");
+    };
+    const body = sheet.querySelector("#topic-body"), qIn = sheet.querySelector("#topic-q");
+    function search() {
+      const raw = qIn.value.trim(), toks = norm(raw).split(/\s+/).filter(Boolean);
+      if (!toks.length) { body.innerHTML = allHTML; return; }
+      const hits = index.map((r) => {
+        let score = 0, snip = "";
+        for (const tk of toks) {
+          if (r.title.includes(tk)) score += r.title.split(/\s+/).some((w) => w.startsWith(tk)) ? 12 : 8;
+          else if (r.meta.includes(tk)) score += 5;
+          else {
+            const n = r.bodyN.filter((v) => v.includes(tk)).length;
+            if (!n) return null;
+            score += Math.min(4, 1 + n / 4);
+            if (!snip) { const k = r.bodyN.findIndex((v) => v.includes(tk)); snip = snippet(r.body[k], tk); }
+          }
+        }
+        return { r, score, snip };
+      }).filter(Boolean).sort((a, b) => b.score - a.score);
+      body.innerHTML = hits.length
+        ? `<section class="sheet-group"><h3>${esc(ST.sug)} <small>${esc(ST.count(hits.length))}</small></h3><div class="sheet-grid">${hits.map((h) =>
+            topicBtn(h.r.x, h.snip ? `<span class="st-snip">${esc(ST.inEx)} ${mark(h.snip, toks)}</span>` : "", mark(topicTitle(h.r.x), toks))).join("")}</div></section>`
+        : `<p class="sheet-none">${esc(ST.none(raw))}</p>`;
+      body.scrollTop = 0;
+    }
+    qIn.addEventListener("input", search);
+    qIn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); const first = body.querySelector("[data-pick]"); if (first && qIn.value.trim()) first.click(); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); const first = body.querySelector("[data-pick]"); if (first) first.focus(); }
+    });
+    body.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      const all = [...body.querySelectorAll("[data-pick]")], i = all.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      if (e.key === "ArrowUp" && i === 0) return qIn.focus();
+      const next = all[i + (e.key === "ArrowDown" ? 1 : -1)];
+      if (next) next.focus();
+    });
     sheet.showModal();
     const cur = sheet.querySelector("[aria-current]");
     if (cur) cur.scrollIntoView({ block: "center" });
+    // On a computer, start typing right away (on phones the keyboard would cover the list)
+    if (matchMedia("(hover: hover) and (pointer: fine)").matches) qIn.focus({ preventScroll: true });
   }
 
   // ——— Listening: channel cards ———
