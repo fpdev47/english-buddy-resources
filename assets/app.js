@@ -1271,6 +1271,12 @@
         save(); writeHash(); render();
         $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
       }
+      else if (a === "search-go") {
+        homeQuery = "";
+        readHash(action.dataset.hash);
+        save(); writeHash(); render();
+        $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       else if (a === "teach-view") { teachView = action.dataset.v; renderPanel(); }
       else if (a === "teach-as") { const row = teachData && teachData.rows.find((r) => r.user === action.dataset.user); CLOUD.startViewAs(action.dataset.user, row && row.progress); }
       else if (a === "teach-open") { teachOpen = teachOpen === action.dataset.user ? null : action.dataset.user; renderPanel(); }
@@ -1319,6 +1325,18 @@
     const input = form.querySelector("input");
     if (!input.value.trim()) { input.focus(); return; }
     answer(form.dataset.key, input.value.trim());
+  });
+
+  // Home search: results update while typing (only the results box is redrawn, so the field keeps focus)
+  $("#panel").addEventListener("input", (e) => {
+    if (e.target.id !== "home-q") return;
+    homeQuery = e.target.value;
+    $("#home-results").innerHTML = homeResultsHTML();
+    const rest = $(".home-rest");
+    if (rest) rest.hidden = !!homeQuery.trim();
+  });
+  $("#panel").addEventListener("keydown", (e) => {
+    if (e.target.id === "home-q" && e.key === "Enter") { e.preventDefault(); const first = $("#home-results .hs-item"); if (first) first.click(); }
   });
 
   // Computer: resting the mouse on the little speaker reads the option
@@ -1687,7 +1705,13 @@
         <span class="home-txt"><strong>${esc(t("driveShort"))}</strong><span>${esc(t("driveText"))}</span></span>
         <span class="home-go" aria-hidden="true">${svg("M7 17 17 7M8 7h9v9")}</span>
       </a>` : "";
-    return `${resume}${drive}
+    const ph = isEN() ? "Search topics, readings, videos, channels… (e.g. past, Steve Jobs, 's)" : "Busca temas, lecturas, videos, canales… (ej. pasado, Steve Jobs, 's)";
+    return `<div class="home-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" id="home-q" value="${esc(homeQuery)}" placeholder="${esc(ph)}" aria-label="${esc(ph)}" autocomplete="off" spellcheck="false" enterkeyhint="search">
+      </div>
+      <div id="home-results" class="home-results">${homeResultsHTML()}</div>
+      <div class="home-rest"${homeQuery.trim() ? " hidden" : ""}>${resume}${drive}
       <div class="home-grid">
         ${card("practicar", TOPIC_ICONS.ejercicio, t("practice"), t("homePractice")(EXERCISES.length), ex && p.done && ex.id !== resumeId ? t("homeContinue")(topicTitle(ex), p.done, p.total) : "")}
         ${card("escuchar", TOPIC_ICONS.aprender, t("listen"), t("homeListen")(shadow, channels.length), "")}
@@ -1695,8 +1719,76 @@
         ${card("progreso", svg("M4 20V11M10 20V5M16 20v-6M3 20h18"), t("progressTab"), t("homeProgress"), student ? t("homeStreak")(n, fmtTime(totalMs())) : "")}
         ${HAS_CLASSES ? card("clases", svg("M4 5h16v15H4zM4 10h16M9 3v4M15 3v4"), CLASSES.tab(), t("homeClasses"), "") : ""}
         ${TEACHER ? card("alumnos", svg("M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"), tt("tab"), tt("homeText"), "") : ""}
-        ${BOARD.enabled ? card("pizarra", svg("M3 5h18v11H3zM8 21l4-5 4 5M12 2v3"), t("boardTab"), t("homeBoard"), "") : ""}
-      </div>`;
+        ${BOARD.enabled && TEACHER ? card("pizarra", svg("M3 5h18v11H3zM8 21l4-5 4 5M12 2v3"), t("boardTab"), t("homeBoard"), "") : ""}
+      </div></div>`;
+  }
+
+  // ——— Home search: exercises, readings, listening sections, channels and shadowing videos ———
+  const sNorm = (v) => String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[«»"“”¿?¡!.,;:()]/g, " ");
+  const sStrings = (o, out = []) => { if (typeof o === "string") out.push(o); else if (Array.isArray(o)) o.forEach((v) => sStrings(v, out)); else if (o && typeof o === "object") Object.values(o).forEach((v) => sStrings(v, out)); return out; };
+  let sIndex = null, sIndexLang = "";
+  function searchIndex() {
+    const lang = isEN() ? "en" : "es";
+    if (sIndex && sIndexLang === lang) return sIndex;
+    const KIND = isEN() ? { ex: "Practice", rd: "Reading", sec: "Listen", ch: "Channel / podcast", vid: "Shadowing video" } : { ex: "Practicar", rd: "Lectura", sec: "Escuchar", ch: "Canal / podcast", vid: "Video de shadowing" };
+    const entry = (kind, label, sub, hash, titles, meta, body) => ({ kind: KIND[kind], label, sub, hash, title: sNorm(titles.join(" ")), meta: sNorm(meta.join(" ")), body: body.filter((v) => v && v.length > 1), bodyN: null });
+    sIndex = [
+      ...EXERCISES.map((x) => { const tr = exT(x) || {}, g = topicGroup(x.id); return entry("ex", topicTitle(x), `${x.level} · ${pickLang((exT(x) || x).text) || ""}`, `#practicar/${x.id}`,
+        [sStrings(x.title).join(" "), tr.title, (EN.exercises[x.id] || {}).title], [sStrings(x.text).join(" "), x.level, g ? sStrings(g.title).join(" ") : "", ...(x.sections || []).map((sc) => sStrings(sc.title).join(" "))], [...sStrings(x.sections), ...sStrings(tr.sections)]); }),
+      ...READINGS.map((x) => entry("rd", x.title, `${x.level}${x.minutes ? ` · ${t("minRead")(x.minutes)}` : ""}`, `#leer/${x.id}`, [x.title, sStrings(x.titleEn || "").join(" ")], [x.level, sStrings(x.tags || "").join(" ")], [...sStrings(x.text), ...sStrings(x.vocab || [])])),
+      ...sections.map((sc) => entry("sec", secT(sc).title || sc.title, secT(sc).text || sc.text || "", `#${sc.id}`, [sc.title, sc.short, (EN.sections[sc.id] || {}).title, (EN.sections[sc.id] || {}).short], [], [sc.text, (EN.sections[sc.id] || {}).text])),
+      ...channels.map((c) => { const sc = sections.find((x) => x.id === c.section); return entry("ch", c.name, `${sc ? secT(sc).short || sc.short : ""}${c.host ? ` · ${c.host}` : ""}`, `#${c.section}`, [c.name], [c.host, sStrings(c.level).join(" "), c.accent, c.format], [c.text, EN.channels[c.name]]); }),
+      ...(window.YEB_SHADOWING || []).map((v) => entry("vid", v.title, v.channel || "", "#shadowing", [v.title], [v.channel, v.cat], []))
+    ];
+    sIndexLang = lang;
+    return sIndex;
+  }
+  function siteSearch(raw) {
+    const toks = sNorm(raw).split(/\s+/).filter(Boolean);
+    if (!toks.length) return { toks, hits: [] };
+    const hits = [];
+    for (const r of searchIndex()) {
+      let score = 0, snip = "";
+      for (const tk of toks) {
+        if (r.title.includes(tk)) score += r.title.split(/\s+/).some((w) => w.startsWith(tk)) ? 12 : 8;
+        else if (r.meta.includes(tk)) score += 5;
+        else {
+          if (!r.bodyN) r.bodyN = r.body.map(sNorm);
+          const k = r.bodyN.findIndex((v) => v.includes(tk));
+          if (k < 0) { score = 0; break; }
+          score += 2;
+          if (!snip) { const str = r.body[k], i = r.bodyN[k].indexOf(tk), from = Math.max(0, i - 30), to = Math.min(str.length, i + tk.length + 45); snip = (from ? "…" : "") + str.slice(from, to).replace(/\s+/g, " ").trim() + (to < str.length ? "…" : ""); }
+        }
+      }
+      if (score) hits.push({ r, score, snip });
+    }
+    hits.sort((a, b) => b.score - a.score);
+    return { toks, hits };
+  }
+  // Highlights the words searched (only when accents don't change the length)
+  function hiliteSearch(text, toks) {
+    const n = sNorm(text);
+    if (n.length !== text.length) return esc(text);
+    const spans = [];
+    toks.forEach((tk) => { let i = n.indexOf(tk); while (i >= 0) { spans.push([i, i + tk.length]); i = n.indexOf(tk, i + tk.length); } });
+    spans.sort((a, b) => a[0] - b[0]);
+    let out = "", last = 0;
+    spans.forEach(([a, b]) => { if (a < last) return; out += esc(text.slice(last, a)) + "<mark>" + esc(text.slice(a, b)) + "</mark>"; last = b; });
+    return out + esc(text.slice(last));
+  }
+  let homeQuery = "";
+  function homeResultsHTML() {
+    const { toks, hits } = siteSearch(homeQuery);
+    if (!toks.length) return "";
+    const L = isEN() ? { n: (k) => `${k} ${k === 1 ? "result" : "results"}`, none: `Nothing found for «${homeQuery.trim()}». Try another word.`, more: (k) => `and ${k} more…` } : { n: (k) => `${k} ${k === 1 ? "resultado" : "resultados"}`, none: `No encontramos nada con «${homeQuery.trim()}». Prueba otra palabra.`, more: (k) => `y ${k} más…` };
+    if (!hits.length) return `<p class="hs-none">${esc(L.none)}</p>`;
+    const shown = hits.slice(0, 30);
+    return `<p class="hs-count">${esc(L.n(hits.length))}</p><div class="hs-list">${shown.map((h) => `
+      <button type="button" class="hs-item" data-action="search-go" data-hash="${esc(h.r.hash)}">
+        <small class="hs-kind">${esc(h.r.kind)}</small>
+        <strong>${hiliteSearch(h.r.label, toks)}</strong>
+        <span>${h.snip ? hiliteSearch(h.snip, toks) : esc(h.r.sub)}</span>
+      </button>`).join("")}</div>${hits.length > shown.length ? `<p class="hs-count">${esc(L.more(hits.length - shown.length))}</p>` : ""}`;
   }
 
   const account = () => student && (window.YEB_ACCOUNTS || []).find((a) => a.user === student.id);
