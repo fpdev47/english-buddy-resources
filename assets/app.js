@@ -18,7 +18,7 @@
   // Teacher-only board (assets/board.js); students get a stub that does nothing
   const BOARD = window.YEB_BOARD || { enabled: false, mountPage() {}, pageMode() {} };
   // Teacher account (assets/accounts.js → teacher: true): students dashboard and board
-  const TEACHER = (() => {
+  const TEACHER = !window.YEB_VIEWAS && (() => {
     try { const s = JSON.parse(localStorage.getItem("yeb-student") || "null"); const a = s && (window.YEB_ACCOUNTS || []).find((x) => x.user === s.id); return !!(a && a.teacher); } catch (e) { return false; }
   })();
   const isEN = () => window.YEB_I18N && window.YEB_I18N.lang === "en";
@@ -32,8 +32,9 @@
   // Each logged-in student has their own saved progress; with Supabase it also syncs between devices
   const CLOUD = window.YEB_CLOUD;
   const student = CLOUD && CLOUD.student;
-  const syncing = !!(student && CLOUD.enabled);
-  const STORE = student ? `yeb-state:${student.id}` : "yeb-state";
+  const VIEWAS = CLOUD && CLOUD.viewAs;   // teacher looking at the site as a student: nothing is synced
+  const syncing = !!(student && CLOUD.enabled && !VIEWAS);
+  const STORE = VIEWAS ? `yeb-view:${VIEWAS.id}` : student ? `yeb-state:${student.id}` : "yeb-state";
   // Classes: calendar, package, syllabus and Zoom link (assets/classes.js + data/classes.js)
   const CLASSES = window.YEB_CLASSES_UI || { has: () => false, studentHTML: () => "", mountTeacher() {}, refresh() {}, tab: () => "", editorTitle: () => "" };
   const HAS_CLASSES = !TEACHER && !!(student && CLASSES.has(student.id));
@@ -1266,6 +1267,7 @@
         $(".topics-label").scrollIntoView({ behavior: "smooth", block: "start" });
       }
       else if (a === "teach-view") { teachView = action.dataset.v; renderPanel(); }
+      else if (a === "teach-as") { const row = teachData && teachData.rows.find((r) => r.user === action.dataset.user); CLOUD.startViewAs(action.dataset.user, row && row.progress); }
       else if (a === "teach-open") { teachOpen = teachOpen === action.dataset.user ? null : action.dataset.user; renderPanel(); }
       else if (a === "teach-refresh") { teachData = null; renderPanel(); }
       else if (a === "home") {
@@ -1494,7 +1496,7 @@
   // saved in this browser (students who logged in on this computer).
   const TEACH_TXT = {
     en: {
-      tab: "Students", tabProgress: "Progress", title: "Students", intro: "Streak, study time, answers and where each student needs help. Tap a student to see the details.",
+      tab: "Students", tabProgress: "Progress", viewAs: (n) => `View as ${n}`, title: "Students", intro: "Streak, study time, answers and where each student needs help. Tap a student to see the details.",
       homeText: "Streaks, study time, mistakes and weak points of each student.",
       cloud: (when) => `Live from the cloud · updated ${when}`, refresh: "Refresh", loading: "Loading your students' progress…",
       local: "Only this browser", localHelp: "The cloud isn't connected yet, so each student's progress stays on their own phone or computer. Here you only see students who logged in on this browser. Connect Supabase (setup/supabase.sql and assets/config.js) to see everyone from anywhere.",
@@ -1506,7 +1508,7 @@
       byTopic: "Progress by topic", rightOf: (a, b) => `${a} of ${b} right`, answeredOf: (a, b) => `${a} of ${b} answered`
     },
     es: {
-      tab: "Estudiantes", tabProgress: "Progreso", title: "Estudiantes", intro: "Racha, tiempo de estudio, respuestas y en qué necesita ayuda cada estudiante. Toca un estudiante para ver el detalle.",
+      tab: "Estudiantes", tabProgress: "Progreso", viewAs: (n) => `Ver como ${n}`, title: "Estudiantes", intro: "Racha, tiempo de estudio, respuestas y en qué necesita ayuda cada estudiante. Toca un estudiante para ver el detalle.",
       homeText: "Rachas, tiempo de estudio, errores y puntos débiles de cada estudiante.",
       cloud: (when) => `En vivo desde la nube · actualizado ${when}`, refresh: "Actualizar", loading: "Cargando el progreso de tus estudiantes…",
       local: "Solo este navegador", localHelp: "La nube todavía no está conectada, así que el progreso de cada estudiante queda en su propio teléfono o computadora. Aquí solo ves a quienes entraron en este navegador. Conecta Supabase (setup/supabase.sql y assets/config.js) para ver a todos desde cualquier lugar.",
@@ -1632,6 +1634,7 @@
             </dl>
           </div>` : ""}
           ${detail}
+          <div class="tb-as"><button type="button" class="tb-as-btn" data-action="teach-as" data-user="${esc(r.user)}">${svg("M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z")}<span>${esc(tt("viewAs")(r.name))}</span></button></div>
         </article>`;
     }).join("");
     return `
@@ -1708,6 +1711,24 @@
   }
   $("#streak-chip").addEventListener("click", () => { state.mode = "progreso"; save(); writeHash(); render(); $("#results").scrollIntoView({ behavior: "smooth", block: "start" }); });
   $("#logout").addEventListener("click", async () => { await push(); CLOUD.logout(); });
+
+  // Teacher viewing the site as a student: a bar on top to go back
+  if (VIEWAS) {
+    const bar = document.createElement("div");
+    bar.className = "va-bar"; bar.setAttribute("role", "status");
+    const paint = () => {
+      bar.innerHTML = isEN()
+        ? `<span><strong>Viewing as ${esc(VIEWAS.name)}</strong> · student view. Nothing you do here is saved to their account.</span><button type="button">Back to my account</button>`
+        : `<span><strong>Viendo como ${esc(VIEWAS.name)}</strong> · vista de estudiante. Nada de lo que hagas aquí se guarda en su cuenta.</span><button type="button">Volver a mi cuenta</button>`;
+    };
+    paint();
+    bar.addEventListener("click", (e) => { if (e.target.closest("button")) CLOUD.stopViewAs(); });
+    document.body.prepend(bar);
+    document.documentElement.classList.add("viewing-as");
+    const vaH = () => document.documentElement.style.setProperty("--va-h", bar.offsetHeight + "px");
+    vaH(); addEventListener("resize", vaH);
+    document.addEventListener("click", (e) => { if (e.target.closest("[data-lang]")) setTimeout(() => { paint(); vaH(); }, 0); });
+  }
 
   // Teacher: «Students» tab, before «Board»
   if (TEACHER) {

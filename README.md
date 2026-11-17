@@ -221,3 +221,11 @@ De dónde salen los datos:
 - El profesor las edita en **Students → Classes**: enlace de Zoom, días, horario, tamaño del paquete, temario, estado/tema/nota de cada clase, «New package» (genera las fechas solas) y sesión opcional de dudas.
 - Estados: **done** (dada) · **missed** (faltó sin avisar, cuenta) · **moved** (avisó, se reprograma y no cuenta) · **scheduled** · **skipped**. Una clase programada cuya fecha ya pasó aparece como «To confirm». El número de clase se calcula solo.
 - Sin Supabase, los cambios se guardan en el navegador del profesor: usa **Export** para descargar `data/classes.js` y súbelo al repo para que los estudiantes los vean. Con Supabase conectado (sección 7 de `setup/supabase.sql`) se sincronizan solos.
+
+## Ver como estudiante (solo `teacher: true`)
+
+En **Students → Progress**, cada estudiante tiene el botón **View as …**: abre el sitio tal como lo ve ese estudiante (pestañas, clases, progreso) con una barra amarilla arriba para volver. Funciona solo en esa pestaña del navegador, no sincroniza nada y lo que hagas no se guarda en la cuenta del estudiante (usa una copia aparte, `yeb-view:<usuario>`, que se borra al volver).
+
+## Pizarra en pantalla completa
+
+El botón de las cuatro esquinas (junto a PDF) pone la pizarra en pantalla completa; **Esc** sale.

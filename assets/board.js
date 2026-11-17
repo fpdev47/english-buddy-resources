@@ -15,7 +15,7 @@
   let me = null;
   try {
     const s = JSON.parse(localStorage.getItem("yeb-student") || "null");
-    me = s && ACCOUNTS.find((a) => a.user === s.id);
+    me = !window.YEB_VIEWAS && s && ACCOUNTS.find((a) => a.user === s.id);
   } catch (e) {}
   const API = { enabled: !!(me && me.teacher), mountPage() {}, pageMode() {}, openPage: null };
   window.YEB_BOARD = API;
@@ -26,7 +26,7 @@
     en: {
       board: "Board", open: "Open the board", select: "Select and move (V)", pen: "Pen (P)", text: "Text (T)", note: "Post-it (N)",
       rect: "Box (R)", line: "Line (L)", image: "Add an image", undo: "Undo", redo: "Redo", del: "Delete", dup: "Duplicate",
-      pdf: "PDF", pdfLong: "Download every page as a PDF", page: (a, b) => `Page ${a} of ${b}`, prev: "Previous page", next: "Next page",
+      fsOn: "Full screen (Esc to exit)", fsOff: "Exit full screen", pdf: "PDF", pdfLong: "Download every page as a PDF", page: (a, b) => `Page ${a} of ${b}`, prev: "Previous page", next: "Next page",
       addPage: "New page", delPage: "Delete this page", delPageQ: "Delete this page and everything on it?", newBoard: "New board",
       newQ: "Start an empty board? Download the PDF first if the student needs this one.", titlePh: "Title (used for the PDF name)",
       outline: "No fill", tint: "Light fill", solid: "Solid", arrow: "Arrow", thin: "Thin", thick: "Thick", small: "Small", medium: "Medium", large: "Large",
@@ -37,7 +37,7 @@
     es: {
       board: "Pizarra", open: "Abrir la pizarra", select: "Seleccionar y mover (V)", pen: "Lápiz (P)", text: "Texto (T)", note: "Post-it (N)",
       rect: "Cuadro (R)", line: "Línea (L)", image: "Agregar una imagen", undo: "Deshacer", redo: "Rehacer", del: "Borrar", dup: "Duplicar",
-      pdf: "PDF", pdfLong: "Descargar todas las páginas en PDF", page: (a, b) => `Página ${a} de ${b}`, prev: "Página anterior", next: "Página siguiente",
+      fsOn: "Pantalla completa (Esc para salir)", fsOff: "Salir de pantalla completa", pdf: "PDF", pdfLong: "Descargar todas las páginas en PDF", page: (a, b) => `Página ${a} de ${b}`, prev: "Página anterior", next: "Página siguiente",
       addPage: "Página nueva", delPage: "Borrar esta página", delPageQ: "¿Borrar esta página y todo lo que tiene?", newBoard: "Pizarra nueva",
       newQ: "¿Empezar una pizarra vacía? Descarga antes el PDF si el estudiante necesita esta.", titlePh: "Título (nombre del PDF)",
       outline: "Sin relleno", tint: "Relleno suave", solid: "Sólido", arrow: "Flecha", thin: "Fino", thick: "Grueso", small: "Pequeño", medium: "Mediano", large: "Grande",
@@ -177,6 +177,14 @@
     const it = current();
     return it ? it.t : selSet.size > 1 ? "multi" : tool;
   }
+  // Full screen: the board covers the whole monitor (Esc exits)
+  const canFull = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  const isFull = () => (document.fullscreenElement || document.webkitFullscreenElement) === root;
+  function toggleFull() {
+    if (isFull()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else { const req = root.requestFullscreen || root.webkitRequestFullscreen; if (req) Promise.resolve(req.call(root)).catch(() => {}); }
+  }
+  ["fullscreenchange", "webkitfullscreenchange"].forEach((ev) => document.addEventListener(ev, () => { renderBar(); requestAnimationFrame(fit); }));
   function renderBar() {
     const it = current(), k = kind();
     const b = (act, title, inner, on, extra = "") => `<button type="button" class="bd-b${on ? " on" : ""}" data-act="${act}" title="${esc(title)}" aria-label="${esc(title)}"${extra}>${inner}</button>`;
@@ -200,6 +208,7 @@
         ${b("redo", tx("redo"), ico("M15 14l5-5-5-5M20 9H9a5 5 0 0 0 0 10h3"), false, redo.length ? "" : " disabled")}
         ${b("dup", tx("dup"), ico("M8 8h12v12H8zM4 16V4h12"), false, selSet.size ? "" : " disabled")}
         ${b("del", tx("del"), ico("M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"), false, selSet.size ? "" : " disabled")}
+        ${canFull ? b("full", isFull() ? tx("fsOff") : tx("fsOn"), isFull() ? ico("M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5") : ico("M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"), isFull()) : ""}
         <button type="button" class="bd-pdf" data-act="pdf" title="${esc(tx("pdfLong"))}">${ico("M12 4v11M7 10l5 5 5-5M5 20h14")}<span>${tx("pdf")}</span></button>
       </div>`;
     stage.dataset.tool = tool;
@@ -346,7 +355,7 @@
   function fit() {
     const r = stage.getBoundingClientRect();
     if (!r.width || !r.height) return;
-    const m = 12, wide = !!(pageHost && root.parentNode === pageHost && r.width >= 700);
+    const m = 12, wide = !!((isFull() || (pageHost && root.parentNode === pageHost)) && r.width >= 700);
     stage.classList.toggle("wide", wide);
     const cw = wide ? stage.clientWidth : r.width;
     scale = wide ? Math.max(0.05, (cw - m * 2) / W) : Math.max(0.05, Math.min((r.width - m * 2) / W, (r.height - m * 2) / H));
@@ -647,6 +656,7 @@
     else if (a === "del") removeSelected();
     else if (a === "dup") duplicate(selItems());
     else if (a === "pdf") exportPdf();
+    else if (a === "full") toggleFull();
     else if (a === "prev") goPage(doc.page - 1);
     else if (a === "next") goPage(doc.page + 1);
     else if (a === "addpage") { endEdit(true); doc.pages.splice(doc.page + 1, 0, { items: [] }); goPage(doc.page + 1); }
@@ -992,7 +1002,7 @@
   function fitHost() {
     if (!pageHost || !pageHost.isConnected) return;
     const top = pageHost.getBoundingClientRect().top + window.scrollY;
-    pageHost.style.height = Math.max(380, window.innerHeight - top - 12) + "px";
+    pageHost.style.height = Math.max(380, window.innerHeight - top - 6) + "px";
   }
   addEventListener("resize", fitHost);
   API.mountPage = (host) => {

@@ -32,7 +32,23 @@
     try { localStorage.removeItem(SESSION); } catch (e) {}
     root.classList.remove("unlocked");
   }
-  try { localStorage.removeItem("yeb-access"); } catch (e) {}   // the old shared key no longer opens the site
+  try { localStorage.removeItem("yeb-access"); } catch (e) {}
+
+  // Teacher «view as a student» (only in this tab): the site behaves as that student's session,
+  // but nothing is saved to their account (progress goes to a separate preview copy, cloud sync is off)
+  const VIEW = "yeb-viewas";
+  let viewAs = null;
+  try {
+    const v = sessionStorage.getItem(VIEW);
+    const me = student && ACCOUNTS.find((a) => a.user === student.id);
+    const target = v && ACCOUNTS.find((a) => a.user === v && !a.teacher);
+    if (me && me.teacher && target) {
+      viewAs = { id: target.user, name: target.name, teacher: { id: me.user, name: me.name } };
+      student = { id: target.user, name: target.name, ...(student.key ? { key: student.key } : {}) };
+    } else if (v) sessionStorage.removeItem(VIEW);
+  } catch (e) {}
+  window.YEB_VIEWAS = viewAs;
+  const reloadAt = (hash) => { location.hash = hash; location.reload(); };   // the old shared key no longer opens the site
 
   async function rpc(fn, body, keepalive) {
     const res = await fetch(`${cfg.url.replace(/\/$/, "")}/rest/v1/rpc/${fn}`, {
@@ -92,8 +108,26 @@
     getClasses() { return rpc("yeb_get_classes", { p_key: student.key }); },
     saveClasses(user, data) { return rpc("yeb_save_classes", { p_key: student.key, p_user: user, p_data: data }); },
 
+    get viewAs() { return viewAs; },
+    // Teacher: open the site as a student (progress = their latest copy, from the cloud or this browser)
+    startViewAs(user, progress) {
+      try {
+        const own = localStorage.getItem(`yeb-state:${user}`);
+        const p = progress || (own ? JSON.parse(own) : {});
+        const { dirty, syncedAt, ...rest } = p || {};
+        localStorage.setItem(`yeb-view:${user}`, JSON.stringify({ ...rest, mode: "inicio" }));
+        sessionStorage.setItem(VIEW, user);
+      } catch (e) {}
+      reloadAt("inicio");
+    },
+    stopViewAs() {
+      try { if (viewAs) localStorage.removeItem(`yeb-view:${viewAs.id}`); sessionStorage.removeItem(VIEW); } catch (e) {}
+      reloadAt("alumnos");
+    },
+
     // The student's progress stays saved on this browser for the next time they log in
     logout() {
+      if (viewAs) return this.stopViewAs();
       try { localStorage.removeItem(SESSION); } catch (e) {}
       student = null;
       location.reload();
