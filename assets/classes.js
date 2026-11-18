@@ -38,7 +38,8 @@
       savedCloud: "Saved. Students see the changes right away.", saveError: "Couldn't save in the cloud. Saved on this browser.",
       calendar: "Calendar", allClasses: "All classes in this package", prevM: "Previous month", nextM: "Next month", todayBtn: "Today",
       noClassDay: "No classes this day.", pick: "Tap a day with a class to see the details.", all: "All students", chooseToEdit: "Choose a student to edit their classes.",
-      ofSize: (n, s) => `Class ${n} of ${s}`, editBelow: "Edit classes",
+      ofSize: (n, s) => `Class ${n} of ${s}`, editBelow: "Edit classes", folder: "My class folder", folderOf: (n) => `${n}'s Drive folder`,
+      topicPh: "Topic of this class", stLabel: "Status", savedShort: "Saved",
       export: "Export data/classes.js", preview: "What the student sees", sortNote: "Classes are sorted by date.", over: "More classes than the package size"
     },
     es: {
@@ -61,11 +62,14 @@
       savedCloud: "Guardado. Los estudiantes ven los cambios al instante.", saveError: "No se pudo guardar en la nube. Quedó guardado en este navegador.",
       calendar: "Calendario", allClasses: "Todas las clases de este paquete", prevM: "Mes anterior", nextM: "Mes siguiente", todayBtn: "Hoy",
       noClassDay: "No hay clases este día.", pick: "Toca un día con clase para ver el detalle.", all: "Todos los estudiantes", chooseToEdit: "Elige un estudiante para editar sus clases.",
-      ofSize: (n, s) => `Clase ${n} de ${s}`, editBelow: "Editar clases",
+      ofSize: (n, s) => `Clase ${n} de ${s}`, editBelow: "Editar clases", folder: "Mi carpeta de clases", folderOf: (n) => `Carpeta de Drive de ${n}`,
+      topicPh: "Tema de esta clase", stLabel: "Estado", savedShort: "Guardado",
       export: "Exportar data/classes.js", preview: "Lo que ve el estudiante", sortNote: "Las clases se ordenan por fecha.", over: "Más clases que el tamaño del paquete"
     }
   };
   const tx = (k) => TXT[isEN() ? "en" : "es"][k];
+  const driveOf = (u) => { const a = (window.YEB_ACCOUNTS || []).find((x) => x.user === u); return a && a.drive && /^https?:\/\//i.test(a.drive) ? a.drive : ""; };
+  const DRIVE_ICO = "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z";
 
   // ——— Data: published file < cloud < this browser (teacher's unpublished edits) ———
   let local = null, cloud = null;
@@ -132,8 +136,8 @@
       if (!D || !D.sets) return;
       const sch = D.schedule || { days: [] }, size = D.setSize || 8;
       const acc = (window.YEB_ACCOUNTS || []).find((a) => a.user === u);
-      D.sets.forEach((set) => analyze(set, size, sch).rows.forEach((r) => {
-        if (r.c.date) out.push({ user: u, name: acc ? acc.name : u, date: r.c.date, st: r.c.kind === "review" ? (r.st === "confirm" ? "confirm" : r.st) : r.st, review: r.c.kind === "review", n: r.n, size, over: r.over, topic: r.c.topic, note: r.c.note, start: sch.start, end: sch.end, zoom: D.zoom, set: set.title });
+      D.sets.forEach((set, si) => analyze(set, size, sch).rows.forEach((r) => {
+        if (r.c.date) out.push({ user: u, name: acc ? acc.name : u, date: r.c.date, st: r.c.kind === "review" ? (r.st === "confirm" ? "confirm" : r.st) : r.st, review: r.c.kind === "review", n: r.n, size, over: r.over, topic: r.c.topic, note: r.c.note, start: sch.start, end: sch.end, zoom: D.zoom, set: set.title, si, ci: r.i });
       }));
     });
     return out.sort((a, b) => (a.date + (a.start || "")).localeCompare(b.date + (b.start || "")));
@@ -159,7 +163,7 @@
     for (let d = 1; d <= daysIn; d++) {
       const k = `${st.month}-${String(d).padStart(2, "0")}`, list = byDay[k] || [];
       const cls = `cal-cell${k === today ? " today" : ""}${k === st.day ? " sel" : ""}${list.length ? " has" : ""}`;
-      const chips = list.map((e) => `<span class="cal-ev s-${e.st}${e.review ? " s-review" : ""}"><b>${e.review ? "+" : e.n ? e.n : "–"}</b><span class="cal-ev-t">${esc(multi ? e.name : e.start ? fmtTime(e.start) : tx("st")[e.st])}</span></span>`).join("");
+      const chips = list.map((e) => `<span class="cal-ev s-${e.st}${e.review ? " s-review" : ""}"><b>${e.review ? "+" : e.n ? e.n : "–"}</b><span class="cal-ev-t">${esc(multi ? e.name : e.topic && !e.review ? e.topic : e.start ? fmtTime(e.start) : tx("st")[e.st])}</span></span>`).join("");
       cells += list.length
         ? `<button type="button" class="${cls}" data-cal="day" data-d="${k}" aria-label="${esc(longDate(k))}: ${list.map((e) => `${multi ? e.name + " · " : ""}${tx("st")[e.st]}`).join(", ")}"><span class="cal-d">${d}</span><span class="cal-evs">${chips}</span></button>`
         : `<div class="${cls}"><span class="cal-d">${d}</span></div>`;
@@ -173,7 +177,14 @@
           const zoom = !multi && upcoming && e.zoom && /^https?:\/\//i.test(e.zoom) && !opts.teacher ? `<a class="cl-zoom sm" href="${esc(e.zoom)}" target="_blank" rel="noopener">${svg("M15 10l5-3v10l-5-3M3 7h12v10H3z")}<span>${esc(tx("zoom"))}</span></a>` : "";
           return `<li class="s-${e.st}${e.review ? " s-review" : ""}">
             <div class="cal-dl-top"><span class="cl-st">${esc(e.review && e.st === "scheduled" ? tx("reviewTag") : tx("st")[e.st])}</span>${multi ? `<strong>${esc(e.name)}</strong>` : ""}<span class="cal-dl-when">${esc(e.start ? `${fmtTime(e.start)} – ${fmtTime(e.end)}` : "")}</span></div>
-            <p class="cal-dl-what"><b>${esc(e.review ? tx("extra") : e.n ? tx("ofSize")(e.n, e.size) : tx("st")[e.st])}</b>${e.topic ? ` · ${esc(e.topic)}` : ""}</p>
+            ${opts.teacher ? `
+            <p class="cal-dl-what"><b>${esc(e.review ? tx("extra") : e.n ? tx("ofSize")(e.n, e.size) : tx("st")[e.st])}</b></p>
+            <div class="cal-edit" data-u="${esc(e.user)}" data-s="${e.si}" data-i="${e.ci}">
+              <input type="text" data-calset="topic" list="cal-topics-${esc(e.user)}" value="${esc(e.topic || "")}" placeholder="${esc(tx("topicPh"))}" aria-label="${esc(tx("topic"))}">
+              <select data-calset="status" aria-label="${esc(tx("stLabel"))}">${["scheduled", "done", "missed", "moved", "skipped"].map((k) => `<option value="${k}"${k === (get(e.user).sets[e.si].classes[e.ci] || {}).status ? " selected" : ""}>${esc(tx("st")[k])}</option>`).join("")}</select>
+              <datalist id="cal-topics-${esc(e.user)}">${topicList(e.user, e.si).map((t) => `<option value="${esc(t)}">`).join("")}</datalist>
+            </div>` : `
+            <p class="cal-dl-what"><b>${esc(e.review ? tx("extra") : e.n ? tx("ofSize")(e.n, e.size) : tx("st")[e.st])}</b>${e.topic ? ` · ${esc(e.topic)}` : ""}</p>`}
             ${e.note ? `<p class="cal-dl-note">${esc(e.note)}</p>` : ""}${zoom}
           </li>`; }).join("")}</ul>` : `<p class="pg-help">${esc(evs.length ? tx("noClassDay") : tx("noNext"))}</p>`}
       </div>`;
@@ -198,6 +209,28 @@
         <ul class="cal-legend">${["done", "missed", "moved", "scheduled", "confirm"].map((k) => `<li class="s-${k}"><i></i>${esc(tx("st")[k])}</li>`).join("")}<li class="s-review"><i></i>${esc(tx("reviewTag"))}</li></ul>
       </section>`;
   }
+  // Topic suggestions: the package syllabus first, then every exercise topic
+  function topicList(user, si) {
+    const D = get(user), set = D && D.sets[si];
+    const ex = (window.YEB_EXERCISES || []).map((x) => (window.YEB_EN && window.YEB_EN.exercises && window.YEB_EN.exercises[x.id] && window.YEB_EN.exercises[x.id].title) || (x.title && x.title.en) || x.title).filter((t) => typeof t === "string");
+    return [...new Set([...((set && set.syllabus) || []), ...ex])];
+  }
+  // Teacher: topic and status edited right in the calendar (saved like the editor below)
+  function calEdit(e, redraw) {
+    const el = e.target.closest("[data-calset]"), box = el && el.closest(".cal-edit");
+    if (!box || !window.YEB_CLASSES_UI.canEdit) return;
+    const u = box.dataset.u, D = ensure(u), c = D.sets[+box.dataset.s] && D.sets[+box.dataset.s].classes[+box.dataset.i];
+    if (!c) return;
+    c[el.dataset.calset] = el.dataset.calset === "topic" ? el.value : el.value;
+    persist(u);
+    if (redraw) {
+      const host = document.getElementById("cl-host");
+      if (host) host.innerHTML = editorHTML();
+    }
+  }
+  document.addEventListener("input", (e) => { if (e.target.dataset && e.target.dataset.calset === "topic") calEdit(e, false); });
+  document.addEventListener("change", (e) => { if (e.target.dataset && e.target.dataset.calset) calEdit(e, true); });
+
   // Month and day changes redraw only that calendar
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-cal]");
@@ -241,7 +274,10 @@
           <small>${esc(tx("next"))}</small>
           ${upcoming ? `<strong>${esc(longDate(upcoming.c.date))}</strong><span>${esc(hours)}${hours ? " · " : ""}${esc(rel(upcoming.c.date))}</span>` : `<strong>${esc(tx("noNext"))}</strong>`}
         </div>
-        ${zoom ? `<a class="cl-zoom" href="${esc(zoom)}" target="_blank" rel="noopener">${svg("M15 10l5-3v10l-5-3M3 7h12v10H3z")}<span>${esc(tx("zoom"))}</span></a>` : ""}
+        <div class="cl-ctas">
+          ${zoom ? `<a class="cl-zoom" href="${esc(zoom)}" target="_blank" rel="noopener">${svg("M15 10l5-3v10l-5-3M3 7h12v10H3z")}<span>${esc(tx("zoom"))}</span></a>` : ""}
+          ${driveOf(user) ? `<a class="cl-drive" href="${esc(driveOf(user))}" target="_blank" rel="noopener">${svg(DRIVE_ICO)}<span>${esc(tx("folder"))}</span></a>` : ""}
+        </div>
         <div class="cl-facts">
           <div><small>${esc(tx("days"))}</small><strong>${esc(cap(tx("every")(dayNames(sch.days || []))))}</strong><span>${esc(hours)}</span></div>
           <div><small>${esc(tx("package"))} · ${esc(set.title || "")}</small><strong>${esc(tx("used")(A.used, size))}</strong><span>${esc(tx("left")(A.left))}</span>
@@ -300,6 +336,7 @@
       <div class="cl-ed">
         <p class="pg-help">${esc(tx("edIntro"))}</p>
         <div class="cl-who"><button type="button" class="lib-chip" aria-pressed="${calAll}" data-cl="all">${esc(tx("all"))}</button>${list.map((s) => `<button type="button" class="lib-chip" aria-pressed="${!calAll && s.user === edUser}" data-cl="user" data-v="${esc(s.user)}">${esc(s.name)}</button>`).join("")}</div>
+        ${!calAll && driveOf(edUser) ? `<a class="cl-drive-t" href="${esc(driveOf(edUser))}" target="_blank" rel="noopener">${svg(DRIVE_ICO)}<span>${esc(tx("folderOf")((list.find((x) => x.user === edUser) || {}).name || ""))}</span></a>` : ""}
         <div class="cl">${calAll ? calendarHTML("t-all", list.map((s) => s.user).filter((u) => get(u)), { teacher: true }) : calendarHTML(`t-${edUser}`, [edUser], { teacher: true })}</div>
         ${calAll ? `<p class="pg-help">${esc(tx("chooseToEdit"))}</p></div>` : `<h3 class="cl-edh">${esc(tx("editBelow"))} · ${esc((list.find((s) => s.user === edUser) || {}).name || "")}</h3>`}
         ${calAll ? "" : `
@@ -404,7 +441,8 @@
     tab: () => tx("tab"),
     editorTitle: () => tx("edTitle"),
     studentHTML,
-    mountTeacher(host) { if (!host) return; host.innerHTML = editorHTML(); bindEditor(host); },
+    canEdit: false,
+    mountTeacher(host) { if (!host) return; window.YEB_CLASSES_UI.canEdit = true; host.innerHTML = editorHTML(); bindEditor(host); },
     // With Supabase, newer classes from the cloud; calls back when they arrive
     refresh(cb) { loadCloud().then((ok) => { if (ok && cb) cb(); }); }
   };

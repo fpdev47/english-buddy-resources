@@ -1260,3 +1260,24 @@ button.cal-cell { cursor: pointer; }
   .cal-title { min-width: 0; }
   .cal-today { display: none; }
 }
+
+/* ——— Google Drive folder: more prominent ——— */
+.drive-chip { background: var(--lime); color: var(--teal-900); border-color: var(--lime); }
+@media (hover: hover) { .drive-chip:hover { filter: brightness(1.05); border-color: var(--lime); } }
+.home-drive { background: var(--lime); border-color: var(--lime); color: var(--teal-900); padding: 18px 22px; }
+.home-drive .home-txt strong { color: var(--teal-900); font-size: 18px; }
+.home-drive .home-txt span { color: var(--teal-900); opacity: .8; }
+.home-drive .home-ico { background: var(--teal-900); color: var(--lime); }
+.home-drive-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 999px; background: var(--teal-900); color: var(--lime); font: 700 14px var(--font-body); white-space: nowrap; }
+.home-drive-btn svg { width: 16px; height: 16px; }
+@media (max-width: 560px) { .home-drive-btn { padding: 9px 12px; font-size: 13px; } }
+.cl-ctas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.cl-drive { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 999px; border: 2px solid var(--lime); color: var(--lime); font: 700 15px var(--font-body); text-decoration: none; white-space: nowrap; }
+.cl-drive svg { width: 20px; height: 20px; }
+@media (hover: hover) { .cl-drive:hover { background: rgba(200, 228, 124, .12); } }
+@media (max-width: 560px) { .cl-ctas { justify-content: stretch; } .cl-ctas a { flex: 1 1 100%; justify-content: center; } }
+.cl-drive-t { justify-self: start; width: fit-content; display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 12px; padding: 8px 14px; border-radius: 999px; background: var(--lime); color: var(--teal-900); font: 700 13.5px var(--font-body); text-decoration: none; }
+.cl-drive-t svg { width: 16px; height: 16px; }
+.cal-edit { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 8px; }
+.cal-edit input, .cal-edit select { min-height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-soft); color: var(--ink); font: 500 14px var(--font-body); }
+.cal-edit input:focus, .cal-edit select:focus { outline: none; border-color: var(--brand); }

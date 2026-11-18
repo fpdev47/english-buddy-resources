@@ -1703,7 +1703,7 @@
       <a class="home-drive" href="${esc(acc.drive)}" target="_blank" rel="noopener">
         <span class="home-ico" aria-hidden="true">${svg("M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z")}</span>
         <span class="home-txt"><strong>${esc(t("driveShort"))}</strong><span>${esc(t("driveText"))}</span></span>
-        <span class="home-go" aria-hidden="true">${svg("M7 17 17 7M8 7h9v9")}</span>
+        <span class="home-drive-btn">${esc(isEN() ? "Open folder" : "Abrir carpeta")}${svg("M7 17 17 7M8 7h9v9")}</span>
       </a>` : "";
     const ph = isEN() ? "Search topics, readings, videos, channels… (e.g. past, Steve Jobs, 's)" : "Busca temas, lecturas, videos, canales… (ej. pasado, Steve Jobs, 's)";
     return `<div class="home-search">
