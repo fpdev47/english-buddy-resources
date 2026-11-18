@@ -46,14 +46,16 @@ window.YEB_CLASSES = {
         title: "Nov – Dec 2026",
         syllabus: [],
         classes: [
-          { date: "2026-11-05", topic: "", status: "scheduled", note: "" },
-          { date: "2026-11-10", topic: "", status: "scheduled", note: "" },
-          { date: "2026-11-12", topic: "", status: "scheduled", note: "" },
+          { date: "2026-11-05", topic: "", status: "done", note: "" },
+          { date: "2026-11-10", topic: "", status: "moved", note: "Student gave advance notice of absence" },
+          { date: "2026-11-12", topic: "", status: "moved", note: "Student gave advance notice of absence" },
           { date: "2026-11-17", topic: "", status: "scheduled", note: "" },
           { date: "2026-11-19", topic: "", status: "scheduled", note: "" },
           { date: "2026-11-24", topic: "", status: "scheduled", note: "" },
           { date: "2026-11-26", topic: "", status: "scheduled", note: "" },
           { date: "2026-12-01", topic: "", status: "scheduled", note: "" },
+          { date: "2026-12-03", topic: "", status: "scheduled", note: "" },
+          { date: "2026-12-08", topic: "", status: "scheduled", note: "" },
           { date: "", topic: "Doubt-clearing session (optional)", status: "scheduled", note: "", kind: "review" }
         ]
       }

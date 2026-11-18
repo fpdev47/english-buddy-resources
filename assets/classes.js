@@ -36,6 +36,9 @@
       addClass: "Add class", addReview: "Add doubt-clearing session", delQ: "Delete this class?", reviewTag: "Optional",
       savedLocal: "Saved on this browser. The cloud isn't connected: students see the published version until you export and publish data/classes.js.",
       savedCloud: "Saved. Students see the changes right away.", saveError: "Couldn't save in the cloud. Saved on this browser.",
+      calendar: "Calendar", allClasses: "All classes in this package", prevM: "Previous month", nextM: "Next month", todayBtn: "Today",
+      noClassDay: "No classes this day.", pick: "Tap a day with a class to see the details.", all: "All students", chooseToEdit: "Choose a student to edit their classes.",
+      ofSize: (n, s) => `Class ${n} of ${s}`, editBelow: "Edit classes",
       export: "Export data/classes.js", preview: "What the student sees", sortNote: "Classes are sorted by date.", over: "More classes than the package size"
     },
     es: {
@@ -56,6 +59,9 @@
       addClass: "Agregar clase", addReview: "Agregar sesión de dudas", delQ: "¿Borrar esta clase?", reviewTag: "Opcional",
       savedLocal: "Guardado en este navegador. La nube no está conectada: los estudiantes ven la versión publicada hasta que exportes y publiques data/classes.js.",
       savedCloud: "Guardado. Los estudiantes ven los cambios al instante.", saveError: "No se pudo guardar en la nube. Quedó guardado en este navegador.",
+      calendar: "Calendario", allClasses: "Todas las clases de este paquete", prevM: "Mes anterior", nextM: "Mes siguiente", todayBtn: "Hoy",
+      noClassDay: "No hay clases este día.", pick: "Toca un día con clase para ver el detalle.", all: "Todos los estudiantes", chooseToEdit: "Elige un estudiante para editar sus clases.",
+      ofSize: (n, s) => `Clase ${n} de ${s}`, editBelow: "Editar clases",
       export: "Exportar data/classes.js", preview: "Lo que ve el estudiante", sortNote: "Las clases se ordenan por fecha.", over: "Más clases que el tamaño del paquete"
     }
   };
@@ -116,6 +122,97 @@
     return { rows, used, left: Math.max(0, size - used) };
   }
 
+
+  // ——— Calendar (month view): every class of every package, colored by status ———
+  const calState = {};   // per calendar id: { month: "YYYY-MM", day: "YYYY-MM-DD" }
+  function events(users) {
+    const out = [];
+    users.forEach((u) => {
+      const D = get(u);
+      if (!D || !D.sets) return;
+      const sch = D.schedule || { days: [] }, size = D.setSize || 8;
+      const acc = (window.YEB_ACCOUNTS || []).find((a) => a.user === u);
+      D.sets.forEach((set) => analyze(set, size, sch).rows.forEach((r) => {
+        if (r.c.date) out.push({ user: u, name: acc ? acc.name : u, date: r.c.date, st: r.c.kind === "review" ? (r.st === "confirm" ? "confirm" : r.st) : r.st, review: r.c.kind === "review", n: r.n, size, over: r.over, topic: r.c.topic, note: r.c.note, start: sch.start, end: sch.end, zoom: D.zoom, set: set.title });
+      }));
+    });
+    return out.sort((a, b) => (a.date + (a.start || "")).localeCompare(b.date + (b.start || "")));
+  }
+  const monthOf = (k) => k.slice(0, 7);
+  function calendarHTML(id, users, opts = {}) {
+    const evs = events(users), byDay = {};
+    evs.forEach((e) => (byDay[e.date] = byDay[e.date] || []).push(e));
+    const today = dayKey();
+    const st = calState[id] || (calState[id] = {});
+    if (!st.day) {
+      const next = evs.find((e) => e.date >= today && (e.st === "scheduled" || e.st === "confirm")) || evs.filter((e) => e.date <= today).pop() || evs[0];
+      st.day = next ? next.date : today;
+    }
+    if (!st.month) st.month = monthOf(st.day);
+    const [y, m] = st.month.split("-").map(Number);
+    const first = new Date(y, m - 1, 1, 12), lead = (first.getDay() + 6) % 7, daysIn = new Date(y, m, 0).getDate();
+    const weekdays = [1, 2, 3, 4, 5, 6, 0].map((d) => cap(new Date(2026, 1, 1 + d).toLocaleDateString(locale(), { weekday: "short" }).replace(".", "")));
+    const title = cap(first.toLocaleDateString(locale(), { month: "long", year: "numeric" }));
+    const multi = users.length > 1;
+    let cells = "";
+    for (let i = 0; i < lead; i++) cells += `<div class="cal-cell out" aria-hidden="true"></div>`;
+    for (let d = 1; d <= daysIn; d++) {
+      const k = `${st.month}-${String(d).padStart(2, "0")}`, list = byDay[k] || [];
+      const cls = `cal-cell${k === today ? " today" : ""}${k === st.day ? " sel" : ""}${list.length ? " has" : ""}`;
+      const chips = list.map((e) => `<span class="cal-ev s-${e.st}${e.review ? " s-review" : ""}"><b>${e.review ? "+" : e.n ? e.n : "–"}</b><span class="cal-ev-t">${esc(multi ? e.name : e.start ? fmtTime(e.start) : tx("st")[e.st])}</span></span>`).join("");
+      cells += list.length
+        ? `<button type="button" class="${cls}" data-cal="day" data-d="${k}" aria-label="${esc(longDate(k))}: ${list.map((e) => `${multi ? e.name + " · " : ""}${tx("st")[e.st]}`).join(", ")}"><span class="cal-d">${d}</span><span class="cal-evs">${chips}</span></button>`
+        : `<div class="${cls}"><span class="cal-d">${d}</span></div>`;
+    }
+    const sel = byDay[st.day] || [];
+    const detail = `
+      <div class="cal-detail">
+        <h4>${esc(longDate(st.day))}</h4>
+        ${sel.length ? `<ul>${sel.map((e) => {
+          const upcoming = (e.st === "scheduled") && e.date >= today;
+          const zoom = !multi && upcoming && e.zoom && /^https?:\/\//i.test(e.zoom) && !opts.teacher ? `<a class="cl-zoom sm" href="${esc(e.zoom)}" target="_blank" rel="noopener">${svg("M15 10l5-3v10l-5-3M3 7h12v10H3z")}<span>${esc(tx("zoom"))}</span></a>` : "";
+          return `<li class="s-${e.st}${e.review ? " s-review" : ""}">
+            <div class="cal-dl-top"><span class="cl-st">${esc(e.review && e.st === "scheduled" ? tx("reviewTag") : tx("st")[e.st])}</span>${multi ? `<strong>${esc(e.name)}</strong>` : ""}<span class="cal-dl-when">${esc(e.start ? `${fmtTime(e.start)} – ${fmtTime(e.end)}` : "")}</span></div>
+            <p class="cal-dl-what"><b>${esc(e.review ? tx("extra") : e.n ? tx("ofSize")(e.n, e.size) : tx("st")[e.st])}</b>${e.topic ? ` · ${esc(e.topic)}` : ""}</p>
+            ${e.note ? `<p class="cal-dl-note">${esc(e.note)}</p>` : ""}${zoom}
+          </li>`; }).join("")}</ul>` : `<p class="pg-help">${esc(evs.length ? tx("noClassDay") : tx("noNext"))}</p>`}
+      </div>`;
+    return `
+      <section class="pg-card cl-calwrap" data-cal-id="${esc(id)}" data-cal-users="${esc(users.join(","))}"${opts.teacher ? ' data-cal-teacher="1"' : ""}>
+        <div class="cal-head">
+          <h3>${esc(tx("calendar"))}</h3>
+          <div class="cal-nav">
+            <button type="button" class="cal-btn" data-cal="prev" aria-label="${esc(tx("prevM"))}">${svg("M15 6l-6 6 6 6")}</button>
+            <strong class="cal-title">${esc(title)}</strong>
+            <button type="button" class="cal-btn" data-cal="next" aria-label="${esc(tx("nextM"))}">${svg("M9 6l6 6-6 6")}</button>
+            <button type="button" class="cal-today" data-cal="today">${esc(tx("todayBtn"))}</button>
+          </div>
+        </div>
+        <div class="cal-body">
+          <div class="cal-grid" role="grid">
+            ${weekdays.map((w) => `<div class="cal-wd">${esc(w)}</div>`).join("")}
+            ${cells}
+          </div>
+          ${detail}
+        </div>
+        <ul class="cal-legend">${["done", "missed", "moved", "scheduled", "confirm"].map((k) => `<li class="s-${k}"><i></i>${esc(tx("st")[k])}</li>`).join("")}<li class="s-review"><i></i>${esc(tx("reviewTag"))}</li></ul>
+      </section>`;
+  }
+  // Month and day changes redraw only that calendar
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-cal]");
+    const wrap = b && b.closest(".cl-calwrap");
+    if (!wrap) return;
+    const id = wrap.dataset.calId, st = calState[id] || (calState[id] = {}), a = b.dataset.cal;
+    if (a === "day") st.day = b.dataset.d;
+    else if (a === "today") { st.day = dayKey(); st.month = monthOf(st.day); }
+    else {
+      const [y, m] = st.month.split("-").map(Number), d = new Date(y, m - 1 + (a === "next" ? 1 : -1), 1);
+      st.month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    }
+    wrap.outerHTML = calendarHTML(id, wrap.dataset.calUsers.split(","), { teacher: !!wrap.dataset.calTeacher });
+  });
+
   // ——— Student view ———
   function studentHTML(user, opts = {}) {
     const D = get(user);
@@ -151,10 +248,11 @@
             <span class="meter" aria-hidden="true"><i style="width:${Math.min(100, Math.round((A.used / size) * 100))}%"></i></span></div>
         </div>
       </section>
-      <section class="pg-card">
-        <h3>${esc(tx("classes"))}</h3>
+      ${calendarHTML(`s-${user}`, [user], { teacher: !!opts.teacher })}
+      <details class="pg-card cl-all">
+        <summary>${esc(tx("allClasses"))} · ${esc(set.title || "")}</summary>
         <ol class="cl-list">${A.rows.map(row).join("")}</ol>
-      </section>
+      </details>
       <section class="pg-card">
         <h3>${esc(tx("syllabus"))}</h3>
         ${set.syllabus && set.syllabus.length ? `<ol class="cl-syl">${set.syllabus.map((s) => `<li class="${doneTopics.has(s.trim().toLowerCase()) ? "done" : ""}">${esc(s)}</li>`).join("")}</ol>` : `<p class="pg-help">${esc(tx("syllabusEmpty"))}</p>`}
@@ -168,7 +266,7 @@
   }
 
   // ——— Teacher editor ———
-  let edUser = null, edSet = null, saveMsg = "", saveTimer = null;
+  let edUser = null, edSet = null, saveMsg = "", saveTimer = null, calAll = false;
   const students = () => (window.YEB_ACCOUNTS || []).filter((a) => !a.teacher);
   function ensure(user) {
     if (!local) local = {};
@@ -201,7 +299,10 @@
     return `
       <div class="cl-ed">
         <p class="pg-help">${esc(tx("edIntro"))}</p>
-        <div class="cl-who">${list.map((s) => `<button type="button" class="lib-chip" aria-pressed="${s.user === edUser}" data-cl="user" data-v="${esc(s.user)}">${esc(s.name)}</button>`).join("")}</div>
+        <div class="cl-who"><button type="button" class="lib-chip" aria-pressed="${calAll}" data-cl="all">${esc(tx("all"))}</button>${list.map((s) => `<button type="button" class="lib-chip" aria-pressed="${!calAll && s.user === edUser}" data-cl="user" data-v="${esc(s.user)}">${esc(s.name)}</button>`).join("")}</div>
+        <div class="cl">${calAll ? calendarHTML("t-all", list.map((s) => s.user).filter((u) => get(u)), { teacher: true }) : calendarHTML(`t-${edUser}`, [edUser], { teacher: true })}</div>
+        ${calAll ? `<p class="pg-help">${esc(tx("chooseToEdit"))}</p></div>` : `<h3 class="cl-edh">${esc(tx("editBelow"))} · ${esc((list.find((s) => s.user === edUser) || {}).name || "")}</h3>`}
+        ${calAll ? "" : `
         <div class="cl-grid">
           <label class="cl-f wide"><span>${esc(tx("zoomLink"))}</span><input type="url" data-ed="zoom" value="${esc(D.zoom || "")}" placeholder="${esc(tx("zoomPh"))}"></label>
           <div class="cl-f wide"><span>${esc(tx("days"))}</span><div class="cl-days">${dayBox}</div></div>
@@ -235,8 +336,7 @@
           <button type="button" class="tb-refresh" data-cl="export">${svg("M12 4v11M7 10l5 5 5-5M5 20h14")}<span>${esc(tx("export"))}</span></button>
         </div>
         <p class="cl-saved" role="status"${saveMsg ? "" : " hidden"}>${esc(saveMsg)}</p>
-        <details class="cl-preview"><summary>${esc(tx("preview"))}</summary><div class="cl">${studentHTML(edUser, { noHead: true })}</div></details>
-      </div>`;
+      </div>`}`;
   }
   function bindEditor(host) {
     if (host.dataset.clBound) return;
@@ -247,7 +347,8 @@
       const b = e.target.closest("[data-cl]");
       if (!b) return;
       const a = b.dataset.cl, D = edUser && ensure(edUser);
-      if (a === "user") { edUser = b.dataset.v; edSet = null; saveMsg = ""; }
+      if (a === "all") { calAll = true; }
+      else if (a === "user") { calAll = false; edUser = b.dataset.v; edSet = null; saveMsg = ""; }
       else if (a === "del") { if (!confirm(tx("delQ"))) return; curSet().classes.splice(+b.closest("[data-i]").dataset.i, 1); persist(edUser); }
       else if (a === "add" || a === "review") {
         const set = curSet(), last = set.classes.filter((c) => c.date).map((c) => c.date).sort().pop();

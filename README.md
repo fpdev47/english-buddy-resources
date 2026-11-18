@@ -217,7 +217,8 @@ De dónde salen los datos:
 
 ## Clases de cada estudiante («My classes» / Students → Classes)
 
-- Los estudiantes con datos en `data/classes.js` ven la pestaña **My classes**: próxima clase (con botón «Join on Zoom» si hay enlace), días y horario, paquete usado/restante, lista de clases, temario y cómo cuentan las clases.
+- Los estudiantes con datos en `data/classes.js` ven la pestaña **My classes**: próxima clase (con botón «Join on Zoom» si hay enlace), días y horario, paquete usado/restante, un **calendario mensual** con cada clase coloreada por estado (al tocar un día se ve el detalle), la lista completa, temario y cómo cuentan las clases.
+- En **Students → Classes** el profesor ve el calendario de cada estudiante o el de **todos** juntos, y debajo el editor.
 - El profesor las edita en **Students → Classes**: enlace de Zoom, días, horario, tamaño del paquete, temario, estado/tema/nota de cada clase, «New package» (genera las fechas solas) y sesión opcional de dudas.
 - Estados: **done** (dada) · **missed** (faltó sin avisar, cuenta) · **moved** (avisó, se reprograma y no cuenta) · **scheduled** · **skipped**. Una clase programada cuya fecha ya pasó aparece como «To confirm». El número de clase se calcula solo.
 - Sin Supabase, los cambios se guardan en el navegador del profesor: usa **Export** para descargar `data/classes.js` y súbelo al repo para que los estudiantes los vean. Con Supabase conectado (sección 7 de `setup/supabase.sql`) se sincronizan solos.
