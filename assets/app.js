@@ -1800,6 +1800,23 @@
     const acc = account();
     $("#badge-text").textContent = `${t("hi")((acc && acc.nick) || student.name)} ${studied(dayKey()) ? t("greetDone") : t("greetToday")}`;
     const b = $("#logout"); b.hidden = false; b.textContent = t("logout");
+    // Teacher: open the site as one of the students, from any page (next to «Log out»)
+    if (TEACHER) {
+      let pick = $("#viewas-pick");
+      if (!pick) {
+        pick = document.createElement("select");
+        pick.id = "viewas-pick"; pick.className = "viewas-pick";
+        b.after(pick);
+        pick.addEventListener("change", () => {
+          if (!pick.value) return;
+          const row = teachData && teachData.rows.find((r) => r.user === pick.value);
+          CLOUD.startViewAs(pick.value, row && row.progress);
+        });
+      }
+      const label = isEN() ? "View as a student…" : "Ver como estudiante…";
+      pick.setAttribute("aria-label", label);
+      pick.innerHTML = `<option value="">${esc(label)}</option>` + (window.YEB_ACCOUNTS || []).filter((a) => !a.teacher).map((a) => `<option value="${esc(a.user)}">${esc(a.name)}</option>`).join("");
+    }
     // The student's Google Drive folder (class notes and calendar), at the top of every page
     const drive = $("#drive-link"), url = acc && acc.drive;
     drive.hidden = !url;

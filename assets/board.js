@@ -24,7 +24,7 @@
   // ——— Texts ———
   const TXT = {
     en: {
-      board: "Board", open: "Open the board", select: "Select and move (V)", pen: "Pen (P)", text: "Text (T)", note: "Post-it (N)",
+      board: "Board", open: "Open the board", select: "Select and move (V)", laser: "Red pointer to point at things, on the board or anywhere on the page (K)", pen: "Pen (P)", text: "Text (T)", note: "Post-it (N)",
       rect: "Box (R)", line: "Line (L)", image: "Add an image", undo: "Undo", redo: "Redo", del: "Delete", dup: "Duplicate",
       fsOn: "Full screen (Esc to exit)", fsOff: "Exit full screen", pdf: "PDF", pdfLong: "Download every page as a PDF", page: (a, b) => `Page ${a} of ${b}`, prev: "Previous page", next: "Next page",
       addPage: "New page", delPage: "Delete this page", delPageQ: "Delete this page and everything on it?", newBoard: "New board",
@@ -35,7 +35,7 @@
       defTitle: "Class notes"
     },
     es: {
-      board: "Pizarra", open: "Abrir la pizarra", select: "Seleccionar y mover (V)", pen: "Lápiz (P)", text: "Texto (T)", note: "Post-it (N)",
+      board: "Pizarra", open: "Abrir la pizarra", select: "Seleccionar y mover (V)", laser: "Puntero rojo para señalar, en la pizarra o en cualquier parte de la página (K)", pen: "Lápiz (P)", text: "Texto (T)", note: "Post-it (N)",
       rect: "Cuadro (R)", line: "Línea (L)", image: "Agregar una imagen", undo: "Deshacer", redo: "Rehacer", del: "Borrar", dup: "Duplicar",
       fsOn: "Pantalla completa (Esc para salir)", fsOff: "Salir de pantalla completa", pdf: "PDF", pdfLong: "Descargar todas las páginas en PDF", page: (a, b) => `Página ${a} de ${b}`, prev: "Página anterior", next: "Página siguiente",
       addPage: "Página nueva", delPage: "Borrar esta página", delPageQ: "¿Borrar esta página y todo lo que tiene?", newBoard: "Pizarra nueva",
@@ -201,7 +201,7 @@
     if (k === "pen" || k === "line") { const w = cur("w", width); opts += `<span class="bd-sep"></span>${chip("width", "thin", tx("thin"), w === "thin")}${chip("width", "thick", tx("thick"), w === "thick")}`; }
     if (k === "line") opts += chip("arrow", "1", tx("arrow"), cur("arrow", arrow));
     bar.innerHTML = `
-      <div class="bd-tools">${TOOLS.map(([id, d]) => b("tool", tx(id), ico(d), tool === id, ` data-v="${id}"`)).join("")}${b("image", tx("image"), ico("M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4", '<circle cx="9" cy="9" r="1.5" fill="currentColor"/>'))}</div>
+      <div class="bd-tools">${TOOLS.map(([id, d]) => b("tool", tx(id), ico(d), tool === id, ` data-v="${id}"`)).join("")}${b("image", tx("image"), ico("M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4", '<circle cx="9" cy="9" r="1.5" fill="currentColor"/>'))}<button type="button" class="bd-b bd-laser-b${laser ? " on" : ""}" data-act="laser" title="${esc(tx("laser"))}" aria-label="${esc(tx("laser"))}" aria-pressed="${laser}"><span class="bd-dot"></span></button></div>
       <div class="bd-opts">${opts}</div>
       <div class="bd-acts">
         ${b("undo", tx("undo"), ico("M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"), false, undo.length ? "" : " disabled")}
@@ -445,7 +445,7 @@
   let drag = null;
   const place = (x, y, w, h) => ({ x: Math.round(Math.min(Math.max(x, 0), W - w)), y: Math.round(Math.min(Math.max(y, 0), H - h)) });
   stage.addEventListener("pointerdown", (e) => {
-    if (e.button > 0) return;
+    if (e.button > 0 || laser) return;   // with the red pointer on, clicking only points
     // The scrollbar of the wide board keeps working
     if (e.target === stage && e.clientX - stage.getBoundingClientRect().left > stage.clientWidth) return;
     const p = pt(e);
@@ -594,6 +594,57 @@
   });
 
   // ——— Toolbar and footer actions ———
+  // ——— Red pointer (laser): a dot with a short fading trail that follows the mouse over the board
+  // and, while it's on, over the whole page (clicks still go through to the page) ———
+  let laser = false, trail = [], lzRaf = 0;
+  const lz = document.createElement("canvas");
+  lz.className = "bd-laser"; lz.hidden = true; lz.setAttribute("aria-hidden", "true");
+  document.body.appendChild(lz);
+  const lzCtx = lz.getContext("2d");
+  function setLaser(on) {
+    laser = on; lz.hidden = !on; trail = [];
+    document.documentElement.classList.toggle("laser-on", on);
+    renderBar();
+    if (on && !lzRaf) lzRaf = requestAnimationFrame(drawLaser);
+  }
+  function drawLaser() {
+    lzRaf = 0;
+    const dpr = window.devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+    if (lz.width !== Math.round(w * dpr) || lz.height !== Math.round(h * dpr)) { lz.width = Math.round(w * dpr); lz.height = Math.round(h * dpr); }
+    lzCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lzCtx.clearRect(0, 0, w, h);
+    if (!laser) return;
+    const now = performance.now(), LIFE = 380;
+    trail = trail.filter((q) => now - q.t < LIFE);
+    lzCtx.lineCap = "round"; lzCtx.lineJoin = "round";
+    for (let i = 1; i < trail.length; i++) {
+      const a = trail[i - 1], b = trail[i];
+      if (a.gap || b.gap) continue;
+      const life = 1 - (now - b.t) / LIFE;
+      lzCtx.strokeStyle = `rgba(240, 40, 40, ${0.55 * life})`;
+      lzCtx.lineWidth = 2 + 6 * life;
+      lzCtx.beginPath(); lzCtx.moveTo(a.x, a.y); lzCtx.lineTo(b.x, b.y); lzCtx.stroke();
+    }
+    const last = lzLast;
+    if (last) {
+      const g = lzCtx.createRadialGradient(last.x, last.y, 0, last.x, last.y, 18);
+      g.addColorStop(0, "rgba(255, 60, 60, .55)"); g.addColorStop(1, "rgba(255, 60, 60, 0)");
+      lzCtx.fillStyle = g; lzCtx.beginPath(); lzCtx.arc(last.x, last.y, 18, 0, Math.PI * 2); lzCtx.fill();
+      lzCtx.fillStyle = "#ff2b2b"; lzCtx.strokeStyle = "#fff"; lzCtx.lineWidth = 1.5;
+      lzCtx.beginPath(); lzCtx.arc(last.x, last.y, 6.5, 0, Math.PI * 2); lzCtx.fill(); lzCtx.stroke();
+    }
+    lzRaf = requestAnimationFrame(drawLaser);
+  }
+  let lzLast = null;
+  addEventListener("pointermove", (e) => {
+    if (!laser) return;
+    lzLast = { x: e.clientX, y: e.clientY };
+    trail.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+  }, { passive: true, capture: true });
+  document.addEventListener("pointerout", (e) => { if (laser && !e.relatedTarget) { lzLast = null; trail.push({ gap: true, t: performance.now() }); } });
+  // In full screen only the board is shown, so the pointer layer moves inside it
+  ["fullscreenchange", "webkitfullscreenchange"].forEach((ev) => document.addEventListener(ev, () => ((document.fullscreenElement || document.webkitFullscreenElement) === root ? root : document.body).appendChild(lz)));
+
   function setTool(t) { tool = t; if (t !== "select") selectOnly(null); drawSel(); renderBar(); }
   // Applies an option (color, fill…) to every selected item that has it
   function changeSelected(prop, value) {
@@ -643,7 +694,8 @@
     const b = e.target.closest("[data-act]");
     if (!b || b.disabled) return;
     const a = b.dataset.act, v = b.dataset.v;
-    if (a === "tool") { endEdit(); setTool(v); }
+    if (a === "laser") { endEdit(); setLaser(!laser); return; }
+    if (a === "tool") { endEdit(); if (laser) setLaser(false); setTool(v); }
     else if (a === "color") { color = v; if (editing && applyInline("color", v)) return; wholeWhileEditing("color", v) || changeSelected("color", v) || renderBar(); }
     else if (a === "bg") { noteBg = v; changeSelected("bg", v) || renderBar(); }
     else if (a === "fill") { fill = v; changeSelected("fill", v) || renderBar(); }
@@ -742,7 +794,8 @@
     else if (mod && k === "a") { e.preventDefault(); setTool("select"); selSet = new Set(items().map((i) => i.id)); drawSel(); renderBar(); }
     else if (mod) return;
     else if ((e.key === "Delete" || e.key === "Backspace") && selSet.size) { e.preventDefault(); removeSelected(); }
-    else if (e.key === "Escape") { selectOnly(null); setTool("select"); }
+    else if (e.key === "Escape") { if (laser) setLaser(false); selectOnly(null); setTool("select"); }
+    else if (k === "k" && !e.metaKey && !e.ctrlKey) { e.preventDefault(); setLaser(!laser); }
     else if (e.key === "Enter" && current()) { const it = current(); if (it.t === "text" || it.t === "note") { e.preventDefault(); startEdit(it.id); } }
     else if (e.key.startsWith("Arrow") && selSet.size) {
       e.preventDefault();
